@@ -1,142 +1,140 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.codcodes.icebreaker.MainActivity"
-    tools:showIn="@layout/app_bar_main"
-    android:background="#ff00f7"
-    android:layout_marginRight="-10dp"
-    android:layout_marginLeft="-10dp">
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context=".MainActivity">
 
-    <FrameLayout
+    <com.sothree.slidinguppanel.SlidingUpPanelLayout
+        android:id="@+id/sliding_layout"
+        xmlns:sothree="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:background="#00f7ff"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:paddingTop="20dp"
-        android:paddingBottom="20dp">
+        android:gravity="bottom"
+        sothree:umanoDragView="@+id/dragView"
+        sothree:umanoOverlay="true"
+        sothree:umanoPanelHeight="60dp"
+        sothree:umanoShadowHeight="4dp">
 
-        <!-- Rows, divide FrameLayout into two rows - mind the weight-->
-        <LinearLayout
-            android:orientation="vertical"
+        <!-- MAIN CONTENT -->
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:background="#ff0000"
-            android:weightSum="4">
+            android:background="@drawable/profile_placeholder"
+            android:orientation="vertical">
 
-            <!-- Profile picture-->
-            <ImageView
+            <android.support.design.widget.CoordinatorLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="3"
-                android:src="@drawable/cod_poster"
-                />
-            <!--<RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="2"
-                android:background="#fff">
+                android:layout_height="match_parent">
 
-            </RelativeLayout>-->
-
-            <!-- Cols, bottom half of the LinearLayout[FrameLayout really] -->
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:layout_alignParentTop="true"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="126dp"
-                android:background="#0dff00">
-
-                <!-- Divide bottom half of LinearLayout[FrameLayout] into two cols-->
                 <LinearLayout
+                    android:id="@+id/viewA"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:weightSum="3">
 
-                    <!-- Col1: User information and stuff like that -->
+                    android:orientation="horizontal">
+
                     <RelativeLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="2">
+                        android:id="@+id/fabAnchor"
+                        android:layout_width="match_parent"
+                        android:layout_height="450dp"
+                        />
 
-                        <TextView
-                            android:id="@+id/userHandle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@string/user_handle_placeholder"/>
 
-                        <TextView
-                            android:id="@+id/ltxt1"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_below="@+id/userHandle"
-                            android:text="Some info"/>
-
-                        <TextView
-                            android:id="@+id/ltxt2"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_below="@+id/ltxt1"
-                            android:text="Some more info"/>
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_below="@+id/ltxt2"
-                            android:text="Even more info"/>
-                    </RelativeLayout>
-
-                    <!-- Col2: Level details and stuff like that -->
-                    <RelativeLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="#ff217a">
-
-                        <TextView
-                            android:id="@+id/rtxt1"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Some info"/>
-
-                        <TextView
-                            android:id="@+id/rtxt2"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_below="@+id/rtxt1"
-                            android:text="Some more info"/>
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_below="@+id/rtxt2"
-                            android:text="Even more info"/>
-
-                        <!--<ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="80dp"
-                            android:src="@drawable/blue"/>-->
-                    </RelativeLayout>
                 </LinearLayout>
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/fabEvent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+
+                    app:layout_anchor="@id/fabAnchor"
+                    app:layout_anchorGravity="bottom|right|end"/>
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/fabLevel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="60dp"
+                    android:clickable="true"
+
+                    app:layout_anchor="@id/fabAnchor"
+                    app:layout_anchorGravity="bottom|right|end"/>
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/fabXP"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="120dp"
+
+                    android:clickable="true"
+                    app:layout_anchor="@id/fabAnchor"
+                    app:layout_anchorGravity="bottom|right|end"/>
+
+            </android.support.design.widget.CoordinatorLayout>
+
+        </RelativeLayout>
+
+        <!-- SLIDING LAYOUT -->
+        <LinearLayout
+            android:id="@+id/dragView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#ffffff"
+            android:clickable="true"
+            android:focusable="false"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#fff"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/name"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+
+                    android:gravity="center_vertical"
+                    android:paddingLeft="10dp"
+                    android:text="@string/placeholder"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="26sp"/>
+
+                <TextView
+                    android:id="@+id/recent"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+
+                    android:gravity="center_vertical"
+                    android:paddingLeft="10dp"
+                    android:text="Recent Activity"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="16sp"/>
+
+                <!--<Button
+                    android:id="@+id/btn_hide"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical|right"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:text="Button Two"
+                    android:textSize="14sp" />-->
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFCCCC">
+
+
             </LinearLayout>
         </LinearLayout>
-
-    </FrameLayout>
+    </com.sothree.slidinguppanel.SlidingUpPanelLayout>
 
 </RelativeLayout>

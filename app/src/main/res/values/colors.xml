@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">@android:color/transparent</color>
+    <color name="colorPrimaryDark">#0379be</color>
+    <color name="colorAccent">#7f08ff</color>
+    <color name="colourSecondary">#0090ff</color>
+    <color name="textColour">#fff</color>
+    <color name="borderColour">#FFBD04FA</color>
+    <color name="levelsFabColour">#09daf1</color>
+    <color name="xpFabColour">#09f185</color>
+    <color name="eventFabColour">#730dab</color>
+    <color name="red">#e20929</color>
 </resources>

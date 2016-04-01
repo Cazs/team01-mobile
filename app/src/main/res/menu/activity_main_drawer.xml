@@ -5,19 +5,34 @@
         <item
             android:id="@+id/nav_camera"
             android:icon="@drawable/ic_menu_camera"
-            android:title="Import" />
+            android:title="Profile"/>
         <item
             android:id="@+id/nav_gallery"
             android:icon="@drawable/ic_menu_gallery"
             android:title="Gallery" />
         <item
-            android:id="@+id/nav_slideshow"
+            android:id="@+id/nav_attended"
             android:icon="@drawable/ic_menu_slideshow"
-            android:title="Slideshow" />
+            android:title="IceBreaker Events Attended"/>
         <item
             android:id="@+id/nav_manage"
             android:icon="@drawable/ic_menu_manage"
-            android:title="Tools" />
+            android:title="Settings"/>
+
+        <item
+            android:id="@+id/nav_find"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="Find IceBreaker Friendly Events"/>
+
+        <item
+            android:id="@+id/nav_history"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="Your Full History"/>
+
+        <item
+            android:id="@+id/nav_clip"
+            android:icon="@drawable/ic_menu_camera"
+            android:title="Post Clip"/>
     </group>
 
     <item android:title="Communicate">
