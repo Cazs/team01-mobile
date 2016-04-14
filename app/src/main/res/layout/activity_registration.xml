@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.codcodes.icebreaker.RegistrationActivity">
+
+    <TextView
+        android:id="@+id/reg_lbl_username"
+        android:layout_width="150dp"
+        android:layout_height="60dp"
+        android:text="@string/reg_username"/>
+
+    <EditText
+        android:id="@+id/reg_txt_username"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_toRightOf="@+id/reg_lbl_username"/>
+
+    <TextView
+        android:id="@+id/reg_lbl_firstname"
+        android:layout_width="150dp"
+        android:layout_height="60dp"
+        android:layout_below="@+id/reg_lbl_username"
+        android:text="@string/reg_firstname"/>
+
+    <EditText
+        android:id="@+id/reg_txt_firstname"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_below="@+id/reg_txt_username"
+        android:layout_toRightOf="@+id/reg_lbl_firstname"/>
+
+    <TextView
+        android:id="@+id/reg_lbl_lastname"
+        android:layout_width="150dp"
+        android:layout_height="60dp"
+        android:layout_below="@+id/reg_lbl_firstname"
+        android:text="@string/reg_lastname"/>
+
+    <EditText
+        android:id="@+id/reg_txt_lastname"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_below="@+id/reg_txt_firstname"
+        android:layout_toRightOf="@+id/reg_lbl_lastname"/>
+
+    <TextView
+        android:id="@+id/reg_lbl_password"
+        android:layout_width="150dp"
+        android:layout_height="60dp"
+        android:layout_below="@+id/reg_lbl_lastname"
+        android:text="@string/reg_password"/>
+
+    <EditText
+        android:id="@+id/reg_txt_password"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:inputType="textPassword"
+        android:layout_below="@+id/reg_txt_lastname"
+        android:layout_toRightOf="@+id/reg_lbl_password"/>
+
+    <TextView
+        android:id="@+id/reg_lbl_password2"
+        android:layout_width="150dp"
+        android:layout_height="60dp"
+        android:layout_below="@+id/reg_lbl_password"
+        android:text="@string/reg_password2"/>
+
+    <EditText
+        android:id="@+id/reg_txt_password2"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:inputType="textPassword"
+        android:layout_below="@+id/reg_txt_password"
+        android:layout_toRightOf="@+id/reg_lbl_password2"/>
+
+    <TextView
+        android:id="@+id/reg_lbl_email"
+        android:layout_width="150dp"
+        android:layout_height="60dp"
+        android:layout_below="@+id/reg_lbl_password2"
+        android:text="@string/reg_email"/>
+
+    <EditText
+        android:id="@+id/reg_txt_email"
+        android:layout_width="200dp"
+        android:layout_height="60dp"
+        android:layout_below="@+id/reg_txt_password2"
+        android:layout_toRightOf="@+id/reg_lbl_email"/>
+
+    <Button
+        android:id="@+id/reg_btn_create"
+        android:layout_width="200dp"
+        android:layout_height="60dp"
+        android:text="Create account"
+        android:layout_below="@+id/reg_lbl_email"
+        android:layout_centerHorizontal="true"/>
+
+</RelativeLayout>

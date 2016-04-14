@@ -1,51 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_camera"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="Profile"/>
-        <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="Gallery" />
-        <item
-            android:id="@+id/nav_attended"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="IceBreaker Events Attended"/>
-        <item
-            android:id="@+id/nav_manage"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Settings"/>
-
-        <item
-            android:id="@+id/nav_find"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Find IceBreaker Friendly Events"/>
-
-        <item
-            android:id="@+id/nav_history"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="Your Full History"/>
-
-        <item
-            android:id="@+id/nav_clip"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="Post Clip"/>
-    </group>
-
-    <item android:title="Communicate">
-        <menu>
             <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
-            <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
-        </menu>
-    </item>
+                android:title="All about you"
+                android:checkableBehavior="single">
+                <menu>
+                    <item
+                        android:id="@+id/nav_profile"
+                        android:icon="@drawable/ic_account_circle_black_24dp"
+                        android:title="Profile"/>
 
+                    <item
+                        android:id="@+id/nav_gallery"
+                        android:icon="@drawable/ic_menu_gallery"
+                        android:title="Posts" />
+
+                    <item
+                        android:id="@+id/nav_attended"
+                        android:icon="@drawable/ic_event_black_24dp"
+                        android:title="IceBreaker\u00a9 Events Attended"/>
+
+                    <item
+                        android:id="@+id/nav_achievements"
+                        android:icon="@drawable/ic_stars_black_24dp"
+                        android:title="Achievements"/>
+
+                    <item
+                        android:id="@+id/nav_history"
+                        android:icon="@drawable/ic_timeline_black_24dp"
+                        android:title="History"/>
+                </menu>
+            </item>
+
+        <item
+            android:title="Explore"
+            android:checkableBehavior="single">
+            <menu>
+                <item
+                    android:id="@+id/nav_find"
+                    android:icon="@drawable/ic_explore_black_24dp"
+                    android:title="Find IceBreaker\u00a9 Events"/>
+
+                <item
+                    android:id="@+id/nav_clip"
+                    android:icon="@drawable/ic_menu_camera"
+                    android:title="Post Clip"/>
+
+                <item
+                    android:id="@+id/nav_settings"
+                    android:icon="@drawable/ic_menu_manage"
+                    android:title="Settings"/>
+            </menu>
+        </item>
+
+        <item
+            android:title="Sharing"
+            android:checkableBehavior="single">
+            <menu>
+                <item
+                    android:id="@+id/nav_share"
+                    android:icon="@drawable/ic_menu_share"
+                    android:title="Share Event" />
+                <item
+                    android:id="@+id/nav_send"
+                    android:icon="@drawable/ic_gps_fixed_black_24dp"
+                    android:title="Send Location" />
+            </menu>
+        </item>
 </menu>

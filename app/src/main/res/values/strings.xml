@@ -1,5 +1,14 @@
 <resources>
     <string name="app_name">IceBreaker</string>
+    <string name="temp_usr_handle">\@kwashington</string>
+    <string name="ach_name">Achievements</string>
+    <string name="action_create_account">Or, create an account</string>
+    <string name="reg_username">Username</string>
+    <string name="reg_firstname">First name</string>
+    <string name="reg_lastname">Last name</string>
+    <string name="reg_password">Password</string>
+    <string name="reg_password2">Password again</string>
+    <string name="reg_email">Email Address</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -46,6 +55,16 @@
         <item>0</item>
         <item>-1</item>
     </string-array>
+    <string-array name="contacts_temp">
+        <item>Bruce Wayne</item>
+        <item>Tony Stark</item>
+        <item>Clark Kent</item>
+        <item>Peter Parker</item>
+        <item>Sergey Brin</item>
+        <item>Bill Gates</item>
+        <item>Linus Torvalds</item>
+        <item>Steve Jobs</item>
+    </string-array>
 
     <string name="pref_title_sync_frequency">Sync frequency</string>
     <string-array name="pref_sync_frequency_titles">
@@ -74,4 +93,22 @@
 
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="title_activity_event_search">EventSearch</string>
+    <string name="title_activity_event_map">Map</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_login">Sign in</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
 </resources>
