@@ -10,12 +10,14 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class EventMapActivity extends FragmentActivity implements OnMapReadyCallback {
+public class EventMapActivity extends FragmentActivity implements OnMapReadyCallback
+{
 
     private GoogleMap mMap;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_map);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -35,7 +37,8 @@ public class EventMapActivity extends FragmentActivity implements OnMapReadyCall
      * installed Google Play services and returned to the app.
      */
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(GoogleMap googleMap)
+    {
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera

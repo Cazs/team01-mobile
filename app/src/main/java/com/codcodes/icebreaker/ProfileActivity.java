@@ -34,21 +34,19 @@ public class ProfileActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        RelativeLayout rl = (RelativeLayout)findViewById(R.id.ppHolder);
+        //RelativeLayout rl = (RelativeLayout)findViewById(R.id.ppHolder);
 
         final ListView profile_settings = (ListView)findViewById(R.id.profile_settings);
 
         ProfileListItem items[] = {new ProfileListItem("Handle","@kwashington"),
                                     new ProfileListItem("Name","Kerry"),
                                     new ProfileListItem("Surname","Washington"),
-                                    new ProfileListItem("Birthdate","1995-07-20")};
+                                    new ProfileListItem("Birth-date","1995-07-20")};
         profile_settings.setAdapter(new ProfileAdapter(this,items));
 
         final ImageView imgArrow = (ImageView)findViewById(R.id.imgArrow);
         final SlidingUpPanelLayout supl = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
 
-        supl.setScrollableViewHelper(new SlidingMenuNestedScrollHelper());
-        supl.setScrollableView(profile_settings);
 
         supl.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
 

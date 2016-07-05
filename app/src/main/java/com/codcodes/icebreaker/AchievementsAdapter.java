@@ -14,10 +14,10 @@ import android.widget.TextView;
 public class AchievementsAdapter extends BaseAdapter
 {
     private Context context;
-    private String[] data;
+    private Achievement[] data;
     private static LayoutInflater inflater = null;
 
-    public AchievementsAdapter(String[] data, Context context)
+    public AchievementsAdapter(Achievement[] data, Context context)
     {
         this.data = data;
         this.context = context;
@@ -31,7 +31,7 @@ public class AchievementsAdapter extends BaseAdapter
     }
 
     @Override
-    public Object getItem(int position)
+    public Achievement getItem(int position)
     {
         return data[position];
     }
@@ -49,7 +49,7 @@ public class AchievementsAdapter extends BaseAdapter
             convertView = inflater.inflate(R.layout.ach_list_row_item, parent, false);//inflater.inflate(R.layout.ach_list_row_item,null);
         TextView ach = (TextView) convertView.findViewById(R.id.achName);
 
-        ach.setText(data[position]);
+        ach.setText(data[position].getAchName());
 
         ImageView imgAch = (ImageView)convertView.findViewById(R.id.imgAch);
 

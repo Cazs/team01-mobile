@@ -2,6 +2,7 @@ package com.codcodes.icebreaker.tabs;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -60,26 +61,9 @@ public class ContactsFragment extends Fragment
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
-        View view = inflater.inflate(R.layout.fragment_contacts_list, container, false);
-
-        // Set the adapter
-        if (view instanceof RecyclerView)
-        {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1)
-            {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else
-            {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-            recyclerView.setAdapter(new ContactsRecyclerViewAdapter(DummyContent.ITEMS, (OnListFragmentInteractionListener)mListener));
-        }
-        return view;
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View v =inflater.inflate(R.layout.fragment_contacts,container,false);
+        return v;
     }
 
 

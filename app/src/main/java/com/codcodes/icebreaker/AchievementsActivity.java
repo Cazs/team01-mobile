@@ -2,6 +2,8 @@ package com.codcodes.icebreaker;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 /**
@@ -9,6 +11,21 @@ import android.widget.ListView;
  */
 public class AchievementsActivity extends Activity
 {
+    private AchievementsAdapter adapter;
+    private ListView lstAchievements;
+    private Achievement[] achievements = new Achievement[]
+            {
+                new Achievement("Popular Kid",false,"**Insert description here**"),
+                new Achievement("Smooth Criminal",false,"**Insert description here**"),
+                new Achievement("Star Of The Night/Day",false,"**Insert description here**"),//TODO: Programmatically figure out whether it should say Night/Day
+                new Achievement("IceBreak Queen",false,"**Insert description here**"),
+                new Achievement("Heart-breaker",false,"**Insert description here**"),
+                new Achievement("Friendly",false,"**Insert description here**"),
+                new Achievement("Popular Kid",false,"**Insert description here**"),
+                new Achievement("Popular Kid",false,"**Insert description here**"),
+                new Achievement("Popular Kid",false,"**Insert description here**"),
+            };
+
     @Override
     //public void onCreate(Bundle savedInstanceState, PersistableBundle persistentState)
     protected void onCreate(Bundle savedInstanceState)
@@ -20,21 +37,28 @@ public class AchievementsActivity extends Activity
         /*String[] arr = new String[20];
         for(int i=0;i<20;i++)
             arr[i] = new String("Achievement " + (i+1));*/
-        AchievementsAdapter adapter = new AchievementsAdapter(new String[]{"Popular Kid",
-                "Smooth Criminal",
-                "Star Of The Night",
-                "IceBreak Queen",
-                "Heartbreaker",
-                "Happy Person",
-                "Achievement 1",
-                "Achievement 2",
-                "Achievement 3",
-                "Achievement 4",
-                "Achievement 5",
-        },this);
+        adapter = new AchievementsAdapter(achievements,this);
 
-        ListView listView = (ListView) findViewById(R.id.lstAchs);
+        lstAchievements = (ListView) findViewById(R.id.lstAchs);
+        lstAchievements.setAdapter(adapter);
 
-        listView.setAdapter(adapter);
+        lstAchievements.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                //TODO: Display MessageDialog
+            }
+        });
+    }
+
+    public void displayAchievements()
+    {
+        //TODO: Implement displayAchievements
+    }
+
+    public void displayAchievementDialog()
+    {
+        //TODO: Implement displayAchievementDialog
     }
 }

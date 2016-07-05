@@ -1,57 +1,50 @@
 package com.codcodes.icebreaker.tabs;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.codcodes.icebreaker.R;
-
+import com.codcodes.icebreaker.dummy.DummyContent;
+import com.codcodes.icebreaker.dummy.DummyContent.DummyItem;
 
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link RecentFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link RecentFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * A fragment representing a list of Items.
+ * <p/>
+ * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
+ * interface.
  */
 public class RecentFragment extends Fragment
 {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    private OnFragmentInteractionListener mListener;
-
-    public RecentFragment()
-    {
-        // Required empty public constructor
-    }
+    // TODO: Customize parameter argument names
+    private static final String ARG_COLUMN_COUNT = "column-count";
+    // TODO: Customize parameters
+    private int mColumnCount = 1;
+    private OnListFragmentInteractionListener mListener;
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment RecentFragment.
+     * Mandatory empty constructor for the fragment manager to instantiate the
+     * fragment (e.g. upon screen orientation changes).
      */
-    // TODO: Rename and change types and number of parameters
-    public static RecentFragment newInstance(String param1, String param2)
+    public RecentFragment()
     {
-        RecentFragment fragment = new RecentFragment();
+    }
+
+    // TODO: Customize parameter initialization
+    @SuppressWarnings("unused")
+    public static ContactsFragment newInstance(int columnCount)
+    {
+        ContactsFragment fragment = new ContactsFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putInt(ARG_COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
         return fragment;
     }
@@ -60,41 +53,31 @@ public class RecentFragment extends Fragment
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null)
         {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_recent, container, false);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View v =inflater.inflate(R.layout.fragment_contacts,container,false);
+        return v;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri)
-    {
-        if (mListener != null)
-        {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
 
     @Override
     public void onAttach(Context context)
     {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener)
+        if (context instanceof OnListFragmentInteractionListener)
         {
-            mListener = (OnFragmentInteractionListener) context;
+            mListener = (OnListFragmentInteractionListener) context;
         } else
         {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnListFragmentInteractionListener");
         }
     }
 
@@ -115,9 +98,9 @@ public class RecentFragment extends Fragment
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener
+    public interface OnListFragmentInteractionListener
     {
         // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+        void onListFragmentInteraction(DummyItem item);
     }
 }
