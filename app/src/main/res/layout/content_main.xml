@@ -1,8 +1,8 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:context=".MainActivity">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
     <com.sothree.slidinguppanel.SlidingUpPanelLayout
         android:id="@+id/sliding_layout"
@@ -12,33 +12,82 @@
         android:gravity="bottom"
         sothree:umanoDragView="@+id/dragView"
         sothree:umanoOverlay="true"
-        sothree:umanoPanelHeight="60dp"
+        sothree:umanoPanelHeight="80dp"
         sothree:umanoShadowHeight="4dp">
-
-        <!-- MAIN CONTENT -->
-        <RelativeLayout
+        <!--Main Content-->
+        <LinearLayout
+            android:id="@+id/main"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/profile_placeholder"
+            android:clickable="true"
+            android:focusable="false"
             android:orientation="vertical">
 
+            <LinearLayout
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@android:color/transparent"
+                android:orientation="horizontal"
+                android:weightSum="100">
+                //#4D0066cc
+                <Button
+                    android:layout_width="20dp"
+                    android:layout_height="30dp"
+                    android:layout_weight="10"
+                    android:onClick="showMenu"
+                    android:background="@drawable/ic_menu_black_24dp"/>
+                <!--<ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="30"
+                    android:src="@drawable/ic_menu_black_24dp"
+                    android:onClick="showMenu"
+                    android:soundEffectsEnabled="true"/>-->
+                <TextView
+                    android:id="@+id/toolbarTitle"
+                    android:visibility="invisible"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="90"
+                    android:text="@string/app_name"
+                    android:textSize="18pt"/>
+
+                <Button
+                    android:layout_width="35dp"
+                    android:layout_height="30dp"
+                    android:layout_weight="10"
+                    android:onClick="showMenu"
+                    android:background="@drawable/ic_more_vert_black_24dp"/>
+            </LinearLayout>
             <android.support.design.widget.CoordinatorLayout
                 xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-
                 <LinearLayout
                     android:id="@+id/viewA"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-
                     android:orientation="horizontal">
 
                     <RelativeLayout
-                        android:id="@+id/fabAnchor"
+                        android:id="@+id/fabAnchorA"
                         android:layout_width="match_parent"
-                        android:layout_height="450dp"
+                        android:layout_height="280dp"
+                        />
+
+                    <RelativeLayout
+                        android:id="@+id/fabAnchorB"
+                        android:layout_width="match_parent"
+                        android:layout_height="340dp"
+                        />
+
+                    <RelativeLayout
+                        android:id="@+id/fabAnchorC"
+                        android:layout_width="match_parent"
+                        android:layout_height="400dp"
                         />
 
 
@@ -50,34 +99,28 @@
                     android:layout_height="wrap_content"
                     android:clickable="true"
 
-                    app:layout_anchor="@id/fabAnchor"
+                    app:layout_anchor="@id/fabAnchorA"
                     app:layout_anchorGravity="bottom|right|end"/>
 
                 <android.support.design.widget.FloatingActionButton
                     android:id="@+id/fabLevel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_margin="60dp"
                     android:clickable="true"
-
-                    app:layout_anchor="@id/fabAnchor"
+                    app:layout_anchor="@id/fabAnchorB"
                     app:layout_anchorGravity="bottom|right|end"/>
 
                 <android.support.design.widget.FloatingActionButton
                     android:id="@+id/fabXP"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="120dp"
-
                     android:clickable="true"
-                    app:layout_anchor="@id/fabAnchor"
+                    app:layout_anchor="@id/fabAnchorC"
                     app:layout_anchorGravity="bottom|right|end"/>
 
             </android.support.design.widget.CoordinatorLayout>
+        </LinearLayout>
 
-        </RelativeLayout>
-
-        <!-- SLIDING LAYOUT -->
         <LinearLayout
             android:id="@+id/dragView"
             android:layout_width="match_parent"
@@ -87,54 +130,23 @@
             android:focusable="false"
             android:orientation="vertical">
 
-            <LinearLayout
+            <com.codcodes.icebreaker.SlidingTabLayout
+                android:id="@+id/tabs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#fff"
-                android:orientation="vertical">
+                android:background="#1a8cff"
+                />
 
-                <TextView
-                    android:id="@+id/name"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-
-                    android:gravity="center_vertical"
-                    android:paddingLeft="10dp"
-                    android:text="@string/placeholder"
-                    android:textColor="@color/colorAccent"
-                    android:textSize="26sp"/>
-
-                <TextView
-                    android:id="@+id/recent"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-
-                    android:gravity="center_vertical"
-                    android:paddingLeft="10dp"
-                    android:text="Recent Activity"
-                    android:textColor="@color/colorAccent"
-                    android:textSize="16sp"/>
-
-                <!--<Button
-                    android:id="@+id/btn_hide"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical|right"
-                    android:paddingLeft="10dp"
-                    android:paddingRight="10dp"
-                    android:text="Button Two"
-                    android:textSize="14sp" />-->
-
-            </LinearLayout>
-
-            <LinearLayout
+            <android.support.v4.view.ViewPager
+                android:id="@+id/pager"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#FFCCCC">
-
-
-            </LinearLayout>
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="#e5e5e5" >
+            </android.support.v4.view.ViewPager>
         </LinearLayout>
-    </com.sothree.slidinguppanel.SlidingUpPanelLayout>
 
-</RelativeLayout>
+
+
+    </com.sothree.slidinguppanel.SlidingUpPanelLayout>
+</LinearLayout>
