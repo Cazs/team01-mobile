@@ -12,4 +12,7 @@
     <color name="profile_details">#fff</color>
     <color name="profile_slider">#0fb1f7</color>
     <color name="red">#e20929</color>
+    <color name="white">#fff</color>
+    <color name="iceblue">#46bdf0</color>
+    <color name="iceblue2">#4665f0</color>
 </resources>

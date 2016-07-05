@@ -1,5 +1,6 @@
 package com.codcodes.icebreaker;
 
+import android.graphics.Typeface;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -51,14 +52,9 @@ public class InitialActivity extends AppCompatActivity {
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
+        TextView headingTextView = (TextView) findViewById(R.id.heading);
+        headingTextView.setTypeface(heading);
 
     }
 
@@ -66,7 +62,7 @@ public class InitialActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_initial, menu);
+        //getMenuInflater().inflate(R.menu.menu_initial, menu);
         return true;
     }
 

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">IceBreaker</string>
+    <string name="app_name">IceBreak</string>
     <string name="temp_usr_handle">\@kwashington</string>
     <string name="ach_name">Achievements</string>
     <string name="action_create_account">Or, create an account</string>
