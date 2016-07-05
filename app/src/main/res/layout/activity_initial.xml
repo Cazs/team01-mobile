@@ -54,18 +54,23 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="#000"
+        android:textSize="15dp"
         android:layout_marginLeft="75dp"
         android:layout_marginTop="23dp"
+        android:background="@drawable/buttonshape"
         android:text="Login"
         />
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="#000"
+        android:textSize="15dp"
         android:shadowRadius="5"
         android:layout_marginTop="23dp"
         android:layout_marginLeft="50dp"
+        android:background="@drawable/buttonshape"
         android:text="Sign Up"
-
     />
 
 </LinearLayout>
