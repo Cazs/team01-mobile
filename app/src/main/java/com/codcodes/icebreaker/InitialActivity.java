@@ -17,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class InitialActivity extends AppCompatActivity {
@@ -29,6 +30,8 @@ public class InitialActivity extends AppCompatActivity {
      * may be best to switch to a
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
+    private ImageView iv;
+
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
     /**
@@ -40,6 +43,9 @@ public class InitialActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_initial);
+
+        iv = (ImageView) findViewById(R.id.image1) ;
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -111,7 +117,28 @@ public class InitialActivity extends AppCompatActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_initial, container, false);
             TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+            ImageView temp = (ImageView) rootView.findViewById(R.id.image1);
+
+            int v= getArguments().getInt(ARG_SECTION_NUMBER);
+            if (v==1)
+            {
+                temp.setImageResource(R.drawable.image1);
+
+            }
+
+            if (v==2)
+            {
+                temp.setImageResource(R.drawable.image2);
+
+            }
+
+            if (v==3)
+            {
+                temp.setImageResource(R.drawable.image3);
+
+            }
+
+           // textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
             return rootView;
         }
     }
