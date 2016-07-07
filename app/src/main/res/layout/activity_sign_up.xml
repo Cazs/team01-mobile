@@ -46,7 +46,7 @@
 
         <EditText
         android:id="@+id/email_sign_up"
-        android:layout_width="250dp"
+        android:layout_width="@dimen/text_box_size"
         android:layout_height="wrap_content"
         android:hint="@string/reg_email"
         android:typeface="monospace"
@@ -55,7 +55,7 @@
         />
         <EditText
             android:id="@+id/username_sign_up"
-            android:layout_width="250dp"
+            android:layout_width="@dimen/text_box_size"
             android:layout_height="wrap_content"
             android:hint="@string/reg_username"
             android:typeface="monospace"
@@ -63,7 +63,7 @@
             />
         <EditText
             android:id="@+id/password_sign_up"
-            android:layout_width="250dp"
+            android:layout_width="@dimen/text_box_size"
             android:layout_height="wrap_content"
             android:hint="@string/reg_password"
             android:typeface="monospace"
@@ -71,11 +71,22 @@
             />
         <EditText
             android:id="@+id/confirm_password"
-            android:layout_width="250dp"
+            android:layout_width="@dimen/text_box_size"
             android:layout_height="wrap_content"
             android:hint="@string/reg_password2"
             android:typeface="monospace"
             android:inputType="textPassword"
+            />
+
+        <Button
+            android:layout_width="@dimen/text_box_size"
+            android:layout_height="wrap_content"
+            android:textColor="#000"
+            android:textSize="15dp"
+            android:layout_marginTop="23dp"
+            android:background="@drawable/buttonshape"
+            android:text="Sign Up"
+            android:fontFamily="monospace"
             />
 
     </LinearLayout>

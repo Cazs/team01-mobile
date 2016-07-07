@@ -39,4 +39,9 @@
     <dimen name="secondlayout_top">200dp</dimen>
 
     <dimen name="text_width">100dp</dimen>
+
+    <dimen name="margin_top_icon">175dp</dimen>
+    <dimen name="margin_top_text">165dp</dimen>
+
+    <dimen name="text_box_size">250dp</dimen>
 </resources>
