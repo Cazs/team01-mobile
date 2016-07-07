@@ -1,5 +1,6 @@
 package com.codcodes.icebreaker;
 
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -47,8 +48,7 @@ public class InitialActivity extends AppCompatActivity {
         iv = (ImageView) findViewById(R.id.image1) ;
 
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        //Toolbar toolbar = (Toolbar) findViewByIsetSupportActionBar(toolbar);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -85,6 +85,11 @@ public class InitialActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+    public void showLogin(View view)
+    {
+        Intent loginscreen = new Intent(this,LoginActivity.class);
+        startActivity(loginscreen);
     }
 
     /**
