@@ -44,6 +44,7 @@
         android:gravity="center_horizontal"
         >
 
+
         <EditText
         android:id="@+id/email_sign_up"
         android:layout_width="@dimen/text_box_size"

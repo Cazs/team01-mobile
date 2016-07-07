@@ -23,8 +23,8 @@ public class SignUpActivity extends AppCompatActivity {
         TextView headingTextView = (TextView) findViewById(R.id.SignUp);
         headingTextView.setTypeface(heading);
 
-       // EditText edit = (EditText) findViewById(R.id.email_sign_up);
-     // edit.getBackground().setColorFilter(Color.BLUE, PorterDuff.Mode.SRC_IN);
+     // EditText edit = (EditText) findViewById(R.id.email_sign_up);
+     // edit.clearFocus();
 
 
     }

@@ -114,4 +114,5 @@
     <string name="title_activity_initial">InitialActivity</string>
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="title_activity_sign_up">SignUpActivity</string>
+    <string name="title_activity_test">Sign in</string>
 </resources>
