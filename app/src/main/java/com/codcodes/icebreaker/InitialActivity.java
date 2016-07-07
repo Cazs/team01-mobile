@@ -92,6 +92,12 @@ public class InitialActivity extends AppCompatActivity {
         startActivity(loginscreen);
     }
 
+    public void ShowSignUp(View view)
+    {
+        Intent signupscreen = new Intent(this,SignUpActivity.class);
+        startActivity(signupscreen);
+    }
+
     /**
      * A placeholder fragment containing a simple view.
      */

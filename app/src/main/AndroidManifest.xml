@@ -21,6 +21,7 @@
     <android:uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <android:uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <android:uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <android:uses-permission android:name="android.permission.READ_CALL_LOG" />
 
     <application
         android:allowBackup="true"
@@ -48,10 +49,10 @@
         <activity
             android:name=".MainActivity"
             android:label="Kerry Washington"
-            android:parentActivityName=".LoginActivity">
+            android:parentActivityName=".SignUpActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.codcodes.icebreaker.LoginActivity" />
+                android:value=".SignUpActivity" />
         </activity>
         <activity
             android:name=".AchievementsActivity"
@@ -91,15 +92,25 @@
 
         <activity
             android:name=".EventMapActivity"
-            android:label="@string/title_activity_event_map"></activity>
+            android:label="@string/title_activity_event_map" />
         <activity
-            android:name=".RegistrationActivity"
-            android:label="Register an account">
+            android:name=".SignUpActivity"
+            android:label="@string/title_activity_sign_up"
+            android:parentActivityName=".InitialActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.codcodes.icebreaker.LoginActivity" />
+                android:value="com.codcodes.icebreaker.InitialActivity" />
         </activity>
-
+        <activity
+            android:name=".LoginActivity"
+            android:label="@string/title_activity_login"
+            android:parentActivityName=".InitialActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.codcodes.icebreaker.InitialActivity" />
+        </activity>
     </application>
 
 </manifest>

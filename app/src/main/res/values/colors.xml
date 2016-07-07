@@ -15,4 +15,6 @@
     <color name="white">#fff</color>
     <color name="iceblue">#46bdf0</color>
     <color name="iceblue2">#4665f0</color>
+    <color name="lightblue">#97d5f0</color>
+    <color name="lightblue2">#b9dff0</color>
 </resources>

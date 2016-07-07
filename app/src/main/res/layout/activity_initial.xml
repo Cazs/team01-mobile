@@ -61,6 +61,7 @@
         android:background="@drawable/buttonshape"
         android:text="Login"
         android:onClick="showLogin"
+        android:fontFamily="monospace"
         />
     <Button
         android:layout_width="wrap_content"
@@ -72,6 +73,8 @@
         android:layout_marginLeft="50dp"
         android:background="@drawable/buttonshape"
         android:text="Sign Up"
+        android:fontFamily="monospace"
+        android:onClick="ShowSignUp"
     />
 
 </LinearLayout>

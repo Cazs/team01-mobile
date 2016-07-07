@@ -7,7 +7,7 @@
     <string name="reg_firstname">First name</string>
     <string name="reg_lastname">Last name</string>
     <string name="reg_password">Password</string>
-    <string name="reg_password2">Password again</string>
+    <string name="reg_password2">Confirm Password</string>
     <string name="reg_email">Email Address</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
@@ -113,4 +113,5 @@
     </string>
     <string name="title_activity_initial">InitialActivity</string>
     <string name="section_format">Hello World from section: %1$d</string>
+    <string name="title_activity_sign_up">SignUpActivity</string>
 </resources>
