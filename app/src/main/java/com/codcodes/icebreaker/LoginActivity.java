@@ -1,5 +1,6 @@
 package com.codcodes.icebreaker;
 
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -22,5 +23,12 @@ public class LoginActivity extends AppCompatActivity {
         headingTextView.setTypeface(heading);
 
     }
+
+    public void showMainPage(View v)
+    {
+        Intent mainScreen = new Intent(this,MainPageActivity.class);
+        startActivity(mainScreen);
+    }
+
 
 }

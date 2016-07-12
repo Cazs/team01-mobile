@@ -111,6 +111,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.codcodes.icebreaker.InitialActivity" />
         </activity>
+        <activity
+            android:name=".MainPageActivity"
+            android:label="@string/title_activity_main_page"
+            android:parentActivityName=".LoginActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.codcodes.icebreaker.LoginActivity" />
+        </activity>
     </application>
 
 </manifest>
