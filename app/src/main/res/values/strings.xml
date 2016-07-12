@@ -117,4 +117,6 @@
     <string name="title_activity_test">Sign in</string>
     <string name="title_activity_main_page">MainPageActivity</string>
     <string name="title_activity_main2">Main2Activity</string>
+
+
 </resources>

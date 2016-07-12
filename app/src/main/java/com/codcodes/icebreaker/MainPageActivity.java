@@ -1,8 +1,12 @@
 package com.codcodes.icebreaker;
 
+import android.content.Context;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -11,6 +15,9 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ImageSpan;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.LinearLayout;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 public class MainPageActivity extends AppCompatActivity {
@@ -30,7 +38,7 @@ public class MainPageActivity extends AppCompatActivity {
      * may be best to switch to a
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
-    private SectionsPagerAdapter mSectionsPagerAdapter;
+
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -47,15 +55,18 @@ public class MainPageActivity extends AppCompatActivity {
         //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setAdapter(new FragmentAdapter(getSupportFragmentManager(),MainPageActivity.this));
 
         Typeface main_heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         TextView headingTextView = (TextView) findViewById(R.id.main_heading);
         //headingTextView.setTypeface(main_heading);
+
+        TabLayout tablayout = (TabLayout) findViewById(R.id.tab_layout);
+        tablayout.setupWithViewPager(mViewPager);
 
     }
 
@@ -82,6 +93,46 @@ public class MainPageActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public class FragmentAdapter extends FragmentPagerAdapter
+    {
+
+        final int PAGE_COUNT = 3;
+        private Context context;
+
+        public FragmentAdapter(FragmentManager fm,Context context) {
+            super(fm);
+            this.context=context;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return PlaceholderFragment.newInstance(position+1);
+        }
+
+        @Override
+        public int getCount() {
+            return PAGE_COUNT;
+        }
+
+        private int[] imageresId = {
+                R.drawable.ic_location_on_white_24dp,
+                R.drawable.ic_person_white_24dp,
+                R.drawable.ic_chat_bubble_white_24dp
+        };
+
+
+        public CharSequence getPageTitle(int position)
+        {
+           Drawable image = ContextCompat.getDrawable(context,imageresId[position]);
+            image.setBounds(0,0,image.getIntrinsicWidth(),image.getIntrinsicHeight());
+            SpannableString sb = new SpannableString(" ");
+            ImageSpan imageSpan = new ImageSpan(image,ImageSpan.ALIGN_BOTTOM);
+            sb.setSpan(imageSpan,0,1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            return sb;
+        }
+
+    }
+
     /**
      * A placeholder fragment containing a simple view.
      */
@@ -90,9 +141,12 @@ public class MainPageActivity extends AppCompatActivity {
          * The fragment argument representing the section number for this
          * fragment.
          */
+        //private Context context;
+
         private static final String ARG_SECTION_NUMBER = "section_number";
 
         public PlaceholderFragment() {
+
         }
 
         /**
@@ -130,36 +184,5 @@ public class MainPageActivity extends AppCompatActivity {
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
-        }
-
-        @Override
-        public int getCount() {
-            // Show 3 total pages.
-            return 3;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return "SECTION 1";
-                case 1:
-                    return "SECTION 2";
-                case 2:
-                    return "SECTION 3";
-            }
-            return null;
-        }
-    }
 }
