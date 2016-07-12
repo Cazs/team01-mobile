@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements RecentFragment.On
     private String[] arr = new String[20];
     private SlidingTabLayout tabs;
     private CharSequence labels[] = {"Recent", "Chats", "Contacts"};
-    private int tabCount = 3;
+    private int tabCount = 5;
 
     //
     private LinearLayout toolbar;
