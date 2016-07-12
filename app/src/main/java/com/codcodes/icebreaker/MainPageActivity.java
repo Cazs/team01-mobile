@@ -53,8 +53,9 @@ public class MainPageActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-
-
+        Typeface main_heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
+        TextView headingTextView = (TextView) findViewById(R.id.main_heading);
+        //headingTextView.setTypeface(main_heading);
 
     }
 
