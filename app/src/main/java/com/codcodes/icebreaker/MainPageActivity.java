@@ -12,6 +12,7 @@ import android.support.v7.widget.Toolbar;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TextView;
@@ -52,6 +54,7 @@ public class MainPageActivity extends AppCompatActivity {
     };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
 
@@ -66,15 +69,17 @@ public class MainPageActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(new FragmentAdapter(getSupportFragmentManager(),MainPageActivity.this));
 
-        Typeface main_heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
-        TextView headingTextView = (TextView) findViewById(R.id.main_heading);
-        //headingTextView.setTypeface(main_heading);
+
+
 
         TabLayout tablayout = (TabLayout) findViewById(R.id.tab_layout);
         tablayout.setupWithViewPager(mViewPager);
         tablayout.getTabAt(0).setIcon(imageResId[0]);
         tablayout.getTabAt(1).setIcon(imageResId[1]);
         tablayout.getTabAt(2).setIcon(imageResId[2]);
+
+
+
 
 
     }
@@ -115,6 +120,10 @@ public class MainPageActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
+            switch (position)
+            {
+                case 0: return event.newInstance(context);
+            }
             return PlaceholderFragment.newInstance(position+1);
         }
 
