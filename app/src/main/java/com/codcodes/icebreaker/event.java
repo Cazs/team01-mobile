@@ -38,10 +38,10 @@ public class event extends android.support.v4.app.Fragment
     }
 
 
-    public static event newInstance(Context c)
+    public static event newInstance(Context context)
     {
         event e = new event();
-        mgr = c.getAssets();
+        mgr = context.getAssets();
         Bundle b = new Bundle();
         e.setArguments(b);
         return e;

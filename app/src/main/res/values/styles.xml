@@ -40,7 +40,7 @@
     <style name="MyCustomTabLayout" parent="Widget.Design.TabLayout">
         <item name="tabTextAppearance">@style/MyCustomTextAppearance</item>
         <item name="tabIndicatorColor">
-            @color/iceblue2
+            @color/white2
         </item>
     </style>
 

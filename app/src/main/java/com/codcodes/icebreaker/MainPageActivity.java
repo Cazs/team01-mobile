@@ -1,6 +1,8 @@
 package com.codcodes.icebreaker;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.design.widget.FloatingActionButton;
@@ -29,6 +31,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TextView;
+
+import com.codcodes.icebreaker.tabs.ImageConverter;
+import com.codcodes.icebreaker.tabs.Profile_Page;
 
 public class MainPageActivity extends AppCompatActivity {
 
@@ -82,6 +87,7 @@ public class MainPageActivity extends AppCompatActivity {
 
 
 
+
     }
 
 
@@ -123,8 +129,10 @@ public class MainPageActivity extends AppCompatActivity {
             switch (position)
             {
                 case 0: return event.newInstance(context);
+                case 1: return Profile_Page.newInstance(context);
+                default:return event.newInstance(context);
             }
-            return PlaceholderFragment.newInstance(position+1);
+
         }
 
         @Override

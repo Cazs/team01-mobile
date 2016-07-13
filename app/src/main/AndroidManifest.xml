@@ -39,22 +39,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ProfileActivity"
-            android:label="Profile"
-            android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.codcodes.icebreaker.MainActivity" />
-        </activity>
-        <activity
-            android:name=".MainActivity"
-            android:label="Kerry Washington"
-            android:parentActivityName=".SignUpActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".SignUpActivity" />
-        </activity>
-        <activity
             android:name=".AchievementsActivity"
             android:label="@string/ach_name"
             android:parentActivityName=".MainActivity">
