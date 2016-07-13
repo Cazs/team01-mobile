@@ -24,7 +24,7 @@
         style="@style/MyCustomTabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-      android:background="@color/iceblue"
+        android:background="@color/iceblue"
         android:layout_marginTop="575dp"
         />
 

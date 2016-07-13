@@ -45,6 +45,11 @@ public class MainPageActivity extends AppCompatActivity {
      */
     private ViewPager mViewPager;
 
+    private int[] imageResId = {
+            R.drawable.ic_location_on_white_24dp,
+            R.drawable.ic_person_white_24dp,
+            R.drawable.ic_chat_bubble_white_24dp
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +72,10 @@ public class MainPageActivity extends AppCompatActivity {
 
         TabLayout tablayout = (TabLayout) findViewById(R.id.tab_layout);
         tablayout.setupWithViewPager(mViewPager);
+        tablayout.getTabAt(0).setIcon(imageResId[0]);
+        tablayout.getTabAt(1).setIcon(imageResId[1]);
+        tablayout.getTabAt(2).setIcon(imageResId[2]);
+
 
     }
 
@@ -114,21 +123,13 @@ public class MainPageActivity extends AppCompatActivity {
             return PAGE_COUNT;
         }
 
-        private int[] imageresId = {
-                R.drawable.ic_location_on_white_24dp,
-                R.drawable.ic_person_white_24dp,
-                R.drawable.ic_chat_bubble_white_24dp
-        };
+
 
 
         public CharSequence getPageTitle(int position)
         {
-           Drawable image = ContextCompat.getDrawable(context,imageresId[position]);
-            image.setBounds(0,0,image.getIntrinsicWidth(),image.getIntrinsicHeight());
-            SpannableString sb = new SpannableString(" ");
-            ImageSpan imageSpan = new ImageSpan(image,ImageSpan.ALIGN_BOTTOM);
-            sb.setSpan(imageSpan,0,1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            return sb;
+
+            return null;
         }
 
     }
