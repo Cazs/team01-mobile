@@ -51,7 +51,7 @@ public class Profile_Page extends android.support.v4.app.Fragment
 
         TextView rewards = (TextView) v.findViewById(R.id.profile_Rewards);
         rewards.setTypeface(h);
-        rewards.setText("Rewards");
+        rewards.setText("Achievements");
 
 
         TextView settings = (TextView) v.findViewById(R.id.profile_settings);
