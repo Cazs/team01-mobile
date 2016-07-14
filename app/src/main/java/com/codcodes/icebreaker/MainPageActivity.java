@@ -54,8 +54,8 @@ public class MainPageActivity extends AppCompatActivity {
 
     private int[] imageResId = {
             R.drawable.ic_location_on_white_24dp,
-            R.drawable.ic_person_white_24dp,
-            R.drawable.ic_chat_bubble_white_24dp
+            R.drawable.ic_chat_bubble_white_24dp,
+            R.drawable.ic_person_white_24dp
     };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,7 +129,7 @@ public class MainPageActivity extends AppCompatActivity {
             switch (position)
             {
                 case 0: return event.newInstance(context);
-                case 1: return Profile_Page.newInstance(context);
+                case 2: return Profile_Page.newInstance(context);
                 default:return event.newInstance(context);
             }
 

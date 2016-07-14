@@ -60,10 +60,15 @@ public class Profile_Page extends android.support.v4.app.Fragment
         settings.setText("Settings");
 
 
+
+
+
         rewards.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                int link_color = Color.parseColor("#4665f0");
                 Intent intent = new Intent(view.getContext(),InitialActivity.class);
+               // rewards.startAnimation();
                 startActivity(intent);
             }
         });
