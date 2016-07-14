@@ -39,7 +39,7 @@ public class Profile_Page extends android.support.v4.app.Fragment
         Typeface h = Typeface.createFromAsset(mgr,"Infinity.ttf");
         TextView name = (TextView) v.findViewById(R.id.profile_name);
         name.setTypeface(h);
-        name.setText("Seleena Gomez"); // TODO: get name from database
+        name.setText("Selena Gomez"); // TODO: get name from database
 
 
         TextView age = (TextView) v.findViewById(R.id.profile_age);
