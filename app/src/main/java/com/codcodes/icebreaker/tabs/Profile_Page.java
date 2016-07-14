@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.codcodes.icebreaker.InitialActivity;
 import com.codcodes.icebreaker.LoginActivity;
 import com.codcodes.icebreaker.R;
 
@@ -49,23 +50,31 @@ public class Profile_Page extends android.support.v4.app.Fragment
         occupation.setTypeface(h);
         occupation.setText("Singer/Songwriter/Actress");
 
-        TextView rewards = (TextView) v.findViewById(R.id.profile_Rewards);
+        final TextView rewards = (TextView) v.findViewById(R.id.profile_Rewards);
         rewards.setTypeface(h);
-        rewards.setText("Achievements");
+        rewards.setText("Rewards");
 
 
         TextView settings = (TextView) v.findViewById(R.id.profile_settings);
         settings.setTypeface(h);
         settings.setText("Settings");
 
+
         rewards.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Intent intent = new Intent(this, LoginActivity.class);
-                //startActivity(intent);
+                Intent intent = new Intent(view.getContext(),InitialActivity.class);
+                startActivity(intent);
             }
         });
 
+        settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(),InitialActivity.class);
+                startActivity(intent);
+            }
+        });
 
         ImageView reward_icon = (ImageView) v.findViewById(R.id.rewards_icon);
 
@@ -83,7 +92,6 @@ public class Profile_Page extends android.support.v4.app.Fragment
 
 
         return v;
-
 
 
     }
