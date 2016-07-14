@@ -8,12 +8,14 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.codcodes.icebreaker.Edit_ProfileActivity;
 import com.codcodes.icebreaker.InitialActivity;
 import com.codcodes.icebreaker.LoginActivity;
 import com.codcodes.icebreaker.R;
@@ -95,11 +97,21 @@ public class Profile_Page extends android.support.v4.app.Fragment
         ImageView circularImageView = (ImageView) v.findViewById(R.id.circleview);
         circularImageView.setImageBitmap(circularbitmap);
 
+        FloatingActionButton editButton = (FloatingActionButton) v.findViewById(R.id.Edit);
+        editButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(), Edit_ProfileActivity.class);
+                startActivity(intent);
+            }
+        });
 
         return v;
 
 
     }
+
+
 
 
     public static Profile_Page newInstance(Context context)
