@@ -42,22 +42,39 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></ScrollView>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:background="@color/white"
         >
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:layout_marginTop="70dp"
-            android:layout_centerHorizontal="true"
-            android:src="@drawable/seleena"
-            android:id="@+id/editprofilepic"
-            />
 
-    </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginTop="70dp"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/seleena"
+                android:id="@+id/editprofilepic"
+                />
+
+           <TextView
+               android:layout_width="wrap_content"
+               android:layout_height="match_parent"
+               android:text="Edit Photo"
+               android:textSize="14pt"
+               android:textColor="@color/iceblue2"
+               android:id="@+id/editphoto"
+               android:layout_marginTop="195dp"
+               android:layout_centerHorizontal="true"
+               />
+
+        </RelativeLayout>
+
+
+    </ScrollView>
+
 
     <include layout="@layout/content_edit__profile" />
 
