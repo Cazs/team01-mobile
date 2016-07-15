@@ -15,8 +15,8 @@
 
     <ImageView
         android:id="@+id/image1"
-        android:layout_width="500dp"
-        android:layout_height="500dp"
+        android:layout_width="@dimen/dp_size_500"
+        android:layout_height="@dimen/dp_size_500"
         />
 
 
