@@ -69,6 +69,16 @@
                android:layout_marginTop="@dimen/dp_size_195"
                android:layout_centerHorizontal="true"
                />
+            <EditText
+                android:layout_width="@dimen/text_box_size"
+                android:layout_height="match_parent"
+                android:hint="First Name"
+                android:textSize="12pt"
+                android:textColor="@color/iceblue2"
+                android:id="@+id/editName"
+                android:layout_marginTop="230dp"
+                android:layout_centerHorizontal="true"
+                />
 
         </RelativeLayout>
 

@@ -62,6 +62,15 @@ public class InitialActivity extends AppCompatActivity {
         TextView headingTextView = (TextView) findViewById(R.id.heading);
         headingTextView.setTypeface(heading);
 
+        if(SharedPreference.getUsername(InitialActivity.this).length()==0)
+        {
+            return;
+        }
+        else
+        {
+            Intent intent = new Intent(this,MainPageActivity.class);
+            startActivity(intent);
+        }
     }
 
 
