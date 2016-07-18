@@ -114,6 +114,9 @@ public class Profile_Page extends android.support.v4.app.Fragment
             @Override
             public void onClick(View view) {
                 SharedPreference.logOut(view.getContext());
+                Intent intent = new Intent(view.getContext(),InitialActivity.class);
+                startActivity(intent);
+
             }
         });
 
