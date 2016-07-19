@@ -180,13 +180,16 @@ public class SignUpActivity extends AppCompatActivity {
                         }
                     }
                     if(found) {
-                        //SharedPreference.setUsername(getApplicationContext(),username);
-                        Toast.makeText(getApplicationContext(), "Successful sign up", Toast.LENGTH_LONG).show();
+
+                        SharedPreference.setUsername(getApplicationContext(),username);
+                        //Toast.makeText(getBaseContext(), "Successful sign up", Toast.LENGTH_LONG).show();
+                        //findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
                         showEditProfile(view);
+
 
                     }
                     else {
-                        Toast.makeText(getApplicationContext(), "Unsuccessful sign up", Toast.LENGTH_LONG).show();
+                        //Toast.makeText(getApplicationContext(), "Unsuccessful sign up", Toast.LENGTH_LONG).show();
                         finish();
                         startActivity(getIntent());
                     }
@@ -196,6 +199,8 @@ public class SignUpActivity extends AppCompatActivity {
                 catch (UnknownHostException e)
                 {
                     e.printStackTrace();
+                    Toast.makeText(getBaseContext(), "No internet access", Toast.LENGTH_LONG).show();
+
                 }
                 catch (IOException e)
                 {

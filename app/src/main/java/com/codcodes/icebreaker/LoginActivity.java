@@ -7,6 +7,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -43,9 +44,11 @@ public class LoginActivity extends AppCompatActivity {
         password = (EditText) findViewById(R.id.password_login);
         btnLogin=(Button) findViewById(R.id.btn_login);
 
+
+
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(final View view) {
                 final String p = password.getText().toString();
                 final String u = username.getText().toString();
 
@@ -75,19 +78,21 @@ public class LoginActivity extends AppCompatActivity {
                             boolean found = false;
                             while((resp = in.readLine())!=null)
                             {
-                                if(resp.contains("200 OK"))
+                                if(resp.contains("HTTP/1.1 200 OK"))
                                 {
                                     found = true;
+                                    Log.d("ICEBREAKER","USer found");
+                                    break;
                                 }
                             }
                             if(found) {
                                 SharedPreference.setUsername(getApplicationContext(),u);
-                                Toast.makeText(getApplicationContext(), "User credentials are correct", Toast.LENGTH_LONG).show();
-                                Intent intent = new Intent(getApplicationContext(), MainPageActivity.class);
-                                startActivity(intent);
+                                //Toast.makeText(getApplicationContext(), "User credentials are correct", Toast.LENGTH_LONG).show();
+                                Intent mainscreen = new Intent(getApplicationContext(),MainPageActivity.class);
+                                startActivity(mainscreen);
                             }
                             else {
-                                Toast.makeText(getApplicationContext(), "User credentials are incorrect", Toast.LENGTH_LONG).show();
+                               // Toast.makeText(getApplicationContext(), "User credentials are incorrect", Toast.LENGTH_LONG).show();
                                 finish();
                                 startActivity(getIntent());
                             }
@@ -111,10 +116,10 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    public void showMainPage(View v)
+    private void showMainPage(View view)
     {
-        Intent mainScreen = new Intent(this,MainPageActivity.class);
-        startActivity(mainScreen);
+        Intent mainscreen = new Intent(this,MainPageActivity.class);
+        startActivity(mainscreen);
     }
 
 
