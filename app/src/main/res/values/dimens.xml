@@ -86,4 +86,7 @@
     <dimen name="dp_size_360">360dp</dimen>
     <dimen name="dp_size_1">1dp</dimen>
     <dimen name="dp_size_355">355dp</dimen>
+    <dimen name="dp_size_330">355dp</dimen>
+    <dimen name="dp_size_320">355dp</dimen>
+    <dimen name="dp_size_370">355dp</dimen>
 </resources>
