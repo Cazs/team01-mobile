@@ -58,6 +58,7 @@ public class CustomListAdapter extends ArrayAdapter<String>
         extratxt.setText(itemdescrip[position]);
 
         txtTitle.setTextColor(Color.BLACK);
+        bitmap.recycle();
         return rowView;
 
     };

@@ -47,6 +47,7 @@ public class EventDetailActivity extends AppCompatActivity {
             ImageView eventImage = (ImageView) findViewById((R.id.event_image));
 
             eventImage.setImageBitmap(circularbitmap);
+            bitmap.recycle();
 
         }
 
@@ -82,6 +83,7 @@ public class EventDetailActivity extends AppCompatActivity {
         super.onBackPressed();
         Intent i = new Intent(this,MainPageActivity.class);
         i.putExtra("com.codcodes.icebreaker.Back",true);
+        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(i);
         finish();
     }

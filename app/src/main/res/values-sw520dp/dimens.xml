@@ -1,0 +1,89 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="nav_header_vertical_spacing">11dp</dimen>
+    <dimen name="nav_header_height">117dp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">11dp</dimen>
+    <dimen name="activity_vertical_margin">11dp</dimen>
+    <dimen name="fab_margin">11dp</dimen>
+
+    <dimen name="logo_width">36dp</dimen>
+    <dimen name="title_text_size">29pt</dimen>
+
+    <dimen name="bottom_bar_width">366dp</dimen>
+    <dimen name="bottom_bar_height">73dp</dimen>
+    <dimen name="bottom_bar_mtop">385dp</dimen>
+
+    <dimen name="btn_login_text_size">11dp</dimen>
+    <dimen name="btn_login_mleft">55dp</dimen>
+    <dimen name="btn_login_mtop">13dp</dimen>
+
+    <dimen name="btn_signup_text_size">11dp</dimen>
+    <dimen name="btn_signup_mleft">36dp</dimen>
+    <dimen name="btn_signup_mtop">13dp</dimen>
+
+
+    <dimen name="profile_settings_h">293dp</dimen>
+    <dimen name="profile_label_size">12pt</dimen>
+    <dimen name="text_margin">11dp</dimen>
+    <dimen name="appbar_padding_top">5dp</dimen>
+    <dimen name="title_padding">14dp</dimen>
+
+    <dimen name="icon_width">36dp</dimen>
+    <dimen name="icon_height">77dp</dimen>
+    <dimen name="icon_left">7dp</dimen>
+
+
+    <dimen name="text_top">73dp</dimen>
+
+    <dimen name="secondlayout_top">146dp</dimen>
+
+    <dimen name="text_width">73dp</dimen>
+
+    <dimen name="margin_top_icon">128dp</dimen>
+    <dimen name="margin_top_text">121dp</dimen>
+
+    <dimen name="text_box_size">183dp</dimen>
+
+    <dimen name="button_text_size">11dp</dimen>
+
+    <dimen name="dp_size_0">0dp</dimen>
+    <dimen name="dp_size_15">11dp</dimen>
+    <dimen name="dp_size_22">16dp</dimen>
+    <dimen name="dp_size_23">16dp</dimen>
+    <dimen name="dp_size_25">18dp</dimen>
+    <dimen name="dp_size_30">22dp</dimen>
+    <dimen name="dp_size_40">29dp</dimen>
+    <dimen name="dp_size_50">36dp</dimen>
+    <dimen name="dp_size_60">44dp</dimen>
+    <dimen name="dp_size_70">51dp</dimen>
+    <dimen name="dp_size_75">55dp</dimen>
+    <dimen name="dp_size_80">58dp</dimen>
+    <dimen name="dp_size_90">66dp</dimen>
+    <dimen name="dp_size_100">73dp</dimen>
+    <dimen name="dp_size_110">80dp</dimen>
+    <dimen name="dp_size_120">88dp</dimen>
+    <dimen name="dp_size_150">110dp</dimen>
+    <dimen name="dp_size_195">143dp</dimen>
+    <dimen name="dp_size_250">183dp</dimen>
+    <dimen name="dp_size_530">388dp</dimen>
+    <dimen name="dp_size_10">7dp</dimen>
+    <dimen name="dp_size_165">121dp</dimen>
+    <dimen name="dp_size_575">421dp</dimen>
+    <dimen name="dp_size_300">220dp</dimen>
+    <dimen name="dp_size_200">146dp</dimen>
+    <dimen name="dp_size_4">2dp</dimen>
+    <dimen name="dp_size_20">14dp</dimen>
+    <dimen name="dp_size_35">25dp</dimen>
+    <dimen name="dp_size_280">205dp</dimen>
+    <dimen name="dp_size_340">249dp</dimen>
+    <dimen name="dp_size_400">293dp</dimen>
+    <dimen name="dp_size_500">366dp</dimen>
+    <dimen name="dp_size_74">54dp</dimen>
+    <dimen name="dp_size_230">168dp</dimen>
+    <dimen name="dp_size_210">154dp</dimen>
+    <dimen name="dp_size_275">201dp</dimen>
+    <dimen name="dp_size_360">264dp</dimen>
+    <dimen name="dp_size_1">0dp</dimen>
+    <dimen name="dp_size_355">260dp</dimen>
+</resources>

@@ -108,7 +108,9 @@ public class Edit_ProfileActivity extends AppCompatActivity
     {
 
         super.onBackPressed();
-        startActivity(new Intent(this,MainPageActivity.class));
+        Intent intent = new Intent(this,MainPageActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
         finish();
     }
 
