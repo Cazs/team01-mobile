@@ -49,6 +49,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+
             >
             <de.hdodenhof.circleimageview.CircleImageView
                 android:layout_width="@dimen/dp_size_120"
@@ -73,12 +74,80 @@
                 android:layout_width="@dimen/text_box_size"
                 android:layout_height="match_parent"
                 android:hint="First Name"
-                android:textSize="12pt"
-                android:textColor="@color/iceblue2"
+                android:textSize="10pt"
                 android:id="@+id/editName"
-                android:layout_marginTop="230dp"
+                android:layout_marginTop="@dimen/dp_size_230"
                 android:layout_centerHorizontal="true"
+                android:fontFamily="monospace"
+                android:maxLines="1"
+                android:inputType="text"
+                android:drawableLeft="@drawable/ic_perm_identity_black_24dp"
                 />
+            <EditText
+                android:layout_width="@dimen/text_box_size"
+                android:layout_height="match_parent"
+                android:hint="Last Name"
+                android:textSize="10pt"
+                android:id="@+id/editLastName"
+                android:layout_marginTop="@dimen/dp_size_280"
+                android:layout_centerHorizontal="true"
+                android:fontFamily="monospace"
+                android:maxLines="1"
+                android:inputType="text"
+                android:drawableLeft="@drawable/ic_perm_identity_black_24dp"
+                />
+            <EditText
+                android:layout_width="@dimen/text_box_size"
+                android:layout_height="match_parent"
+                android:hint="Age"
+                android:textSize="10pt"
+                android:id="@+id/editAge"
+                android:maxLines="1"
+                android:layout_marginTop="330dp"
+                android:layout_centerHorizontal="true"
+                android:fontFamily="monospace"
+                android:drawableLeft="@drawable/ic_date_range_black_24dp"
+                android:inputType="text"
+                />
+            <EditText
+                android:layout_width="@dimen/text_box_size"
+                android:layout_height="match_parent"
+                android:hint="Occupation"
+                android:textSize="10pt"
+                android:id="@+id/editOccupation"
+                android:layout_marginTop="380dp"
+                android:layout_centerHorizontal="true"
+                android:fontFamily="monospace"
+                android:maxLines="1"
+                android:inputType="text"
+                android:drawableLeft="@drawable/ic_local_library_black_24dp"
+                />
+            <Spinner
+                android:id="@+id/spinner"
+                android:layout_width="@dimen/text_box_size"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="430dp"
+                style="@style/Widget.AppCompat.Spinner.Underlined"
+                >
+            </Spinner>
+            <EditText
+                android:id="@+id/bio"
+                android:inputType="textMultiLine"
+                android:layout_width="@dimen/text_box_size"
+                android:layout_height="match_parent"
+                android:fontFamily="monospace"
+                android:textSize="10pt"
+                android:hint="Bio"
+                android:maxLines="10"
+                android:layout_centerHorizontal="true"
+                android:scrollbars="vertical"
+                android:layout_marginTop="480dp"
+                android:drawableLeft="@drawable/ic_description_black_24dp"
+            />
+
+
+
 
         </RelativeLayout>
 

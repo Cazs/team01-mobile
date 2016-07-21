@@ -120,5 +120,9 @@
     <string name="title_activity_edit__profile">Edit Profile</string>
     <string name="title_activity_event_detail">EventDetailActivity</string>
 
+    <string-array name="gender">
+        <item>Male</item>
+        <item>Female</item>
+    </string-array>
 
 </resources>
