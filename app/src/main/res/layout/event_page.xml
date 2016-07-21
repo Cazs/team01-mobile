@@ -33,7 +33,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-       android:layout_gravity="center_horizontal"
+        android:orientation="vertical"
+        android:layout_gravity="center_horizontal"
         android:gravity="center"
         >
         
@@ -43,14 +44,20 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:pulse_count="4"
-            app:pulse_duration="7000"
+            app:pulse_duration="4000"
             app:pulse_repeat="1"
             app:pulse_color="@color/colorAccent"
             app:pulse_startFromScratch="true"
 
             >
         </pl.bclogic.pulsator4droid.library.PulsatorLayout>
-
+        <ListView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            />
+        
     </LinearLayout>
 
 

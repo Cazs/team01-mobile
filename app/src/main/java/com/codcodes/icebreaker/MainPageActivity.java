@@ -129,9 +129,9 @@ public class MainPageActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             switch (position)
             {
-                case 0: return event.newInstance(context);
+                case 0: return event.newInstance(context,getIntent().getExtras());
                 case 2: return Profile_Page.newInstance(context);
-                default:return event.newInstance(context);
+                default:return event.newInstance(context,getIntent().getExtras());
             }
 
         }

@@ -4,7 +4,15 @@
 
     <uses-sdk
         android:minSdkVersion="14"
-        android:targetSdkVersion="23" />
+        android:targetSdkVersion="24" />
+
+    <supports-screens
+        android:anyDensity="true"
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:resizeable="true"
+        android:smallScreens="true"
+        android:xlargeScreens="true" />
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but you must specify either coarse or fine
@@ -107,6 +115,15 @@
         <activity
             android:name=".Edit_ProfileActivity"
             android:label=""
+            android:parentActivityName=".MainPageActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.codcodes.icebreaker.MainPageActivity" />
+        </activity>
+        <activity
+            android:name=".EventDetailActivity"
+            android:label=" "
             android:parentActivityName=".MainPageActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
