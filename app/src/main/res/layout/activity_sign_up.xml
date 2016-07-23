@@ -84,7 +84,7 @@
             android:layout_width="@dimen/text_box_size"
             android:layout_height="wrap_content"
             android:textColor="#000"
-            android:textSize = "@dimen/button_text_size"
+            android:textSize = "@dimen/dp_size_15"
             android:layout_marginTop="@dimen/dp_size_23"
             android:background="@drawable/buttonshape"
             android:text="Sign Up"

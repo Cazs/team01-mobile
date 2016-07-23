@@ -32,8 +32,5 @@ public class ImageConverter
         canvas.drawBitmap(bitmap,rect,rect,paint);
 
         return output;
-
-
-
     }
 }

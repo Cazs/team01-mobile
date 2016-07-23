@@ -36,6 +36,7 @@ public class ContactsFragment extends Fragment
      */
     public ContactsFragment()
     {
+
     }
 
     // TODO: Customize parameter initialization

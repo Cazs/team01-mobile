@@ -55,11 +55,6 @@ public class EventDetailActivity extends AppCompatActivity {
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         eventDetails.setTypeface(heading);
 
-
-
-
-
-
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item){

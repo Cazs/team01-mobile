@@ -1,6 +1,7 @@
 package com.codcodes.icebreaker.tabs;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -10,7 +11,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
+import com.codcodes.icebreaker.CustomListAdapter;
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.dummy.DummyContent;
 import com.codcodes.icebreaker.dummy.DummyContent.DummyItem;
@@ -36,6 +39,7 @@ public class ChatsFragment extends Fragment
      */
     public ChatsFragment()
     {
+
     }
 
     // TODO: Customize parameter initialization
@@ -60,9 +64,17 @@ public class ChatsFragment extends Fragment
         }
     }
 
+    private ListView list;
+    private static AssetManager mgr;
+    private String[] users = {"Seleena"};
+    private Integer[] imgid = {R.drawable.seleena};
+
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    {
+
         View v =inflater.inflate(R.layout.fragment_contacts,container,false);
+
         return v;
     }
 
@@ -70,6 +82,8 @@ public class ChatsFragment extends Fragment
     @Override
     public void onAttach(Context context)
     {
+
+
         super.onAttach(context);
         if (context instanceof OnListFragmentInteractionListener)
         {
@@ -79,6 +93,7 @@ public class ChatsFragment extends Fragment
             throw new RuntimeException(context.toString()
                     + " must implement OnListFragmentInteractionListener");
         }
+
     }
 
     @Override
@@ -103,4 +118,6 @@ public class ChatsFragment extends Fragment
         // TODO: Update argument type and name
         void onListFragmentInteraction(DummyItem item);
     }
+
+
 }

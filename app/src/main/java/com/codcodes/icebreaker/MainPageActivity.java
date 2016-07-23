@@ -33,6 +33,7 @@ import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
+import com.codcodes.icebreaker.tabs.Chats;
 import com.codcodes.icebreaker.tabs.ImageConverter;
 import com.codcodes.icebreaker.tabs.Profile_Page;
 
@@ -130,6 +131,7 @@ public class MainPageActivity extends AppCompatActivity {
             switch (position)
             {
                 case 0: return event.newInstance(context,getIntent().getExtras());
+                case 1: return Chats.newInstance(context,getIntent().getExtras());
                 case 2: return Profile_Page.newInstance(context);
                 default:return event.newInstance(context,getIntent().getExtras());
             }
