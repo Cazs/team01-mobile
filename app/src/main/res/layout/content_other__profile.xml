@@ -17,10 +17,11 @@
         android:layout_height="wrap_content">
 
         <Button
+            android:id="@+id/icebreak"
             android:layout_width="200dp"
             android:layout_height="50dp"
-            android:layout_centerHorizontal="true"
             android:fontFamily="monospace"
+            android:textSize="10pt"
             android:text="ICEBREAK"
             android:background="@drawable/icebreak_button"
 

@@ -36,7 +36,8 @@ public class EventDetailActivity extends AppCompatActivity {
             {
                     "Selena Gomez",
                     "Lindsey Morgan",
-                    "Liam Hemsworth"
+                    "Liam Hemsworth",
+                    "Kara Supergirl"
 
 
             };
@@ -44,7 +45,8 @@ public class EventDetailActivity extends AppCompatActivity {
             {
                     "They call me casanova",
                     "Where Dreams come true",
-                    "Party in my pants..."
+                    "Party in my pants...",
+                    "Fly with me"
 
 
             };
@@ -52,7 +54,8 @@ public class EventDetailActivity extends AppCompatActivity {
             {
                     R.drawable.seleena,
                     R.drawable.lindsey,
-                    R.drawable.liam
+                    R.drawable.liam,
+                    R.drawable.mel
             };
 
     private ListView lv;

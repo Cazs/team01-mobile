@@ -103,7 +103,7 @@ public class ImageUtils
         scaledBitmap = Bitmap.createBitmap(scaledBitmap,0,0,scaledBitmap.getWidth(),scaledBitmap.getHeight(),scaleMatrix,true);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        scaledBitmap.compress(Bitmap.CompressFormat.JPEG,85,out);
+        scaledBitmap.compress(Bitmap.CompressFormat.JPEG,100,out);
 
         byte[] bytearray = out.toByteArray();
 

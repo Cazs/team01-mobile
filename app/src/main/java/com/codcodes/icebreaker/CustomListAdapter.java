@@ -41,7 +41,7 @@ public class CustomListAdapter extends ArrayAdapter<String>
         LayoutInflater inflater=context.getLayoutInflater();
         View rowView=inflater.inflate(R.layout.customlist, null,true);
 
-        Bitmap bitmap = BitmapFactory.decodeResource(rowView.getResources(), imgid[position]);
+        Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(rowView.getResources(),imgid[position]);
         Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
 
        // Typeface h = Typeface.createFromAsset(mgr,"Infinity.ttf");

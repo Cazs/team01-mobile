@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class Other_Profile extends AppCompatActivity {
@@ -24,6 +25,10 @@ public class Other_Profile extends AppCompatActivity {
         profile = (TextView)findViewById(R.id.Profile);
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         profile.setTypeface(heading);
+
+        Button icebreak = (Button) findViewById(R.id.icebreak);
+        Typeface ib = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
+        icebreak.setTypeface(heading);
     }
 
 
