@@ -41,7 +41,7 @@ public class event extends android.support.v4.app.Fragment
             };
     private String[] EventDescrp =
             {
-                    "Rethink. Reimagine. Reinvent. ",
+                    "Time:8pm \nVenue: Madison Avenue Rivonia \nDress code:Smart casual,no sports wear,or chuck taylors \nDetails: Must be eighteen or older, \nMust obtain A degree in pulling a women",
                     "Ultra Music Fesival",
                     "Party in your city..."
 
@@ -68,9 +68,9 @@ public class event extends android.support.v4.app.Fragment
         list=(ListView) v.findViewById(R.id.list);
         list.setAdapter(adapter);
 
-        Typeface h = Typeface.createFromAsset(mgr,"Ailerons-Typeface.otf");
-        TextView headingTextView = (TextView) v.findViewById(R.id.main_heading);
-        headingTextView.setTypeface(h);
+       Typeface h = Typeface.createFromAsset(mgr,"Ailerons-Typeface.otf");
+       TextView headingTextView = (TextView) v.findViewById(R.id.main_heading);
+       headingTextView.setTypeface(h);
 
         Bundle extras = getArguments();
         final PulsatorLayout pulsator = (PulsatorLayout) v.findViewById(R.id.pulsator);
@@ -116,6 +116,8 @@ public class event extends android.support.v4.app.Fragment
                 intent.putExtra("Event Name",Selcteditem);
                 intent.putExtra("Event Description",eventDescrip);
                 intent.putExtra("Image ID",imageID);
+
+
 
 
                 startActivity(intent);

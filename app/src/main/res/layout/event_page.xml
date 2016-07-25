@@ -53,6 +53,7 @@
         </pl.bclogic.pulsator4droid.library.PulsatorLayout>
         <ListView
             android:id="@+id/list"
+            android:layout_marginBottom="@dimen/dp_size_320"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone"
