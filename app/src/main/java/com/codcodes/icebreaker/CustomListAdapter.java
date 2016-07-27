@@ -44,7 +44,7 @@ public class CustomListAdapter extends ArrayAdapter<String>
         Bitmap bitmap = BitmapFactory.decodeResource(rowView.getResources(), imgid[position]);
         Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_500);
 
-       // Typeface h = Typeface.createFromAsset(mgr,"Infinity.ttf");
+        // Typeface h = Typeface.createFromAsset(mgr,"Infinity.ttf");
 
         TextView txtTitle = (TextView) rowView.findViewById(R.id.event_title);
         //txtTitle.setTypeface(h);
