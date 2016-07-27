@@ -44,7 +44,7 @@ import pl.bclogic.pulsator4droid.library.PulsatorLayout;
  */
 public class event extends android.support.v4.app.Fragment
 {
-
+    TextView finding_events;
     private ListView list;
     private static AssetManager mgr;
     private String[] EventNames=
@@ -92,6 +92,9 @@ public class event extends android.support.v4.app.Fragment
         Bundle extras = getArguments();
         final PulsatorLayout pulsator = (PulsatorLayout) v.findViewById(R.id.pulsator);
         System.out.println("Hello");
+        //finding_events = (TextView) v.findViewById(R.id.loading);;
+        //finding_events.setText("Finding Events...");
+        //finding_events.setVisibility(View.VISIBLE);
         if(extras!=null)
         {
 
@@ -109,6 +112,7 @@ public class event extends android.support.v4.app.Fragment
             pulsator.postDelayed(new Runnable() {
                 @Override
                 public void run() {
+
                     pulsator.setVisibility(View.GONE);
                     list.setVisibility(View.VISIBLE);
 

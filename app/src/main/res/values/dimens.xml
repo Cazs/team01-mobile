@@ -91,4 +91,12 @@
     <dimen name="dp_size_260">260dp</dimen>
     <dimen name="dp_size_310">310dp</dimen>
     <dimen name="dp_size_140">140dp</dimen>
+    <dimen name="dp_size_265">265dp</dimen>
+    <dimen name="dp_size_290">290dp</dimen>
+    <dimen name="dp_size_430">430dp</dimen>
+    <dimen name="dp_size_315">315dp</dimen>
+    <dimen name="dp_size_450">450dp</dimen>
+    <dimen name="dp_size_480">480dp</dimen>
+    <dimen name="dp_size_145">145dp</dimen>
+    <dimen name="dp_size_460">460dp</dimen>
 </resources>

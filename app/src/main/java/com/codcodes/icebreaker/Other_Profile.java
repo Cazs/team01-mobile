@@ -1,14 +1,9 @@
 package com.codcodes.icebreaker;
 
-import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -43,6 +38,14 @@ public class Other_Profile extends AppCompatActivity {
         TextView occupation = (TextView) findViewById(R.id.other_profile_occupation);
         occupation.setTypeface(h);
         occupation.setText("Singer/Songwriter/Actress");
+
+        TextView bio_title = (TextView) findViewById(R.id.other_profile_bio_title);
+        bio_title.setTypeface(h);
+        bio_title.setText("Bio:");
+
+        TextView bio = (TextView) findViewById(R.id.other_profile_bio);
+        bio.setTypeface(h);
+        bio.setText("A Caffeine dependent life-form. A human Being. A Women of mystery and power,whose power is exceeded only by her mystery. Absolutely awkward...");
     }
 
 
