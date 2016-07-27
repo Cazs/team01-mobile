@@ -29,6 +29,20 @@ public class Other_Profile extends AppCompatActivity {
         Button icebreak = (Button) findViewById(R.id.icebreak);
         Typeface ib = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         icebreak.setTypeface(heading);
+
+        Typeface h = Typeface.createFromAsset(getAssets(),"Infinity.ttf");
+        TextView name = (TextView) findViewById(R.id.other_profile_name);
+        name.setTypeface(h);
+        name.setText("Selena Gomez"); // TODO: get name from database
+
+
+        TextView age = (TextView) findViewById(R.id.other_profile_age);
+        age.setTypeface(h);
+        age.setText("Age: 21");
+
+        TextView occupation = (TextView) findViewById(R.id.other_profile_occupation);
+        occupation.setTypeface(h);
+        occupation.setText("Singer/Songwriter/Actress");
     }
 
 

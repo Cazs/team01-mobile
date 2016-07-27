@@ -143,7 +143,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private void listPeople()
     {
         //read from database
-
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         CustomListAdapter cla = new CustomListAdapter(this,PeopleNames,imgid,PeopleDescrp);
         lv= (ListView) findViewById(R.id.contactList);
         lv.setAdapter(cla);

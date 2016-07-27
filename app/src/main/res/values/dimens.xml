@@ -90,4 +90,5 @@
     <dimen name="dp_size_320">320dp</dimen>
     <dimen name="dp_size_260">260dp</dimen>
     <dimen name="dp_size_310">310dp</dimen>
+    <dimen name="dp_size_140">140dp</dimen>
 </resources>

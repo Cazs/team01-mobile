@@ -47,9 +47,21 @@ public class event extends android.support.v4.app.Fragment
 
     private ListView list;
     private static AssetManager mgr;
-    private String[] EventNames;
-    private static final boolean DEBUG = false;
-    private String[] EventDescrp;
+    private String[] EventNames=
+            {
+                    "UJ",
+                    "Tomorrow land",
+                    "Mixer"
+
+            };
+    private static final boolean DEBUG = true;
+    private String[] EventDescrp=
+            {
+                    "testing",
+                    "testing",
+                    "testing"
+            };
+
     private Integer[] imgid=
             {
                     R.drawable.uj_icon,
@@ -66,7 +78,7 @@ public class event extends android.support.v4.app.Fragment
 
         final View v = inflater.inflate(R.layout.event_page,container,false);
 
-        readEvents();
+       // readEvents();
         System.out.println("Testing");
 
         CustomListAdapter adapter = new CustomListAdapter(getActivity(),EventNames,imgid,EventDescrp);
@@ -205,7 +217,7 @@ public class event extends android.support.v4.app.Fragment
 
                         if(!in.ready())
                         {
-                            //if(DEBUG)System.out.println(">>Done<<");
+                            if(DEBUG)System.out.println(">>Done<<");
                             break;
                         }
                     }
@@ -232,10 +244,6 @@ public class event extends android.support.v4.app.Fragment
             }
         });
         thread.start();
-
-
-
-
     }
 
     private static ArrayList<EventDB> getEvents(String json)
