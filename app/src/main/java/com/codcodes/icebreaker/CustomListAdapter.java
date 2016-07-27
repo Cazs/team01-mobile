@@ -24,22 +24,24 @@ public class CustomListAdapter extends ArrayAdapter<String>
     private final String[] itemname;
     private final Integer[] imgid;
     private final String[] itemdescrip;
+    private int layer;
 
     private static AssetManager mgr;
 
-    public CustomListAdapter(Activity context, String[] itemname, Integer[] imgid, String[] itemdescrip) {
-        super(context, R.layout.customlist, itemname);
+    public CustomListAdapter(Activity context,int layer, String[] itemname, Integer[] imgid, String[] itemdescrip) {
+        super(context, layer, itemname);
         // TODO Auto-generated constructor stub
 
         this.context=context;
         this.itemname=itemname;
         this.imgid=imgid;
         this.itemdescrip =itemdescrip;
+        this.layer = layer;
     }
 
     public View getView(int position, View view, ViewGroup parent) {
         LayoutInflater inflater=context.getLayoutInflater();
-        View rowView=inflater.inflate(R.layout.customlist, null,true);
+        View rowView=inflater.inflate(layer, null,true);
 
         Bitmap bitmap = BitmapFactory.decodeResource(rowView.getResources(), imgid[position]);
         Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 250);

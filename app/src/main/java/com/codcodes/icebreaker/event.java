@@ -64,7 +64,7 @@ public class event extends android.support.v4.app.Fragment
         final View v = inflater.inflate(R.layout.event_page,container,false);
 
 
-        CustomListAdapter adapter = new CustomListAdapter(getActivity(),EventNames,imgid,EventDescrp);
+        CustomListAdapter adapter = new CustomListAdapter(getActivity(),R.layout.customlist,EventNames,imgid,EventDescrp);
         list=(ListView) v.findViewById(R.id.list);
         list.setAdapter(adapter);
 
