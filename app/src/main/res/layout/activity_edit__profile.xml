@@ -123,7 +123,7 @@
                 android:drawableLeft="@drawable/ic_local_library_black_24dp"
                 />
             <Spinner
-                android:id="@+id/spinner"
+                android:id="@+id/spinner1"
                 android:layout_width="@dimen/text_box_size"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"

@@ -86,7 +86,9 @@
             android:name=".MainPageActivity"
             android:label="@string/title_activity_main_page"
             android:parentActivityName=".LoginActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"
+            >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.codcodes.icebreaker.LoginActivity" />
@@ -95,7 +97,9 @@
             android:name=".Edit_ProfileActivity"
             android:label=""
             android:parentActivityName=".MainPageActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"
+            >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.codcodes.icebreaker.MainPageActivity" />

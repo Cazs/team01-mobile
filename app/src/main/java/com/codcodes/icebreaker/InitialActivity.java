@@ -64,7 +64,8 @@ public class InitialActivity extends AppCompatActivity {
 
         if(SharedPreference.getUsername(InitialActivity.this).length()==0)
         {
-           return;
+            Intent intent = new Intent(this,MainPageActivity.class);
+            startActivity(intent);
         }
         else
         {

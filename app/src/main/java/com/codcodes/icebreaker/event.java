@@ -153,8 +153,8 @@ public class event extends android.support.v4.app.Fragment
 
 
                 Intent intent = new Intent(view.getContext(),EventDetailActivity.class);
-               // intent.putExtra("Event Name",Selcteditem);
-              //  intent.putExtra("Event Description",eventDescrip);
+               intent.putExtra("Event Name",Selcteditem);
+              intent.putExtra("Event Description",eventDescrip);
                 intent.putExtra("Image ID",imageID);
 
                 startActivity(intent);

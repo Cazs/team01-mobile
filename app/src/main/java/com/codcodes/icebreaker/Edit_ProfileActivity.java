@@ -56,7 +56,7 @@ public class Edit_ProfileActivity extends AppCompatActivity
         editphoto.setTypeface(EditFont);
 
 
-        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        Spinner spinner = (Spinner) findViewById(R.id.spinner1);
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,R.array.gender, R.layout.spinner);
         // Specify the layout to use when the list of choices appears
