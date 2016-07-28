@@ -150,7 +150,9 @@ public class EventDetailActivity extends AppCompatActivity {
         vf = (ViewFlipper) findViewById(R.id.viewFlipper);
         eventDetails.setText("List Of People");
         vf.showNext();
-        lv.requestFocus();
+
+
+
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
 
@@ -168,6 +170,11 @@ public class EventDetailActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
 

@@ -104,15 +104,18 @@
             android:name=".EventDetailActivity"
             android:label=" "
             android:parentActivityName=".MainPageActivity"
+            android:windowSoftInputMode="stateAlwaysHidden"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
+                android:windowSoftInputMode="stateAlwaysHidden"
                 android:value="com.codcodes.icebreaker.MainPageActivity" />
         </activity>
         <activity
             android:name=".Other_Profile"
             android:label=" "
             android:parentActivityName=".EventDetailActivity"
+            android:windowSoftInputMode="stateAlwaysHidden"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
