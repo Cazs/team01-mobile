@@ -9,8 +9,11 @@ import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.media.Image;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.support.annotation.Nullable;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -34,6 +37,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,23 +49,15 @@ import pl.bclogic.pulsator4droid.library.PulsatorLayout;
 public class event extends android.support.v4.app.Fragment
 {
 
+
+
     private ListView list;
     private static AssetManager mgr;
-    private String[] EventNames=
-            {
-                    "UJ",
-                    "Tomorrow land",
-                    "Mixer"
-
-            };
+    private ArrayList<String> EventNames = new ArrayList<String>();
     private static final boolean DEBUG = true;
-    private String[] EventDescrp=
-            {
-                    "testing",
-                    "testing",
-                    "testing"
-            };
-
+    private ArrayList<String> EventDescrp = new ArrayList<String>();
+    private ArrayList<EventDB> events;
+    private Handler handler;
     private Integer[] imgid=
             {
                     R.drawable.uj_icon,
@@ -70,7 +66,33 @@ public class event extends android.support.v4.app.Fragment
 
             };
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        handler = new Handler()
+        {
+            @Override
 
+            public void handleMessage(Message msg) {
+
+                for(int i =0;i<events.size();i++)
+                {
+                    System.out.println("test for" + i);
+                    String name = events.get(i).getTitle();
+                    EventNames.add(name);
+                    EventDescrp.add(events.get(i).getDescription());
+
+                }
+
+                String[] EN = EventNames.toArray(new String[EventNames.size()]);
+                String[] ED = EventDescrp.toArray(new String[EventDescrp.size()]);
+                CustomListAdapter adapter = new CustomListAdapter(getActivity(),EN,imgid,ED);
+
+                list.setAdapter(adapter);
+            }
+        };
+    }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
@@ -78,20 +100,15 @@ public class event extends android.support.v4.app.Fragment
 
         final View v = inflater.inflate(R.layout.event_page,container,false);
 
-       // readEvents();
-        System.out.println("Testing");
+        readEvents();
 
-        CustomListAdapter adapter = new CustomListAdapter(getActivity(),EventNames,imgid,EventDescrp);
         list=(ListView) v.findViewById(R.id.list);
-        list.setAdapter(adapter);
-
         Typeface h = Typeface.createFromAsset(mgr,"Ailerons-Typeface.otf");
         TextView headingTextView = (TextView) v.findViewById(R.id.main_heading);
         headingTextView.setTypeface(h);
 
         Bundle extras = getArguments();
         final PulsatorLayout pulsator = (PulsatorLayout) v.findViewById(R.id.pulsator);
-        System.out.println("Hello");
         if(extras!=null)
         {
 
@@ -124,14 +141,14 @@ public class event extends android.support.v4.app.Fragment
                                     int position, long id)
             {
                 // TODO Auto-generated method stub
-                String Selcteditem = EventNames[+position];
-                String eventDescrip = EventDescrp[+position];
+                //String Selcteditem = EventNames[+position];
+                //String eventDescrip = EventDescrp[+position];
                 int imageID = imgid[+position];
 
 
                 Intent intent = new Intent(view.getContext(),EventDetailActivity.class);
-                intent.putExtra("Event Name",Selcteditem);
-                intent.putExtra("Event Description",eventDescrip);
+               // intent.putExtra("Event Name",Selcteditem);
+              //  intent.putExtra("Event Description",eventDescrip);
                 intent.putExtra("Image ID",imageID);
 
                 startActivity(intent);
@@ -221,14 +238,9 @@ public class event extends android.support.v4.app.Fragment
                             break;
                         }
                     }
-                    ArrayList<EventDB> events = getEvents(eventsJson);
-                    //TODO: DO STUFF WITH events object
-                    for(int i =0;i<events.size();i++)
-                    {
-                        EventNames[i] = events.get(i).getTitle();
-                        EventDescrp[i] = events.get(i).getDescription();
+                    events  = getEvents(eventsJson);
 
-                    }
+                    handler.sendEmptyMessage(0);
                     out.close();
                     //in.close();
                     soc.close();
@@ -254,9 +266,12 @@ public class event extends android.support.v4.app.Fragment
         json = json.replaceAll("\\]", "");
         while(json.contains("{") && json.contains("}"))
         {
+            int start =json.indexOf("{")+1;
+            System.out.println("Start "+start);
             int endPos = json.indexOf("}");
-            String event = json.substring(json.indexOf("{")+1,endPos);//remove braces
-            json = json.substring(endPos, json.length());
+            System.out.println("End "+endPos);
+            String event = json.substring(start,endPos);//remove braces
+            json = json.substring(endPos +1, json.length());
             EventDB ev = getEvent(event);
             events.add(ev);
         }
