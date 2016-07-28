@@ -57,6 +57,8 @@ public class event extends android.support.v4.app.Fragment
     private static final boolean DEBUG = true;
     private ArrayList<String> EventDescrp = new ArrayList<String>();
     private ArrayList<EventDB> events;
+    private String[] EN;
+    private String[] ED;
     private Handler handler;
     private Integer[] imgid=
             {
@@ -81,12 +83,14 @@ public class event extends android.support.v4.app.Fragment
                     System.out.println("test for" + i);
                     String name = events.get(i).getTitle();
                     EventNames.add(name);
-                    EventDescrp.add(events.get(i).getDescription());
+                    String descrip = events.get(i).getDescription();
+                    System.out.println(descrip);
+                    EventDescrp.add(descrip);
 
                 }
 
-                String[] EN = EventNames.toArray(new String[EventNames.size()]);
-                String[] ED = EventDescrp.toArray(new String[EventDescrp.size()]);
+                EN = EventNames.toArray(new String[EventNames.size()]);
+                ED = EventDescrp.toArray(new String[EventDescrp.size()]);
                 CustomListAdapter adapter = new CustomListAdapter(getActivity(),EN,imgid,ED);
 
                 list.setAdapter(adapter);
@@ -99,20 +103,22 @@ public class event extends android.support.v4.app.Fragment
 
 
         final View v = inflater.inflate(R.layout.event_page,container,false);
+        Bundle extras = getArguments();
+        boolean check = true;
+
 
         readEvents();
+
 
         list=(ListView) v.findViewById(R.id.list);
         Typeface h = Typeface.createFromAsset(mgr,"Ailerons-Typeface.otf");
         TextView headingTextView = (TextView) v.findViewById(R.id.main_heading);
         headingTextView.setTypeface(h);
 
-        Bundle extras = getArguments();
+
         final PulsatorLayout pulsator = (PulsatorLayout) v.findViewById(R.id.pulsator);
         if(extras!=null)
         {
-
-            boolean check = extras.getBoolean("com.codcodes.icebreaker.Back");
             if (check)
             {
                 pulsator.setVisibility(View.GONE);
@@ -141,8 +147,8 @@ public class event extends android.support.v4.app.Fragment
                                     int position, long id)
             {
                 // TODO Auto-generated method stub
-                //String Selcteditem = EventNames[+position];
-                //String eventDescrip = EventDescrp[+position];
+                String Selcteditem = EN[+position];
+                String eventDescrip = ED[+position];
                 int imageID = imgid[+position];
 
 
@@ -313,6 +319,8 @@ public class event extends android.support.v4.app.Fragment
                     case "Radius":
                         ev.setRadius(Integer.valueOf(val));
                         break;
+                    case "Description":
+                        ev.setDescription(val);
                 }
             }
             //look for next pair
