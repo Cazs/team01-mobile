@@ -53,9 +53,9 @@ public class EventDetailActivity extends AppCompatActivity {
     private Integer[] imgid=
             {
                     R.drawable.seleena,
-                    R.drawable.lindsey,
-                    R.drawable.liam,
-                    R.drawable.mel
+                    R.drawable.seleena,
+                    R.drawable.seleena,
+                    R.drawable.seleena
             };
 
     private ListView lv;

@@ -3,7 +3,7 @@ package com.codcodes.icebreaker;
 /**
  * Created by tevin on 2016/07/25.
  */
-public class EventDB
+public class Event
 {
     private int id;
     private String title;
@@ -12,12 +12,12 @@ public class EventDB
     private int radius;
     private String gps;
 
-    public EventDB()
+    public Event()
     {
 
     }
 
-    public EventDB(int id, String title,String description,String address, int radius,String gps)
+    public Event(int id, String title, String description, String address, int radius, String gps)
     {
         this.id = id;
         this.title=title;
