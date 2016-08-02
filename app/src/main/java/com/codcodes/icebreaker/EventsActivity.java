@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -99,7 +100,7 @@ public class EventsActivity extends android.support.v4.app.Fragment
                                    + "/Icebreak/" + iconName).exists())
                            {
                                Log.d(TAG,"No cached "+iconName+",Image download in progress..");
-                               if(imageDownload(soc,iconName))
+                               if(imageDownload(iconName))
                                    Log.d(TAG,"Image download successful");
                                else
                                    Log.d(TAG,"Image download unsuccessful");
@@ -218,8 +219,9 @@ public class EventsActivity extends android.support.v4.app.Fragment
         }
     }
 
-    public static boolean imageDownload(Socket soc,String iconName) throws IOException
+    public static boolean imageDownload(String iconName) throws IOException
     {
+        Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
         System.out.println("Sending image download request");
         PrintWriter out = new PrintWriter(soc.getOutputStream());
         //Android: final String base64 = ;
@@ -237,13 +239,13 @@ public class EventsActivity extends android.support.v4.app.Fragment
         while(!in.ready()){}
         while((resp = in.readLine())!=null)
         {
-            //System.out.println(resp);
+            System.out.println(resp);
 
             if(resp.toLowerCase().contains("payload"))
             {
                 String base64bytes = resp.split(":")[1];
                 base64bytes = base64bytes.substring(1, base64bytes.length());
-                byte[] binFileArr = android.util.Base64.decode(base64bytes, android.util.Base64.DEFAULT);
+                byte[] binFileArr = android.util.Base64.decode(base64bytes, Base64.DEFAULT);
                 WritersAndReaders.saveImage(binFileArr,iconName);
                 return true;
             }

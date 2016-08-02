@@ -23,6 +23,7 @@ import com.codcodes.icebreaker.tabs.ImageConverter;
 public class CustomListAdapter extends ArrayAdapter<String>
 {
     private final Activity context;
+
     private final String[] eventNames;
     private final String[] eventIcons;
     private final String[] eventDescriptions;
@@ -35,6 +36,7 @@ public class CustomListAdapter extends ArrayAdapter<String>
         this.eventNames=eventNames;
         this.eventIcons=eventIcons;
         this.eventDescriptions =eventDescriptions;
+
     }
 
     public View getView(int position, View view, ViewGroup parent)

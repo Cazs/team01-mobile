@@ -29,8 +29,9 @@ public class WritersAndReaders
 		{
             FileOutputStream fos = new FileOutputStream(f.getPath().toString()+"/"+filename);
             fos.write(data);
+			fos.flush();
             fos.close();
-			Log.d("W&R","Saved image to disk: " + path + "/" + filename);
+			Log.d("W&R","Saved image to disk: " + f.getPath().toString() + "/" + filename);
 		}
 		catch (IOException e)
 		{
