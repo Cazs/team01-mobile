@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.inputmethodservice.Keyboard;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -53,9 +54,9 @@ public class EventDetailActivity extends AppCompatActivity {
     private Integer[] imgid=
             {
                     R.drawable.seleena,
-                    R.drawable.lindsey,
-                    R.drawable.liam,
-                    R.drawable.mel
+                    R.drawable.seleena,
+                    R.drawable.seleena,
+                    R.drawable.seleena
             };
 
     private ListView lv;
@@ -85,17 +86,18 @@ public class EventDetailActivity extends AppCompatActivity {
             TextView eventDescription = (TextView)findViewById(R.id.event_description);
             eventDescription.setText(extras.getString("Event Description"));
 
-            Bitmap bitmap = BitmapFactory.decodeResource(getResources(),extras.getInt("Image ID") );
+            String imagePath = Environment.getExternalStorageDirectory().getPath().toString()
+                    + extras.getString("Image ID");
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+            Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
+            //Bitmap bitmap = BitmapFactory.decodeResource(getResources(), imagePath);
             Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
-
-
             ImageView eventImage = (ImageView) findViewById((R.id.event_image));
 
             eventImage.setImageBitmap(circularbitmap);
             bitmap.recycle();
-
-
-
         }
 
 
@@ -144,7 +146,7 @@ public class EventDetailActivity extends AppCompatActivity {
     {
         //read from database
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-        CustomListAdapter cla = new CustomListAdapter(this,PeopleNames,imgid,PeopleDescrp);
+        CustomListAdapter cla = new CustomListAdapter(this,PeopleNames,null,PeopleDescrp);
         lv= (ListView) findViewById(R.id.contactList);
         lv.setAdapter(cla);
         vf = (ViewFlipper) findViewById(R.id.viewFlipper);

@@ -52,16 +52,6 @@
             >
         </pl.bclogic.pulsator4droid.library.PulsatorLayout>
 
-        <!--
-         <TextView
-             android:layout_width="match_parent"
-             android:layout_height="wrap_content"
-             android:textSize="12pt"
-             android:id="@+id/loading"
-             android:layout_marginLeft="100dp"
-             android:layout_marginTop="@dimen/dp_size_450"
-             />
-        -->
          <ListView
              android:id="@+id/list"
              android:layout_marginBottom="@dimen/dp_size_320"

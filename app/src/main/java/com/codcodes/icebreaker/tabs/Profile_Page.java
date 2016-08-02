@@ -21,6 +21,7 @@ import com.codcodes.icebreaker.Edit_ProfileActivity;
 import com.codcodes.icebreaker.InitialActivity;
 import com.codcodes.icebreaker.LoginActivity;
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.RewardsActivity;
 import com.codcodes.icebreaker.SharedPreference;
 
 /**
@@ -72,7 +73,7 @@ public class Profile_Page extends android.support.v4.app.Fragment
             @Override
             public void onClick(View view) {
                 int link_color = Color.parseColor("#4665f0");
-                Intent intent = new Intent(view.getContext(),InitialActivity.class);
+                Intent intent = new Intent(view.getContext(),RewardsActivity.class);
                // rewards.startAnimation();
                 startActivity(intent);
             }

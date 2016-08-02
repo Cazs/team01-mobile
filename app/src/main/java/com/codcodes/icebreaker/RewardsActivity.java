@@ -1,14 +1,16 @@
 package com.codcodes.icebreaker;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
@@ -21,7 +23,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class InitialActivity extends AppCompatActivity {
+import com.codcodes.icebreaker.tabs.reward;
+import com.codcodes.icebreaker.tabs.ImageConverter;
+import com.codcodes.icebreaker.tabs.Profile_Page;
+
+public class RewardsActivity extends AppCompatActivity {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -31,53 +37,65 @@ public class InitialActivity extends AppCompatActivity {
      * may be best to switch to a
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
-    private ImageView iv;
 
-    private SectionsPagerAdapter mSectionsPagerAdapter;
 
     /**
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
 
+    private int[] imageResId = {
+            R.drawable.ic_grade_white_24dp,
+            R.drawable.ic_school_white_24dp
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_initial);
+        setContentView(R.layout.activity_rewards);
 
-        iv = (ImageView) findViewById(R.id.image1) ;
-
-
-        //Toolbar toolbar = (Toolbar) findViewByIsetSupportActionBar(toolbar);
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setAdapter(new FragmentAdapter(getSupportFragmentManager(),RewardsActivity.this));
 
 
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
-        TextView headingTextView = (TextView) findViewById(R.id.heading);
+        TextView headingTextView = (TextView) findViewById(R.id.reward_title);
         headingTextView.setTypeface(heading);
 
-        if(SharedPreference.getUsername(InitialActivity.this).length()==0)
-        {
-            return;
-        }
-        else
-        {
-            Intent intent = new Intent(this,MainPageActivity.class);
-            startActivity(intent);
-        }
+
+
+        TabLayout tablayout = (TabLayout) findViewById(R.id.tabs);
+        tablayout.setupWithViewPager(mViewPager);
+        tablayout.getTabAt(0).setIcon(imageResId[0]);
+        tablayout.getTabAt(1).setIcon(imageResId[1]);
+
+
+        Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(),R.drawable.seleena);
+        Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap,100);
+
+        ImageView circularImageView = (ImageView) findViewById(R.id.circleviewrewards);
+        circularImageView.setImageBitmap(circularbitmap);
+
+
+
+
+
+
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        //getMenuInflater().inflate(R.menu.menu_initial, menu);
+        getMenuInflater().inflate(R.menu.menu_main_page, menu);
         return true;
     }
 
@@ -95,16 +113,43 @@ public class InitialActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-    public void showLogin(View view)
-    {
-        Intent loginscreen = new Intent(this,LoginActivity.class);
-        startActivity(loginscreen);
-    }
 
-    public void ShowSignUp(View view)
+    public class FragmentAdapter extends FragmentPagerAdapter
     {
-        Intent signupscreen = new Intent(this,SignUpActivity.class);
-        startActivity(signupscreen);
+
+        final int PAGE_COUNT = 2;
+        private Context context;
+
+        public FragmentAdapter(FragmentManager fm,Context context) {
+            super(fm);
+            this.context=context;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            switch (position)
+            {
+                case 0: return reward.newInstance(context);
+                case 1: return reward.newInstance(context);
+                default:return reward.newInstance(context);
+            }
+
+        }
+
+        @Override
+        public int getCount() {
+            return PAGE_COUNT;
+        }
+
+
+
+
+        public CharSequence getPageTitle(int position)
+        {
+
+            return null;
+        }
+
     }
 
     /**
@@ -115,9 +160,12 @@ public class InitialActivity extends AppCompatActivity {
          * The fragment argument representing the section number for this
          * fragment.
          */
+        //private Context context;
+
         private static final String ARG_SECTION_NUMBER = "section_number";
 
         public PlaceholderFragment() {
+
         }
 
         /**
@@ -135,68 +183,35 @@ public class InitialActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_initial, container, false);
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            ImageView temp = (ImageView) rootView.findViewById(R.id.image1);
-
+            View rootView = inflater.inflate(R.layout.fragment_main_page, container, false);
             int v= getArguments().getInt(ARG_SECTION_NUMBER);
             if (v==1)
             {
-                temp.setImageResource(R.drawable.image1);
+                rootView = inflater.inflate(R.layout.event_page, container, false);
 
             }
 
-            if (v==2)
-            {
-                temp.setImageResource(R.drawable.image2);
 
-            }
 
-            if (v==3)
-            {
-                temp.setImageResource(R.drawable.image3);
-
-            }
-
-           // textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+            // textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
             return rootView;
+
         }
     }
+
+    @Override
+    public void onBackPressed()
+    {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
-        }
-
-        @Override
-        public int getCount() {
-            // Show 3 total pages.
-            return 3;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return "SECTION 1";
-                case 1:
-                    return "SECTION 2";
-                case 2:
-                    return "SECTION 3";
-            }
-            return null;
-        }
-    }
 }

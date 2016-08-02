@@ -99,4 +99,5 @@
     <dimen name="dp_size_480">480dp</dimen>
     <dimen name="dp_size_145">145dp</dimen>
     <dimen name="dp_size_460">460dp</dimen>
+    <dimen name="dp_size_180">180dp</dimen>
 </resources>
