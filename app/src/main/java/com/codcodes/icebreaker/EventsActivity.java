@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -53,13 +52,14 @@ public class EventsActivity extends android.support.v4.app.Fragment
     private ArrayList<String> eventIcons;
     private static final boolean DEBUG = true;
     private final String TAG = "ICEBREAK";
+    private static boolean CHUNKED = false;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         validateStoragePermissions(getActivity());
 
         final View v = inflater.inflate(R.layout.event_page,container,false);
-        list = (ListView) v.findViewById(R.id.list);;
+        list = (ListView) v.findViewById(R.id.list);
         eventNames = new ArrayList<>();
         eventDescriptions = new ArrayList<>();
         eventIcons = new ArrayList<>();
@@ -82,11 +82,10 @@ public class EventsActivity extends android.support.v4.app.Fragment
                }
                else//All is well
                {
-                   //for(int i =0;i<events.size();i++)
                    try
                    {
-                       Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-                       Log.d(TAG,"Connection established");
+                       //Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
+                       //Log.d(TAG,"Connection established");
                        for(Event e:events)
                        {
                            eventNames.add(e.getTitle());
@@ -96,8 +95,7 @@ public class EventsActivity extends android.support.v4.app.Fragment
                            //String iconName = "event_icons-10.png";
                            eventIcons.add("/Icebreak/"+iconName);
                            //Download the file only if it has not been cached
-                           if(!new File(Environment.getExternalStorageDirectory().getPath()
-                                   + "/Icebreak/" + iconName).exists())
+                           if(!new File(Environment.getExternalStorageDirectory().getPath()+"/Icebreak/" + iconName).exists())
                            {
                                Log.d(TAG,"No cached "+iconName+",Image download in progress..");
                                if(imageDownload(iconName))
@@ -142,7 +140,6 @@ public class EventsActivity extends android.support.v4.app.Fragment
 
         Typeface h = Typeface.createFromAsset(mgr,"Ailerons-Typeface.otf");
         TextView headingTextView = (TextView) v.findViewById(R.id.main_heading);
-        headingTextView.setText("Events");
         headingTextView.setTypeface(h);
 
         Bundle extras = getArguments();
@@ -230,36 +227,84 @@ public class EventsActivity extends android.support.v4.app.Fragment
                 //+ "Content-Type: application/x-www-form-urlencoded\r\n"
                 + "Content-Type: text/plain;\r\n"// charset=utf-8
                 + "Content-Length: 0\r\n\r\n";
-
         out.print(headers);
         out.flush();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-        String resp;
+        String resp,base64;
         while(!in.ready()){}
+        Pattern pattern = Pattern.compile("^[A-F0-9]+$");//"((\\d*[A-Fa-f]\\d*){2,}|\\d{1})");//"([0-9A-Fa-f]{2,}|[0-9]{1})");//"[0-9A-Fa-f]");
+        //System.out.println(pattern.matcher("4FA3").find());
+        //System.out.println(hexToDecimal("7D0"));
+        String payload = "";
         while((resp = in.readLine())!=null)
         {
-            System.out.println(resp);
-
-            if(resp.toLowerCase().contains("payload"))
+            //System.out.println(resp);
+            if(resp.toLowerCase().contains("transfer-encoding"))
             {
-                String base64bytes = resp.split(":")[1];
-                base64bytes = base64bytes.substring(1, base64bytes.length());
-                byte[] binFileArr = android.util.Base64.decode(base64bytes, Base64.DEFAULT);
-                WritersAndReaders.saveImage(binFileArr,iconName);
-                return true;
+                String encoding = resp.split(":")[1];
+                if(encoding.toLowerCase().contains("chunked"))
+                {
+                    CHUNKED = true;
+                    System.out.println("Preparing for chunked data.");
+                }
             }
 
-            if(!in.ready())
+            if(CHUNKED)
             {
-                if(DEBUG)System.out.println(">>Done<<");
-                break;
+                Matcher m = pattern.matcher(resp.toUpperCase());
+                if(m.find())
+                {
+                    int dec = hexToDecimal(m.group(0));
+                    String chunk = in.readLine();
+                    //char[] chunk = new char[dec];
+                    //int readCount = in.read(chunk,0,chunk.length);//sjv3
+                    //System.out.println(chunk);
+                    //System.out.println("Chunk size: "+ readCount);
+                    if(dec==0)
+                        break;//End of chunks
+                    if(chunk.length()>0)
+                        payload += chunk;//String.copyValueOf(chunk);
+                }
             }
         }
         out.close();
         //in.close();
         soc.close();
-        return false;
+        //System.out.println(payload);
+        if(payload.length()>0)
+        {
+            //payload = payload.split(":")[1];
+            payload = payload.replaceAll("\"", "");
+            System.out.println(payload);
+            //payload = payload.substring(1,payload.length()-1);
+            /*byte[] binFileArr = javax.xml.bind.DatatypeConverter.parseBase64Binary(payload);//Base64.getDecoder().decode(payload.getBytes());
+            FileOutputStream fos = new FileOutputStream("remote_circle.png");
+            fos.write(binFileArr);
+            fos.close();
+            System.out.println("Succesfully wrote to disk");//"\n>>>>>"+base64bytes);*/
+            //System.out.println(payload);
+            byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);
+            WritersAndReaders.saveImage(binFileArr,iconName);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public static int hexToDecimal(String hex)
+    {
+        String possibleDigits = "0123456789ABCDEF";
+        int dec = 0;
+        for(int i=0;i<hex.length();i++)
+        {
+            char currChar = hex.charAt(i);
+            int x = possibleDigits.indexOf(currChar);
+            dec = 16*dec + x;
+        }
+        return dec;
     }
 
     public static EventsActivity newInstance(Context context, Bundle b)

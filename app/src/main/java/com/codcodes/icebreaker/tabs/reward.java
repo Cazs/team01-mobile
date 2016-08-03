@@ -2,188 +2,53 @@ package com.codcodes.icebreaker.tabs;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Typeface;
-import android.inputmethodservice.Keyboard;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.KeyEvent;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethod;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.EditText;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.ViewFlipper;
 
-import com.codcodes.icebreaker.tabs.ImageConverter;
+import com.codcodes.icebreaker.Edit_ProfileActivity;
+import com.codcodes.icebreaker.InitialActivity;
+import com.codcodes.icebreaker.LoginActivity;
+import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.RewardsActivity;
+import com.codcodes.icebreaker.SharedPreference;
 
-import org.w3c.dom.Text;
-
-public class reward extends AppCompatActivity {
-
-    private String[] PeopleNames =
-            {
-                    "Selena Gomez",
-                    "Lindsey Morgan",
-
-
-            };
-    private String[] PeopleDescrp =
-            {
-                    "They call me casanova",
-                    "Where Dreams come true"
-
-
-            };
-    private Integer[] imgid=
-            {
-                    R.drawable.seleena,
-                    R.drawable.seleena
-            };
-
-    private ListView lv;
-    private ViewFlipper vf;
-    private TextView eventDetails;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_event_detail);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        // getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        Bundle extras = getIntent().getExtras();
+/**
+ * Created by tevin on 2016/07/13.
+ */
+public class reward extends android.support.v4.app.Fragment
+{
+    private static AssetManager mgr;
 
 
 
 
-        if(extras != null)
-        {
-            String evtName = extras.getString("Event Name");
-            TextView eventName = (TextView)findViewById(R.id.event_name);
-            eventName.setText(evtName);
-
-            TextView eventDescription = (TextView)findViewById(R.id.event_description);
-            eventDescription.setText(extras.getString("Event Description"));
-
-            String imagePath = Environment.getExternalStorageDirectory().getPath().toString()
-                    + extras.getString("Image ID");
-
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-            Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
-            //Bitmap bitmap = BitmapFactory.decodeResource(getResources(), imagePath);
-            Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
-            ImageView eventImage = (ImageView) findViewById((R.id.event_image));
-
-            eventImage.setImageBitmap(circularbitmap);
-            bitmap.recycle();
-        }
-
-
-
-        eventDetails = (TextView)findViewById(R.id.Event_Heading);
-        Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
-        eventDetails.setTypeface(heading);
-
-        EditText accessCode = (EditText) findViewById(R.id.AccessCode);
-        accessCode.setOnEditorActionListener(new TextView.OnEditorActionListener()
-        {
-            @Override
-            public boolean onEditorAction(TextView v, int actionID, KeyEvent event)
-            {
-                if (actionID== EditorInfo.IME_ACTION_DONE)
-                {
-                    listPeople();
-                }
-                return false;
-            }
-        });
-
-
-
-
-
-    }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item){
-        switch (item.getItemId())
-        {
-            case android.R.id.home:
-                Intent intent = new Intent(getApplicationContext(), MainPageActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                intent.putExtra("com.codcodes.icebreaker.Back",true);
-                startActivity(intent);
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-
-    }
-
-
-    private void listPeople()
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        //read from database
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-        CustomListAdapter cla = new CustomListAdapter(this,PeopleNames,null,PeopleDescrp);
-        lv= (ListView) findViewById(R.id.contactList);
-        lv.setAdapter(cla);
-        vf = (ViewFlipper) findViewById(R.id.viewFlipper);
-        eventDetails.setText("List Of People");
-        vf.showNext();
 
+        View v = inflater.inflate(R.layout.test,container,false);
 
+        return v;
 
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener()
-        {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id)
-            {
-                // TODO Auto-generated method stub
-                String Selcteditem = PeopleNames[+position];
-                String eventDescrip = PeopleDescrp[+position];
-                int imageID = imgid[+position];
-
-
-                Intent intent = new Intent(view.getContext(),Other_Profile.class);
-                startActivity(intent);
-            }
-        });
-        View view = this.getCurrentFocus();
-        if (view != null) {
-            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
     }
 
-
-    @Override
-    public void onBackPressed()
+    public static reward newInstance(Context context)
     {
-        super.onBackPressed();
-        Intent i = new Intent(this,MainPageActivity.class);
-        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        i.putExtra("com.codcodes.icebreaker.Back",true);
-        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(i);
-        finish();
+        reward e = new reward();
+        mgr = context.getAssets();
+        Bundle b = new Bundle();
+        e.setArguments(b);
+        return e;
     }
-
 }

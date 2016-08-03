@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,7 +65,6 @@ public class rewardsList extends android.support.v4.app.Fragment
         View v = inflater.inflate(R.layout.rewardlist_activity,container,false);
         String[] rewards = {"Top Drinker","winner At Life","This better work"};
         ListView lv = (ListView) v.findViewById(R.id.rewardsList);
-
         return v;
 
 

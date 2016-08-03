@@ -68,7 +68,7 @@ public class Edit_ProfileActivity extends AppCompatActivity
         Age = (EditText) findViewById(R.id.editAge);
         Occupation = (EditText) findViewById(R.id.editOccupation);
         Bio = (EditText) findViewById(R.id.editbio);
-        Catchphrase = (EditText) findViewById(R.id.editbio);
+        Catchphrase = (EditText) findViewById(R.id.CatchPhrase);
 
         Typeface h = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
         TextView name = (TextView) toolbar.findViewById(R.id.Edit_Heading);

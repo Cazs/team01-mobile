@@ -43,6 +43,7 @@ import java.net.Socket;
 import java.net.URLEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static com.google.android.gms.internal.zzir.runOnUiThread;
 
 /**
  * Created by tevin on 2016/07/13.
@@ -59,6 +60,7 @@ public class Profile_Page extends android.support.v4.app.Fragment
     private String Occupation;
     private static final boolean DEBUG = true;
     private final String TAG = "ICEBREAK";
+    private static boolean CHUNKED = false;
 
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -68,6 +70,30 @@ public class Profile_Page extends android.support.v4.app.Fragment
         View v = inflater.inflate(R.layout.profile_page,container,false);
         //TODO: Use this information to send to database to see whch user it is.
         final String username = SharedPreference.getUsername(v.getContext());
+
+
+        Typeface h = Typeface.createFromAsset(mgr,"Infinity.ttf");
+        name = (TextView) v.findViewById(R.id.profile_name);
+        name.setTypeface(h);
+
+
+
+        age = (TextView) v.findViewById(R.id.profile_age);
+        age.setTypeface(h);
+
+        occupation = (TextView) v.findViewById(R.id.profile_occupation);
+        occupation.setTypeface(h);
+
+
+        final TextView rewards = (TextView) v.findViewById(R.id.profile_Rewards);
+        rewards.setTypeface(h);
+        rewards.setText("Rewards");
+
+
+        TextView settings = (TextView) v.findViewById(R.id.profile_settings);
+        settings.setTypeface(h);
+        settings.setText("Settings");
+
 
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -82,7 +108,7 @@ public class Profile_Page extends android.support.v4.app.Fragment
                             + "/Icebreak/" + username).exists())
                     {
                         Log.d(TAG,"No cached "+username+",Image download in progress..");
-                        if(imageDownload(soc,username))
+                        if(imageDownload(username))
                             Log.d(TAG,"Image download successful");
                         else
                             Log.d(TAG,"Image download unsuccessful");
@@ -141,7 +167,16 @@ public class Profile_Page extends android.support.v4.app.Fragment
                         Name = user.getFirstname()+" "+user.getLastname();
                         Age = String.valueOf(user.getAge());
                         Occupation = user.getOccupation();
-
+                        runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                age.setText(Age);
+                                name.setText(Name);
+                                occupation.setText(Occupation);
+                            }
+                        });
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -149,33 +184,6 @@ public class Profile_Page extends android.support.v4.app.Fragment
             }
         });
         thread.start();
-
-
-        Typeface h = Typeface.createFromAsset(mgr,"Infinity.ttf");
-        name = (TextView) v.findViewById(R.id.profile_name);
-        name.setTypeface(h);
-        name.setText(Name);
-
-
-        age = (TextView) v.findViewById(R.id.profile_age);
-        age.setTypeface(h);
-        age.setText(Age);
-
-        occupation = (TextView) v.findViewById(R.id.profile_occupation);
-        occupation.setTypeface(h);
-
-
-        final TextView rewards = (TextView) v.findViewById(R.id.profile_Rewards);
-        rewards.setTypeface(h);
-        rewards.setText("Rewards");
-
-
-        TextView settings = (TextView) v.findViewById(R.id.profile_settings);
-        settings.setTypeface(h);
-        settings.setText("Settings");
-
-
-
 
 
         rewards.setOnClickListener(new View.OnClickListener() {
@@ -265,47 +273,97 @@ public class Profile_Page extends android.support.v4.app.Fragment
         e.setArguments(b);
         return e;
     }
-    public static boolean imageDownload(Socket soc,String userName) throws IOException
+    public static boolean imageDownload(String iconName) throws IOException
     {
+        Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
         System.out.println("Sending image download request");
         PrintWriter out = new PrintWriter(soc.getOutputStream());
         //Android: final String base64 = ;
-        String headers = "GET /IBUserRequestService.svc/imageDownload/"+userName+" HTTP/1.1\r\n"
+        String headers = "GET /IBUserRequestService.svc/imageDownload/"+iconName+" HTTP/1.1\r\n"
                 + "Host: icebreak.azurewebsites.net\r\n"
                 //+ "Content-Type: application/x-www-form-urlencoded\r\n"
                 + "Content-Type: text/plain;\r\n"// charset=utf-8
                 + "Content-Length: 0\r\n\r\n";
-
         out.print(headers);
         out.flush();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-        String resp;
+        String resp,base64;
         while(!in.ready()){}
+        Pattern pattern = Pattern.compile("^[A-F0-9]+$");//"((\\d*[A-Fa-f]\\d*){2,}|\\d{1})");//"([0-9A-Fa-f]{2,}|[0-9]{1})");//"[0-9A-Fa-f]");
+        //System.out.println(pattern.matcher("4FA3").find());
+        //System.out.println(hexToDecimal("7D0"));
+        String payload = "";
         while((resp = in.readLine())!=null)
         {
             //System.out.println(resp);
-
-            if(resp.toLowerCase().contains("payload"))
+            if(resp.toLowerCase().contains("transfer-encoding"))
             {
-                String base64bytes = resp.split(":")[1];
-                base64bytes = base64bytes.substring(1, base64bytes.length());
-                byte[] binFileArr = android.util.Base64.decode(base64bytes, android.util.Base64.DEFAULT);
-                WritersAndReaders.saveImage(binFileArr,userName);
-                return true;
+                String encoding = resp.split(":")[1];
+                if(encoding.toLowerCase().contains("chunked"))
+                {
+                    CHUNKED = true;
+                    System.out.println("Preparing for chunked data.");
+                }
             }
 
-            if(!in.ready())
+            if(CHUNKED)
             {
-                if(DEBUG)System.out.println(">>Done<<");
-                break;
+                Matcher m = pattern.matcher(resp.toUpperCase());
+                if(m.find())
+                {
+                    int dec = hexToDecimal(m.group(0));
+                    String chunk = in.readLine();
+                    //char[] chunk = new char[dec];
+                    //int readCount = in.read(chunk,0,chunk.length);//sjv3
+                    //System.out.println(chunk);
+                    //System.out.println("Chunk size: "+ readCount);
+                    if(dec==0)
+                        break;//End of chunks
+                    if(chunk.length()>0)
+                        payload += chunk;//String.copyValueOf(chunk);
+                }
             }
         }
         out.close();
         //in.close();
         soc.close();
-        return false;
+        //System.out.println(payload);
+        if(payload.length()>0)
+        {
+            //payload = payload.split(":")[1];
+            payload = payload.replaceAll("\"", "");
+            System.out.println(payload);
+            //payload = payload.substring(1,payload.length()-1);
+            /*byte[] binFileArr = javax.xml.bind.DatatypeConverter.parseBase64Binary(payload);//Base64.getDecoder().decode(payload.getBytes());
+            FileOutputStream fos = new FileOutputStream("remote_circle.png");
+            fos.write(binFileArr);
+            fos.close();
+            System.out.println("Succesfully wrote to disk");//"\n>>>>>"+base64bytes);*/
+            //System.out.println(payload);
+            byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);
+            WritersAndReaders.saveImage(binFileArr,iconName);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
+
+    public static int hexToDecimal(String hex)
+    {
+        String possibleDigits = "0123456789ABCDEF";
+        int dec = 0;
+        for(int i=0;i<hex.length();i++)
+        {
+            char currChar = hex.charAt(i);
+            int x = possibleDigits.indexOf(currChar);
+            dec = 16*dec + x;
+        }
+        return dec;
+    }
+
     private static User getUser(String json)
     {
         System.out.println("Reading User: " + json);

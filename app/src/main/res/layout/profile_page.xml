@@ -127,7 +127,6 @@
                     android:text="Sign Out"
                     android:fontFamily="monospace"
                     android:id="@+id/logOut"
-                    android:layout_marginRight="@dimen/dp_size_200"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/dp_size_400"
                     />

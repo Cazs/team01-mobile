@@ -47,11 +47,12 @@ public class CustomListAdapter extends ArrayAdapter<String>
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ALPHA_8;
 
-        Bitmap bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                + eventIcons[position], options);
+      //  Bitmap bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
+              //  + eventIcons[position], options);
         //selected_photo.setImageBitmap(bitmap);
 
-        //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(rowView.getResources(),eventIcons[position]);
+        Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
+                + eventIcons[position],context);
         Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
 
        // Typeface h = Typeface.createFromAsset(mgr,"Infinity.ttf");
