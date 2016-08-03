@@ -32,6 +32,7 @@
             android:layout_height="@dimen/dp_size_40"
             android:src="@drawable/ic_done_white_24dp"
             android:layout_marginLeft="@dimen/dp_size_22"
+            android:id="@+id/edit_profile_done"
 
 
             />
@@ -107,7 +108,7 @@
                 android:layout_centerHorizontal="true"
                 android:fontFamily="monospace"
                 android:drawableLeft="@drawable/ic_date_range_black_24dp"
-                android:inputType="text"
+                android:inputType="number"
                 />
             <EditText
                 android:layout_width="@dimen/text_box_size"
@@ -132,7 +133,7 @@
                 >
             </Spinner>
             <EditText
-                android:id="@+id/bio"
+                android:id="@+id/editbio"
                 android:inputType="textMultiLine"
                 android:layout_width="@dimen/text_box_size"
                 android:layout_height="match_parent"

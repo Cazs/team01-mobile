@@ -1,19 +1,22 @@
 package com.codcodes.icebreaker;
 
+import android.content.Context;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.net.Uri;
+import android.provider.MediaStore;
 
 import java.io.ByteArrayOutputStream;
 
 /**
  * Created by USER on 2016/07/24.
  */
-public class ImageUtils
-{
+public class ImageUtils {
     public static ImageUtils mInstant;
 
     public static ImageUtils getInstant() {
@@ -23,8 +26,9 @@ public class ImageUtils
         return mInstant;
 
     }
-    public Bitmap compressBitmapImage(Resources res,int image)
-    {
+
+    public Bitmap compressBitmapImage(String imagePath, Context c) {
+        String filePath = getRealPathFromURI(imagePath, c);
         float maxHeight = 816.0f;
         float maxWidth = 612.0f;
 
@@ -33,23 +37,20 @@ public class ImageUtils
 
         options.inJustDecodeBounds = true;
 
-        Bitmap bmp = BitmapFactory.decodeResource(res,image,options);
+        Bitmap bmp = BitmapFactory.decodeFile(filePath, options);
 
         int actualHeight = options.outHeight;
         int actualWidth = options.outWidth;
 
-        float imgRatio = actualWidth/ actualHeight;
-        float maxRatio = maxWidth /maxHeight;
+        float imgRatio = actualWidth / actualHeight;
+        float maxRatio = maxWidth / maxHeight;
 
-        if (actualHeight > maxHeight || actualWidth > maxWidth)
-        {
-            if (imgRatio < maxRatio)
-            {
+        if (actualHeight > maxHeight || actualWidth > maxWidth) {
+            if (imgRatio < maxRatio) {
                 imgRatio = maxHeight / actualHeight;
                 actualWidth = (int) (imgRatio * actualWidth);
                 actualHeight = (int) maxHeight;
-            } else if (imgRatio > maxRatio)
-            {
+            } else if (imgRatio > maxRatio) {
                 imgRatio = maxWidth / actualWidth;
                 actualHeight = (int) (imgRatio * actualHeight);
                 actualWidth = (int) maxWidth;
@@ -61,78 +62,160 @@ public class ImageUtils
         }
 
 
-        options.inSampleSize = calculateInSampleSize(options,actualWidth,actualHeight);
+        options.inSampleSize = calculateInSampleSize(options, actualWidth, actualHeight);
 
         options.inJustDecodeBounds = false;
 
         options.inPurgeable = true;
-        options.inInputShareable =true;
-        options.inTempStorage =new byte[16 * 1024];
+        options.inInputShareable = true;
+        options.inTempStorage = new byte[16 * 1024];
 
-        try
-        {
-            bmp = BitmapFactory.decodeResource(res,image,options);
+        try {
+            bmp = BitmapFactory.decodeFile(filePath, options);
 
-        }
-        catch (OutOfMemoryError e)
-        {
+        } catch (OutOfMemoryError e) {
             e.printStackTrace();
         }
-        try
-        {
-            scaledBitmap = Bitmap.createBitmap(actualWidth,actualHeight,Bitmap.Config.ARGB_8888);
+        try {
+            scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.ARGB_8888);
 
-        }
-        catch (OutOfMemoryError e)
-        {
+        } catch (OutOfMemoryError e) {
             e.printStackTrace();
         }
 
-        float ratioX = actualWidth /(float) options.outWidth;
-        float ratioY = actualHeight /(float) options.outHeight;
+        float ratioX = actualWidth / (float) options.outWidth;
+        float ratioY = actualHeight / (float) options.outHeight;
         float middleX = actualWidth / 2.0f;
         float middleY = actualWidth / 2.0f;
 
         Matrix scaleMatrix = new Matrix();
-        scaleMatrix.setScale(ratioX,ratioY,middleX,middleY);
+        scaleMatrix.setScale(ratioX, ratioY, middleX, middleY);
 
         Canvas canvas = new Canvas(scaledBitmap);
         canvas.setMatrix(scaleMatrix);
-        canvas.drawBitmap(bmp,middleX-bmp.getWidth() / 2 ,middleY-bmp.getHeight() / 2,new Paint(Paint.FILTER_BITMAP_FLAG));
+        canvas.drawBitmap(bmp, middleX - bmp.getWidth() / 2, middleY - bmp.getHeight() / 2, new Paint(Paint.FILTER_BITMAP_FLAG));
 
-        scaledBitmap = Bitmap.createBitmap(scaledBitmap,0,0,scaledBitmap.getWidth(),scaledBitmap.getHeight(),scaleMatrix,true);
+        scaledBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), scaleMatrix, true);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        scaledBitmap.compress(Bitmap.CompressFormat.JPEG,100,out);
+        scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
 
         byte[] bytearray = out.toByteArray();
 
-        Bitmap compressedBitmap = BitmapFactory.decodeByteArray(bytearray,0,bytearray.length);
-        return  compressedBitmap;
+        Bitmap compressedBitmap = BitmapFactory.decodeByteArray(bytearray, 0, bytearray.length);
+        return compressedBitmap;
+    }
+
+    public Bitmap compressBitmapImage(Resources res, int image) {
+        float maxHeight = 816.0f;
+        float maxWidth = 612.0f;
+
+        Bitmap scaledBitmap = null;
+        BitmapFactory.Options options = new BitmapFactory.Options();
+
+        options.inJustDecodeBounds = true;
+
+        Bitmap bmp = BitmapFactory.decodeResource(res, image, options);
+
+        int actualHeight = options.outHeight;
+        int actualWidth = options.outWidth;
+
+        float imgRatio = actualWidth / actualHeight;
+        float maxRatio = maxWidth / maxHeight;
+
+        if (actualHeight > maxHeight || actualWidth > maxWidth) {
+            if (imgRatio < maxRatio) {
+                imgRatio = maxHeight / actualHeight;
+                actualWidth = (int) (imgRatio * actualWidth);
+                actualHeight = (int) maxHeight;
+            } else if (imgRatio > maxRatio) {
+                imgRatio = maxWidth / actualWidth;
+                actualHeight = (int) (imgRatio * actualHeight);
+                actualWidth = (int) maxWidth;
+            } else {
+                actualHeight = (int) maxHeight;
+                actualWidth = (int) maxWidth;
+
+            }
+        }
+
+
+        options.inSampleSize = calculateInSampleSize(options, actualWidth, actualHeight);
+
+        options.inJustDecodeBounds = false;
+
+        options.inPurgeable = true;
+        options.inInputShareable = true;
+        options.inTempStorage = new byte[16 * 1024];
+
+        try {
+            bmp = BitmapFactory.decodeResource(res, image, options);
+
+        } catch (OutOfMemoryError e) {
+            e.printStackTrace();
+        }
+        try {
+            scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.ARGB_8888);
+
+        } catch (OutOfMemoryError e) {
+            e.printStackTrace();
+        }
+
+        float ratioX = actualWidth / (float) options.outWidth;
+        float ratioY = actualHeight / (float) options.outHeight;
+        float middleX = actualWidth / 2.0f;
+        float middleY = actualWidth / 2.0f;
+
+        Matrix scaleMatrix = new Matrix();
+        scaleMatrix.setScale(ratioX, ratioY, middleX, middleY);
+
+        Canvas canvas = new Canvas(scaledBitmap);
+        canvas.setMatrix(scaleMatrix);
+        canvas.drawBitmap(bmp, middleX - bmp.getWidth() / 2, middleY - bmp.getHeight() / 2, new Paint(Paint.FILTER_BITMAP_FLAG));
+
+        scaledBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), scaleMatrix, true);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+
+        byte[] bytearray = out.toByteArray();
+
+        Bitmap compressedBitmap = BitmapFactory.decodeByteArray(bytearray, 0, bytearray.length);
+        return compressedBitmap;
     }
 
 
-
-    private int calculateInSampleSize(BitmapFactory.Options options,int reqWidth,int reqHeight)
-    {
+    private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
         final int height = options.outHeight;
         final int width = options.outWidth;
         int inSamplesize = 1;
 
-            if(height >reqHeight || width > reqWidth)
-            {
-                final int heightRatio = Math.round((float) height / (float) reqHeight);
-                final int widthRatio = Math.round((float) width / (float) reqWidth);
-                inSamplesize = heightRatio < widthRatio ? heightRatio : widthRatio;
-            }
+        if (height > reqHeight || width > reqWidth) {
+            final int heightRatio = Math.round((float) height / (float) reqHeight);
+            final int widthRatio = Math.round((float) width / (float) reqWidth);
+            inSamplesize = heightRatio < widthRatio ? heightRatio : widthRatio;
+        }
         final float totalPixels = width * height;
         final float totalReqPixelsCap = reqWidth * reqHeight * 2;
 
-            while (totalPixels / (inSamplesize * inSamplesize) > totalReqPixelsCap) {
-                inSamplesize++;
+        while (totalPixels / (inSamplesize * inSamplesize) > totalReqPixelsCap) {
+            inSamplesize++;
 
-            }
+        }
         return inSamplesize;
+    }
+
+    private String getRealPathFromURI(String contentURI, Context c) {
+        Uri contentUri = Uri.parse(contentURI);
+        Cursor cursor = c.getContentResolver().query(contentUri, null, null, null, null);
+        if (cursor == null) {
+            return contentUri.getPath();
+        } else {
+            cursor.moveToFirst();
+            int index = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+            return cursor.getString(index);
+        }
+
     }
 }
 
