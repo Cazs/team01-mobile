@@ -1,11 +1,13 @@
 package com.codcodes.icebreaker;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,27 +23,33 @@ import com.codcodes.icebreaker.tabs.ImageConverter;
 public class CustomListAdapter extends ArrayAdapter<String>
 {
     private final Activity context;
-    private final String[] itemname;
-    private final Integer[] imgid;
-    private final String[] itemdescrip;
-
+    private final String[] eventNames;
+    private final String[] eventIcons;
+    private final String[] eventDescriptions;
     private static AssetManager mgr;
 
-    public CustomListAdapter(Activity context, String[] itemname, Integer[] imgid, String[] itemdescrip) {
-        super(context, R.layout.customlist, itemname);
-        // TODO Auto-generated constructor stub
-
+    public CustomListAdapter(Activity context, String[] eventNames, String[] eventIcons, String[] eventDescriptions)
+    {
+        super(context, R.layout.customlist, eventNames);
         this.context=context;
-        this.itemname=itemname;
-        this.imgid=imgid;
-        this.itemdescrip =itemdescrip;
+        this.eventNames=eventNames;
+        this.eventIcons=eventIcons;
+        this.eventDescriptions =eventDescriptions;
     }
 
-    public View getView(int position, View view, ViewGroup parent) {
+    public View getView(int position, View view, ViewGroup parent)
+    {
         LayoutInflater inflater=context.getLayoutInflater();
         View rowView=inflater.inflate(R.layout.customlist, null,true);
 
-        Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(rowView.getResources(),imgid[position]);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+
+        Bitmap bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
+                + eventIcons[position], options);
+        //selected_photo.setImageBitmap(bitmap);
+
+        //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(rowView.getResources(),eventIcons[position]);
         Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
 
        // Typeface h = Typeface.createFromAsset(mgr,"Infinity.ttf");
@@ -53,13 +61,13 @@ public class CustomListAdapter extends ArrayAdapter<String>
         TextView extratxt = (TextView) rowView.findViewById(R.id.event_description);
         //extratxt.setTypeface(h);
 
-        txtTitle.setText(itemname[position]);
+        txtTitle.setText(eventNames[position]);
         imageView.setImageBitmap(circularbitmap);
-        extratxt.setText(itemdescrip[position]);
+        extratxt.setText(eventDescriptions[position]);
 
         txtTitle.setTextColor(Color.BLACK);
         bitmap.recycle();
         return rowView;
 
-    };
+    }
 }

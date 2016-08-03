@@ -48,9 +48,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-<<<<<<< Updated upstream
-
-=======
         <activity
             android:name=".AchievementsActivity"
             android:label="@string/ach_name"
@@ -83,7 +80,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.codcodes.icebreaker.MainPageActivity" />
         </activity>-->
->>>>>>> Stashed changes
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
