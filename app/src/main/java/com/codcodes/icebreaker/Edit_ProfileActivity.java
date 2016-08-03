@@ -9,6 +9,7 @@ import android.graphics.Typeface;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -16,20 +17,41 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.codcodes.icebreaker.tabs.ImageConverter;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.URLEncoder;
+import java.net.UnknownHostException;
 
 public class Edit_ProfileActivity extends AppCompatActivity
 {
-    ImageView circularImageView;
+    private ImageView circularImageView;
+    private EditText Firstname;
+    private EditText Lastname;
+    private EditText Age;
+    private EditText Occupation;
+    private EditText Bio;
+    private EditText Catchphrase;
+    private EditText Email;
+    private EditText Password;
+    private EditText Username;
+    private String Gender;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +62,13 @@ public class Edit_ProfileActivity extends AppCompatActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
+        Firstname = (EditText) findViewById(R.id.editName);
+
+        Lastname = (EditText) findViewById(R.id.editLastName);
+        Age = (EditText) findViewById(R.id.editAge);
+        Occupation = (EditText) findViewById(R.id.editOccupation);
+        Bio = (EditText) findViewById(R.id.editbio);
+        Catchphrase = (EditText) findViewById(R.id.CatchPhrase);
 
         Typeface h = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
         TextView name = (TextView) toolbar.findViewById(R.id.Edit_Heading);
@@ -64,6 +93,25 @@ public class Edit_ProfileActivity extends AppCompatActivity
         // Apply the adapter to the spinner
         spinner.setAdapter(adapter);
 
+        ImageView done = (ImageView) findViewById(R.id.edit_profile_done);
+
+
+        done.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view)
+            {
+                String fname = Firstname.getText().toString();
+                String lname = Lastname.getText().toString();
+                String age =  Age.getText().toString();
+                String occupation =  Occupation.getText().toString();
+                String bio =  Bio.getText().toString();
+                String catchphrase=  Catchphrase.getText().toString();
+                String gender = Gender;
+                updateProfile(fname,lname,age,occupation,bio,catchphrase,gender);
+            }
+
+        });
+
         editphoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -74,9 +122,14 @@ public class Edit_ProfileActivity extends AppCompatActivity
         });
 
     }
+
+
+
         public void onActivityResult(int requstCode,int resltCode,Intent data) {
                super.onActivityResult(requstCode,resltCode,data);
                 Uri targetUri = data.getData();
+
+            //TODO: Upload image here
                 Bitmap bitmap;
                 try
                 {
@@ -95,6 +148,7 @@ public class Edit_ProfileActivity extends AppCompatActivity
         public void onItemSelected(AdapterView<?> parent, View view,int pos, long id) {
             // An item was selected. You can retrieve the selected item using
             // parent.getItemAtPosition(pos)
+          Gender = parent.getItemAtPosition(pos).toString();
         }
 
         public void onNothingSelected(AdapterView<?> parent) {
@@ -102,6 +156,120 @@ public class Edit_ProfileActivity extends AppCompatActivity
         }
     }
 
+
+    public void updateProfile(final String firstname, final String lastname, final String age,final String occupation, final String bio, final String catchphrase,final String gender)
+    {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                try
+                {
+                    Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
+                    System.out.println("Connection established");
+                    PrintWriter out = new PrintWriter(soc.getOutputStream());
+                    System.out.println("Sending request");
+
+                    String data = URLEncoder.encode("fname", "UTF-8") + "=" + URLEncoder.encode(firstname, "UTF-8") + "&"
+                            + URLEncoder.encode("lname", "UTF-8") + "=" + URLEncoder.encode(lastname, "UTF-8") + "&"
+                            + URLEncoder.encode("age", "UTF-8") + "=" + URLEncoder.encode(age, "UTF-8") + "&"
+                            + URLEncoder.encode("bio", "UTF-8") + "=" + URLEncoder.encode(bio, "UTF-8") + "&"
+                            + URLEncoder.encode("gender", "UTF-8") + "=" + URLEncoder.encode(gender, "UTF-8") + "&"
+                            + URLEncoder.encode("occupation", "UTF-8") + "=" + URLEncoder.encode(occupation, "UTF-8") + "&"
+                            + URLEncoder.encode("catchphrase", "UTF-8") + "=" + URLEncoder.encode(catchphrase, "UTF-8");
+
+                    out.print("POST /IBUserRequestService.svc/userUpdate HTTP/1.1\r\n"
+                            + "Host: icebreak.azurewebsites.net\r\n"
+                            //+ "Content-Type: application/x-www-form-urlencoded\r\n"
+                            + "Content-Type: text/plain; charset=utf-8\r\n"
+                            + "Content-Length: " + data.length() + "\r\n\r\n"
+                            + data);
+                    out.flush();
+
+                    BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
+                    String resp;
+                    boolean found = false;
+                    while((resp = in.readLine())!=null)
+                    {
+                        Log.d("ICEBREAK",resp);
+                        if(resp.contains("HTTP/1.1 200 OK"))
+                        {
+                            Log.d("ICEBREAK","Found HTTP attr");
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(found)
+                    {
+                        //TODO: Figure out how o go back to profile fragment
+                        Intent intent = new Intent(getApplicationContext(),MainPageActivity.class);
+                        startActivity(intent);
+                    }
+                    else
+                    {
+                        //TODO: send message that editing was unsucessful try again
+                        finish();
+                        startActivity(getIntent());
+                    }
+                    out.close();
+                    in.close();
+                }
+                catch (UnknownHostException e)
+                {
+                    e.printStackTrace();
+                    Toast.makeText(getBaseContext(), "No internet access", Toast.LENGTH_LONG).show();
+
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
+    }
+    public static boolean imageUpload(Socket soc,String iconName) throws IOException
+    {
+        System.out.println("Sending image download request");
+        PrintWriter out = new PrintWriter(soc.getOutputStream());
+        //Android: final String base64 = ;
+        String headers = "GET /IBUserRequestService.svc/imageUpload/"+iconName+" HTTP/1.1\r\n"
+                + "Host: icebreak.azurewebsites.net\r\n"
+                //+ "Content-Type: application/x-www-form-urlencoded\r\n"
+                + "Content-Type: text/plain;\r\n"// charset=utf-8
+                + "Content-Length: 0\r\n\r\n";
+
+        out.print(headers);
+        out.flush();
+
+        //TODO: Not Sure what do
+        BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
+        String resp;
+        while(!in.ready()){}
+        while((resp = in.readLine())!=null)
+        {
+            //System.out.println(resp);
+
+            if(resp.toLowerCase().contains("payload"))
+            {
+                String base64bytes = resp.split(":")[1];
+                base64bytes = base64bytes.substring(1, base64bytes.length());
+                byte[] binFileArr = android.util.Base64.decode(base64bytes, android.util.Base64.DEFAULT);
+                WritersAndReaders.saveImage(binFileArr,iconName);
+                return true;
+            }
+
+            if(!in.ready())
+            {
+                //if(DEBUG)System.out.println(">>Done<<");
+                break;
+            }
+        }
+        out.close();
+        //in.close();
+        soc.close();
+        return false;
+    }
 
     @Override
     public void onBackPressed()

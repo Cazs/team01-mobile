@@ -123,7 +123,9 @@
     <string-array name="gender">
         <item>Male</item>
         <item>Female</item>
+        <item>Unspecified</item>
     </string-array>
     <string name="title_activity_other__profile">Other_Profile</string>
+    <string name="title_activity_rewards">RewardsActivity</string>
 
 </resources>

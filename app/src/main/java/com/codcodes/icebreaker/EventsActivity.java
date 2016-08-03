@@ -271,9 +271,16 @@ public class EventsActivity extends android.support.v4.app.Fragment
         out.close();
         //in.close();
         soc.close();
+<<<<<<< HEAD
         if(payload.length()>0)
         {
             payload = payload.split(":")[1];
+=======
+        //System.out.println(payload);
+        if(payload.length()>0)
+        {
+            //payload = payload.split(":")[1];
+>>>>>>> e4f08746661cde9588c6e48ed983400256080138
             payload = payload.replaceAll("\"", "");
             System.out.println(payload);
             //payload = payload.substring(1,payload.length()-1);

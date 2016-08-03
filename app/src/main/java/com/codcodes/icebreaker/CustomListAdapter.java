@@ -23,6 +23,10 @@ import com.codcodes.icebreaker.tabs.ImageConverter;
 public class CustomListAdapter extends ArrayAdapter<String>
 {
     private final Activity context;
+<<<<<<< HEAD
+=======
+
+>>>>>>> e4f08746661cde9588c6e48ed983400256080138
     private final String[] eventNames;
     private final String[] eventIcons;
     private final String[] eventDescriptions;
@@ -35,6 +39,10 @@ public class CustomListAdapter extends ArrayAdapter<String>
         this.eventNames=eventNames;
         this.eventIcons=eventIcons;
         this.eventDescriptions =eventDescriptions;
+<<<<<<< HEAD
+=======
+
+>>>>>>> e4f08746661cde9588c6e48ed983400256080138
     }
 
     public View getView(int position, View view, ViewGroup parent)
@@ -45,11 +53,20 @@ public class CustomListAdapter extends ArrayAdapter<String>
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ALPHA_8;
 
+<<<<<<< HEAD
         Bitmap bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
                 + eventIcons[position], options);
         //selected_photo.setImageBitmap(bitmap);
 
         //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(rowView.getResources(),eventIcons[position]);
+=======
+      //  Bitmap bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
+              //  + eventIcons[position], options);
+        //selected_photo.setImageBitmap(bitmap);
+
+        Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
+                + eventIcons[position],context);
+>>>>>>> e4f08746661cde9588c6e48ed983400256080138
         Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
 
        // Typeface h = Typeface.createFromAsset(mgr,"Infinity.ttf");
