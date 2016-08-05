@@ -19,7 +19,7 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/black"
                 android:textSize="20pt"
-                android:layout_marginLeft="@dimen/dp_size_74"
+                android:layout_centerHorizontal="true"
                 android:layout_marginTop="@dimen/dp_size_30"
                 />
 
@@ -29,7 +29,6 @@
                 android:layout_height="@dimen/dp_size_200"
                 android:layout_marginTop="@dimen/dp_size_70"
                 android:layout_centerHorizontal="true"
-                android:src="@drawable/seleena"
                 android:id="@+id/circleview"
                 />
 
@@ -49,8 +48,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/black"
-                android:textSize="12pt"
-                android:layout_marginLeft="@dimen/dp_size_150"
+                android:textSize="14pt"
+                android:layout_centerHorizontal="true"
                 android:layout_marginTop="@dimen/dp_size_275"
                 />
 
@@ -59,8 +58,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/black"
-                android:textSize="10pt"
-                android:layout_marginLeft="@dimen/dp_size_80"
+                android:textSize="13pt"
+                android:layout_centerHorizontal="true"
                 android:layout_marginTop="@dimen/dp_size_300"
                 android:maxLines="1"
                 android:maxLength="30"

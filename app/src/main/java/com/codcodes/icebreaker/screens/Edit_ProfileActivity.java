@@ -22,7 +22,9 @@ import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
+import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
+import com.codcodes.icebreaker.model.User;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -33,6 +35,10 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.google.android.gms.internal.zzir.runOnUiThread;
 
 public class Edit_ProfileActivity extends AppCompatActivity
 {
@@ -47,6 +53,12 @@ public class Edit_ProfileActivity extends AppCompatActivity
     private EditText Password;
     private EditText Username;
     private String Gender;
+    private User user;
+
+    private static final boolean DEBUG = true;
+    private final String TAG = "ICEBREAK";
+    private static boolean CHUNKED = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,8 +69,9 @@ public class Edit_ProfileActivity extends AppCompatActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        Firstname = (EditText) findViewById(R.id.editName);
+        final String username = SharedPreference.getUsername(getApplicationContext());
 
+        Firstname = (EditText) findViewById(R.id.editName);
         Lastname = (EditText) findViewById(R.id.editLastName);
         Age = (EditText) findViewById(R.id.editAge);
         Occupation = (EditText) findViewById(R.id.editOccupation);
@@ -91,6 +104,29 @@ public class Edit_ProfileActivity extends AppCompatActivity
         ImageView done = (ImageView) findViewById(R.id.edit_profile_done);
 
 
+        Thread thread = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                user = readUser(username);
+
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        Firstname.setText(user.getFirstname());
+                        Lastname.setText(user.getLastname());
+                        Age.setText(Integer.toString(user.getAge()));
+                        Occupation.setText(user.getOccupation());
+                        Catchphrase.setText(user.getCatchphrase());
+                        Bio.setText(user.getBio());
+                    }
+                });
+            }
+        });
+        thread.start();
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view)
@@ -152,6 +188,86 @@ public class Edit_ProfileActivity extends AppCompatActivity
         }
     }
 
+
+    public User readUser(String username)
+    {
+        try
+        {
+            Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
+            Log.d(TAG,"Connection established");
+                    /*profilePicture = "/Icebreak/profile_"+username+".png";
+                    if(!new File(Environment.getExternalStorageDirectory().getPath()+profilePicture).exists())
+                    {
+                        Log.d(TAG,"No cached "+username+",Image download in progress..");
+                        if(imageDownload("profile_"+username+".png"))
+                        {
+                            Bitmap bitmap = BitmapFactory.decodeFile(profilePicture);
+                            Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap,100);
+
+                            ImageView circularImageView = (ImageView) v.findViewById(R.id.circleview);
+                            circularImageView.setImageBitmap(circularbitmap);
+                            Log.d(TAG,"Image download successful");
+                        }
+                        else
+                            Log.d(TAG,"Image download unsuccessful");
+                    }*/
+
+            PrintWriter out = new PrintWriter(soc.getOutputStream());
+            Log.d(TAG,"Sending request");
+            //String data = URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(username, "UTF-8");
+
+            out.print("GET /IBUserRequestService.svc/getUser/"+username+" HTTP/1.1\r\n"
+                    + "Host: icebreak.azurewebsites.net\r\n"
+                    + "Content-Type: text/plain;\r\n"
+                    + "Content-Length: 0\r\n\r\n");
+            out.flush();
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
+            String resp;
+            //Wait for response indefinitely TODO: Time-Out
+            while(!in.ready()){}
+
+            String userJson = "";
+            boolean openUserRead = false;
+            while((resp = in.readLine())!=null)
+            {
+                if(DEBUG)System.out.println(resp);
+
+                if(resp.equals("0"))
+                {
+                    out.close();
+                    //in.close();
+                    soc.close();
+                    if(DEBUG)System.out.println(">>Done<<");
+                    break;//EOF
+                }
+
+                if(resp.isEmpty())
+                    if(DEBUG)System.out.println("\n\nEmpty Line\n\n");
+
+                if(resp.contains("{"))
+                {
+                    if(DEBUG)System.out.println("Opening at>>" + resp.indexOf("{"));
+                    openUserRead = true;
+                }
+
+                if(openUserRead)
+                    userJson += resp;//.substring(resp.indexOf('['));
+
+                if(resp.contains("}"))
+                {
+                    if(DEBUG)System.out.println("Closing at>>" + resp.indexOf("}"));
+                    openUserRead = false;
+                }
+            }
+            return getUser(userJson);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public void updateProfile(final String firstname, final String lastname, final String age,final String occupation, final String bio, final String catchphrase,final String gender)
     {
@@ -223,6 +339,62 @@ public class Edit_ProfileActivity extends AppCompatActivity
             }
         });
         thread.start();
+    }
+    private static User getUser(String json)
+    {
+        System.out.println("Reading User: " + json);
+        //TODO: Regex fo user string
+
+        int endPos = json.indexOf("}");
+        int startPos = json.indexOf("{");
+        System.out.println(startPos+" to " + endPos);
+        String userJson = json.substring(startPos,endPos+1);
+
+        String p2 = "\"([a-zA-Z0-9\\s~`!@#$%^&*)(_+-={}\\[\\];',./\\|<>?]*)\"\\:(\"[a-zA-Z0-9\\s~`!@#$%^&*()_+-={}\\[\\];',./\\|<>?]*\"|\"[0-9,]\"|\\d+)";
+        Pattern p = Pattern.compile(p2);
+        Matcher m = p.matcher(userJson);
+        User user = new User();
+        while(m.find())
+        {
+            String pair = m.group(0);
+            //process key value pair
+            pair = pair.replaceAll("\"", "");
+            if(pair.contains(":"))
+            {
+                //if(DEBUG)System.out.println("Found good pair");
+                String[] kv_pair = pair.split(":");
+                String var = kv_pair[0];
+                String val = kv_pair[1];
+                switch(var)
+                {
+                    case "Fname":
+                        user.setFirstname(val);
+                        break;
+                    case "Lname":
+                        user.setLastname(val);
+                        break;
+                    case "Age":
+                        user.setAge(Integer.valueOf(val));
+                        break;
+                    case "Occupation":
+                        user.setOccupation(val);
+                        break;
+                    case "Bio":
+                        user.setBio(val);
+                        break;
+                    case "Catchphrase":
+                        user.setCatchphrase(val);
+                        break;
+                    case "Gender":
+                        user.setGender(val);
+                        break;
+                }
+            }
+            //look for next pair
+            json = json.substring(m.end());
+            m = p.matcher(json);
+        }
+        return user;
     }
 
     public static boolean imageUpload(Socket soc,String iconName) throws IOException

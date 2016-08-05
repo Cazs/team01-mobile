@@ -38,8 +38,12 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.URLEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.google.android.gms.internal.zzir.runOnUiThread;
+
 
 /**
  * Created by tevin on 2016/07/13.
@@ -54,6 +58,8 @@ public class ProfileFragment extends android.support.v4.app.Fragment
     private String Name;
     private String Age;
     private String Occupation;
+    private User user;
+    private View v;
     private static final boolean DEBUG = true;
     private final String TAG = "ICEBREAK";
     private static boolean CHUNKED = false;
@@ -63,10 +69,9 @@ public class ProfileFragment extends android.support.v4.app.Fragment
     {
         validateStoragePermissions(getActivity());
 
-        final View v = inflater.inflate(R.layout.fragment_profile,container,false);
+        v = inflater.inflate(R.layout.fragment_profile,container,false);
         //TODO: Use this information to send to database to see whch user it is.
         final String username = SharedPreference.getUsername(v.getContext()).toLowerCase();
-
 
         Typeface h = Typeface.createFromAsset(mgr,"Infinity.ttf");
         name = (TextView) v.findViewById(R.id.profile_name);
@@ -95,95 +100,21 @@ public class ProfileFragment extends android.support.v4.app.Fragment
             @Override
             public void run()
             {
-                try
+               user = readUser(username);
+                Name = user.getFirstname()+" "+user.getLastname();
+                Age = String.valueOf(user.getAge());
+                Occupation = user.getOccupation();
+
+                runOnUiThread(new Runnable()
                 {
-                    Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-
-                    profilePicture = "/Icebreak/profile_"+username+".png";
-                    if(!new File(Environment.getExternalStorageDirectory().getPath()+profilePicture).exists())
+                    @Override
+                    public void run()
                     {
-                        Log.d(TAG,"No cached "+username+",Image download in progress..");
-                        if(imageDownload("profile_"+username+".png"))
-                        {
-                            Bitmap bitmap = BitmapFactory.decodeFile(profilePicture);
-                            Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap,100);
-
-                            ImageView circularImageView = (ImageView) v.findViewById(R.id.circleview);
-                            circularImageView.setImageBitmap(circularbitmap);
-                            Log.d(TAG,"Image download successful");
-                        }
-                        else
-                            Log.d(TAG,"Image download unsuccessful");
+                        age.setText(Age);
+                        name.setText(Name);
+                        occupation.setText(Occupation);
                     }
-
-                    /*PrintWriter out = new PrintWriter(soc.getOutputStream());
-
-                    String data = URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(username, "UTF-8");
-
-                    out.print("GET /IBUserRequestService.svc/getUser HTTP/1.1\r\n"
-                            + "Host: icebreak.azurewebsites.net\r\n"
-                            + "Content-Type: text/plain;\r\n"// charset=utf-8
-                            + "Content-Length: " + data.length() + "\r\n\r\n"
-                            + data);
-                    out.flush();
-
-                    BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-                    String resp;
-                    //Wait for response indefinitely TODO: Time-Out
-                    while(!in.ready()){}
-
-                    String userJson = "";
-                    boolean openUserRead = false;
-                    while((resp = in.readLine())!=null)
-                    {
-                        //if(DEBUG)System.out.println(resp);
-
-                        if(resp.equals("0"))
-                        {
-                            out.close();
-                            //in.close();
-                            soc.close();
-                            if(DEBUG)System.out.println(">>Done<<");
-                            break;//EOF
-                        }
-
-                        if(resp.isEmpty())
-                            if(DEBUG)System.out.println("\n\nEmpty Line\n\n");
-
-                        if(resp.contains("["))
-                        {
-                            if(DEBUG)System.out.println("Opening at>>" + resp.indexOf("["));
-                            openUserRead = true;
-                        }
-
-                        if(openUserRead)
-                            userJson += resp;//.substring(resp.indexOf('['));
-
-                        if(resp.contains("]"))
-                        {
-                            if(DEBUG)System.out.println("Closing at>>" + resp.indexOf("]"));
-                            openUserRead = false;
-                        }
-                        User user = getUser(userJson);
-                        Name = user.getFirstname()+" "+user.getLastname();
-                        Age = String.valueOf(user.getAge());
-                        Occupation = user.getOccupation();
-                        runOnUiThread(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                age.setText(Age);
-                                name.setText(Name);
-                                occupation.setText(Occupation);
-                            }
-                        });
-                    }*/
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
+                });
             }
         });
         thread.start();
@@ -210,6 +141,12 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                 startActivity(intent);
             }
         });
+
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.seleena);
+        Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap,100);
+
+        ImageView circularImageView = (ImageView) v.findViewById(R.id.circleview);
+        circularImageView.setImageBitmap(circularbitmap);
 
         ImageView reward_icon = (ImageView) v.findViewById(R.id.rewards_icon);
 
@@ -243,6 +180,86 @@ public class ProfileFragment extends android.support.v4.app.Fragment
             }
         });
         return v;
+    }
+
+    public User readUser(String username)
+    {
+        try
+        {
+            Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
+            Log.d(TAG,"Connection established");
+                    profilePicture = "/Icebreak/profile_"+username+".png";
+                    if(!new File(Environment.getExternalStorageDirectory().getPath()+profilePicture).exists())
+                    {
+                        Log.d(TAG,"No cached "+username+",Image download in progress..");
+                        if(imageDownload("profile_"+username+".png"))
+                        {
+                            Bitmap bitmap = BitmapFactory.decodeFile(profilePicture);
+                            Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap,100);
+
+                            ImageView circularImageView = (ImageView) v.findViewById(R.id.circleview);
+                            circularImageView.setImageBitmap(circularbitmap);
+                            Log.d(TAG,"Image download successful");
+                        }
+                        else
+                            Log.d(TAG,"Image download unsuccessful");
+                    }
+
+            PrintWriter out = new PrintWriter(soc.getOutputStream());
+            Log.d(TAG,"Sending request");
+            //String data = URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(username, "UTF-8");
+
+            out.print("GET /IBUserRequestService.svc/getUser/"+username+" HTTP/1.1\r\n"
+                    + "Host: icebreak.azurewebsites.net\r\n"
+                    + "Content-Type: text/plain;\r\n"
+                    + "Content-Length: 0\r\n\r\n");
+            out.flush();
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
+            String resp;
+            //Wait for response indefinitely TODO: Time-Out
+            while(!in.ready()){}
+
+            String userJson = "";
+            boolean openUserRead = false;
+            while((resp = in.readLine())!=null)
+            {
+                if(DEBUG)System.out.println(resp);
+
+                if(resp.equals("0"))
+                {
+                    out.close();
+                    //in.close();
+                    soc.close();
+                    if(DEBUG)System.out.println(">>Done<<");
+                    break;//EOF
+                }
+
+                if(resp.isEmpty())
+                    if(DEBUG)System.out.println("\n\nEmpty Line\n\n");
+
+                if(resp.contains("{"))
+                {
+                    if(DEBUG)System.out.println("Opening at>>" + resp.indexOf("{"));
+                    openUserRead = true;
+                }
+
+                if(openUserRead)
+                    userJson += resp;//.substring(resp.indexOf('['));
+
+                if(resp.contains("}"))
+                {
+                    if(DEBUG)System.out.println("Closing at>>" + resp.indexOf("}"));
+                    openUserRead = false;
+                }
+            }
+            return getUser(userJson);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 
@@ -358,9 +375,15 @@ public class ProfileFragment extends android.support.v4.app.Fragment
     {
         System.out.println("Reading User: " + json);
         //TODO: Regex fo user string
+
+        int endPos = json.indexOf("}");
+        int startPos = json.indexOf("{");
+        System.out.println(startPos+" to " + endPos);
+        String userJson = json.substring(startPos,endPos+1);
+
         String p2 = "\"([a-zA-Z0-9\\s~`!@#$%^&*)(_+-={}\\[\\];',./\\|<>?]*)\"\\:(\"[a-zA-Z0-9\\s~`!@#$%^&*()_+-={}\\[\\];',./\\|<>?]*\"|\"[0-9,]\"|\\d+)";
         Pattern p = Pattern.compile(p2);
-        Matcher m = p.matcher(json);
+        Matcher m = p.matcher(userJson);
         User user = new User();
         while(m.find())
         {

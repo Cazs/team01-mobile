@@ -334,7 +334,7 @@ public class EventsFragment extends android.support.v4.app.Fragment
                 boolean openEventRead = false;
                 while((resp = in.readLine())!=null)
                 {
-                    //if(DEBUG)System.out.println(resp);
+                    if(DEBUG)System.out.println(resp);
 
                     if(resp.equals("0"))
                     {
