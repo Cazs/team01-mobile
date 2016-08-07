@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 
 import static com.google.android.gms.internal.zzir.runOnUiThread;
 
-public class Edit_ProfileActivity extends AppCompatActivity
+public class Edit_ProfileActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener
 {
     private ImageView circularImageView;
     private EditText Firstname;
@@ -66,7 +66,7 @@ public class Edit_ProfileActivity extends AppCompatActivity
         setContentView(R.layout.activity_edit_profile);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+       // getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         final String username = SharedPreference.getUsername(getApplicationContext());
@@ -95,50 +95,54 @@ public class Edit_ProfileActivity extends AppCompatActivity
 
         Spinner spinner = (Spinner) findViewById(R.id.spinner1);
         // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,R.array.gender, R.layout.spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.gender, R.layout.spinner);
         // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(this);
+
 
         ImageView done = (ImageView) findViewById(R.id.edit_profile_done);
 
 
-        Thread thread = new Thread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                user = readUser(username);
+        Bundle extras = getIntent().getExtras();
 
-                runOnUiThread(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        Firstname.setText(user.getFirstname());
-                        Lastname.setText(user.getLastname());
-                        Age.setText(Integer.toString(user.getAge()));
-                        Occupation.setText(user.getOccupation());
-                        Catchphrase.setText(user.getCatchphrase());
-                        Bio.setText(user.getBio());
-                    }
-                });
+        if (extras != null) {
+            Firstname.setText(extras.getString("First Name"));
+            Lastname.setText(extras.getString("Last Name"));
+            Age.setText(extras.getString("Age"));
+            Occupation.setText(extras.getString("Occupation"));
+            Catchphrase.setText(extras.getString("Catchphrase"));
+            Bio.setText(extras.getString("Bio"));
+            Gender = extras.getString("Gender");
+            int gender = 0;
+            switch(Gender)
+            {
+                case "Male":
+                    gender = 0;
+                    break;
+                case "Female":
+                    gender = 1;
+                    break;
+                case "Unspecified":
+                    gender = 2;
+                    break;
             }
-        });
-        thread.start();
+            spinner.setSelection(gender);
+        }
+
         done.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
+            public void onClick(View view) {
                 String fname = Firstname.getText().toString();
                 String lname = Lastname.getText().toString();
-                String age =  Age.getText().toString();
-                String occupation =  Occupation.getText().toString();
-                String bio =  Bio.getText().toString();
-                String catchphrase=  Catchphrase.getText().toString();
-                String gender = Gender;
-                updateProfile(fname,lname,age,occupation,bio,catchphrase,gender);
+                String age = Age.getText().toString();
+                String occupation = Occupation.getText().toString();
+                String bio = Bio.getText().toString();
+                String catchphrase = Catchphrase.getText().toString();
+                String g = Gender;
+                updateProfile(username,fname, lname, age, occupation, bio, catchphrase,g);
             }
 
         });
@@ -147,6 +151,7 @@ public class Edit_ProfileActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                System.out.println("Edit photo");
                 startActivityForResult(intent, 0);
 
             }
@@ -174,102 +179,18 @@ public class Edit_ProfileActivity extends AppCompatActivity
                 }
             }
 
-    public class SpinnerActivity extends Activity implements AdapterView.OnItemSelectedListener {
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        Gender = adapterView.getItemAtPosition(i).toString();
+    }
 
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
 
-        public void onItemSelected(AdapterView<?> parent, View view,int pos, long id) {
-            // An item was selected. You can retrieve the selected item using
-            // parent.getItemAtPosition(pos)
-          Gender = parent.getItemAtPosition(pos).toString();
-        }
-
-        public void onNothingSelected(AdapterView<?> parent) {
-            // Another interface callback
-        }
     }
 
 
-    public User readUser(String username)
-    {
-        try
-        {
-            Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-            Log.d(TAG,"Connection established");
-                    /*profilePicture = "/Icebreak/profile_"+username+".png";
-                    if(!new File(Environment.getExternalStorageDirectory().getPath()+profilePicture).exists())
-                    {
-                        Log.d(TAG,"No cached "+username+",Image download in progress..");
-                        if(imageDownload("profile_"+username+".png"))
-                        {
-                            Bitmap bitmap = BitmapFactory.decodeFile(profilePicture);
-                            Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap,100);
-
-                            ImageView circularImageView = (ImageView) v.findViewById(R.id.circleview);
-                            circularImageView.setImageBitmap(circularbitmap);
-                            Log.d(TAG,"Image download successful");
-                        }
-                        else
-                            Log.d(TAG,"Image download unsuccessful");
-                    }*/
-
-            PrintWriter out = new PrintWriter(soc.getOutputStream());
-            Log.d(TAG,"Sending request");
-            //String data = URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(username, "UTF-8");
-
-            out.print("GET /IBUserRequestService.svc/getUser/"+username+" HTTP/1.1\r\n"
-                    + "Host: icebreak.azurewebsites.net\r\n"
-                    + "Content-Type: text/plain;\r\n"
-                    + "Content-Length: 0\r\n\r\n");
-            out.flush();
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-            String resp;
-            //Wait for response indefinitely TODO: Time-Out
-            while(!in.ready()){}
-
-            String userJson = "";
-            boolean openUserRead = false;
-            while((resp = in.readLine())!=null)
-            {
-                if(DEBUG)System.out.println(resp);
-
-                if(resp.equals("0"))
-                {
-                    out.close();
-                    //in.close();
-                    soc.close();
-                    if(DEBUG)System.out.println(">>Done<<");
-                    break;//EOF
-                }
-
-                if(resp.isEmpty())
-                    if(DEBUG)System.out.println("\n\nEmpty Line\n\n");
-
-                if(resp.contains("{"))
-                {
-                    if(DEBUG)System.out.println("Opening at>>" + resp.indexOf("{"));
-                    openUserRead = true;
-                }
-
-                if(openUserRead)
-                    userJson += resp;//.substring(resp.indexOf('['));
-
-                if(resp.contains("}"))
-                {
-                    if(DEBUG)System.out.println("Closing at>>" + resp.indexOf("}"));
-                    openUserRead = false;
-                }
-            }
-            return getUser(userJson);
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public void updateProfile(final String firstname, final String lastname, final String age,final String occupation, final String bio, final String catchphrase,final String gender)
+    public void updateProfile(final String username,final String firstname, final String lastname, final String age,final String occupation, final String bio, final String catchphrase,final String gender)
     {
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -290,9 +211,8 @@ public class Edit_ProfileActivity extends AppCompatActivity
                             + URLEncoder.encode("occupation", "UTF-8") + "=" + URLEncoder.encode(occupation, "UTF-8") + "&"
                             + URLEncoder.encode("catchphrase", "UTF-8") + "=" + URLEncoder.encode(catchphrase, "UTF-8");
 
-                    out.print("POST /IBUserRequestService.svc/userUpdate HTTP/1.1\r\n"
+                    out.print("POST /IBUserRequestService.svc/userUpdate/"+username+" HTTP/1.1\r\n"
                             + "Host: icebreak.azurewebsites.net\r\n"
-                            //+ "Content-Type: application/x-www-form-urlencoded\r\n"
                             + "Content-Type: text/plain; charset=utf-8\r\n"
                             + "Content-Length: " + data.length() + "\r\n\r\n"
                             + data);
@@ -303,6 +223,7 @@ public class Edit_ProfileActivity extends AppCompatActivity
                     boolean found = false;
                     while((resp = in.readLine())!=null)
                     {
+                        if (DEBUG) System.out.println(resp);
                         Log.d("ICEBREAK",resp);
                         if(resp.contains("HTTP/1.1 200 OK"))
                         {
@@ -314,11 +235,13 @@ public class Edit_ProfileActivity extends AppCompatActivity
                     if(found)
                     {
                         //TODO: Figure out how o go back to profile fragment
+                        if (DEBUG) System.out.println("Success");
                         Intent intent = new Intent(getApplicationContext(),MainActivity.class);
                         startActivity(intent);
                     }
                     else
                     {
+                        if (DEBUG) System.out.println("UnSuccess");
                         //TODO: send message that editing was unsucessful try again
                         finish();
                         startActivity(getIntent());
@@ -340,66 +263,10 @@ public class Edit_ProfileActivity extends AppCompatActivity
         });
         thread.start();
     }
-    private static User getUser(String json)
-    {
-        System.out.println("Reading User: " + json);
-        //TODO: Regex fo user string
-
-        int endPos = json.indexOf("}");
-        int startPos = json.indexOf("{");
-        System.out.println(startPos+" to " + endPos);
-        String userJson = json.substring(startPos,endPos+1);
-
-        String p2 = "\"([a-zA-Z0-9\\s~`!@#$%^&*)(_+-={}\\[\\];',./\\|<>?]*)\"\\:(\"[a-zA-Z0-9\\s~`!@#$%^&*()_+-={}\\[\\];',./\\|<>?]*\"|\"[0-9,]\"|\\d+)";
-        Pattern p = Pattern.compile(p2);
-        Matcher m = p.matcher(userJson);
-        User user = new User();
-        while(m.find())
-        {
-            String pair = m.group(0);
-            //process key value pair
-            pair = pair.replaceAll("\"", "");
-            if(pair.contains(":"))
-            {
-                //if(DEBUG)System.out.println("Found good pair");
-                String[] kv_pair = pair.split(":");
-                String var = kv_pair[0];
-                String val = kv_pair[1];
-                switch(var)
-                {
-                    case "Fname":
-                        user.setFirstname(val);
-                        break;
-                    case "Lname":
-                        user.setLastname(val);
-                        break;
-                    case "Age":
-                        user.setAge(Integer.valueOf(val));
-                        break;
-                    case "Occupation":
-                        user.setOccupation(val);
-                        break;
-                    case "Bio":
-                        user.setBio(val);
-                        break;
-                    case "Catchphrase":
-                        user.setCatchphrase(val);
-                        break;
-                    case "Gender":
-                        user.setGender(val);
-                        break;
-                }
-            }
-            //look for next pair
-            json = json.substring(m.end());
-            m = p.matcher(json);
-        }
-        return user;
-    }
 
     public static boolean imageUpload(Socket soc,String iconName) throws IOException
     {
-        System.out.println("Sending image download request");
+        System.out.println("Sending image upload request");
         PrintWriter out = new PrintWriter(soc.getOutputStream());
         //Android: final String base64 = ;
         String headers = "GET /IBUserRequestService.svc/imageUpload/"+iconName+" HTTP/1.1\r\n"
