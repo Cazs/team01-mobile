@@ -67,7 +67,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment {
     private User user;
     private View v;
     private static final boolean DEBUG = true;
-    private final String TAG = "ICEBREAK";
+    private final String TAG = "IB/ProfileFragment";
     private static boolean CHUNKED = false;
 
 
@@ -158,7 +158,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment {
                 });
             }
         });
-        thread.start();
+        //thread.start();
 
 
         rewards.setOnClickListener(new View.OnClickListener() {

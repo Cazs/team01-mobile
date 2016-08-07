@@ -2,6 +2,7 @@ package com.codcodes.icebreaker.screens;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 
@@ -11,17 +12,19 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
+import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.tabs.EventsFragment;
 import com.codcodes.icebreaker.tabs.ProfileFragment;
+import com.codcodes.icebreaker.tabs.UserContactsFragment;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
 {
 
     /**
@@ -41,9 +44,9 @@ public class MainActivity extends AppCompatActivity
 
     private int[] imageResId =
             {
-                R.drawable.ic_location_on_white_24dp,
-                R.drawable.ic_chat_bubble_white_24dp,
-                R.drawable.ic_person_white_24dp
+                    R.drawable.ic_location_on_white_24dp,
+                    R.drawable.ic_chat_bubble_white_24dp,
+                    R.drawable.ic_person_white_24dp
             };
 
     @Override
@@ -68,6 +71,10 @@ public class MainActivity extends AppCompatActivity
         tablayout.getTabAt(0).setIcon(imageResId[0]);
         tablayout.getTabAt(1).setIcon(imageResId[1]);
         tablayout.getTabAt(2).setIcon(imageResId[2]);
+
+        Typeface h = Typeface.createFromAsset(this.getAssets(),"Ailerons-Typeface.otf");
+        TextView headingTextView = (TextView) findViewById(R.id.main_heading);
+        headingTextView.setTypeface(h);
     }
 
     @Override
@@ -94,6 +101,12 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onListFragmentInteraction(User item)
+    {
+        Toast.makeText(this,item.getFirstname(),Toast.LENGTH_LONG).show();
+    }
+
     public class FragmentAdapter extends FragmentPagerAdapter
     {
 
@@ -112,7 +125,7 @@ public class MainActivity extends AppCompatActivity
             switch (position)
             {
                 case 0: return EventsFragment.newInstance(context,getIntent().getExtras());
-                case 1: return EventsFragment.newInstance(context,getIntent().getExtras());
+                case 1: return UserContactsFragment.newInstance(context, getIntent().getExtras());
                 case 2: return ProfileFragment.newInstance(context);
                 default: return null;
             }

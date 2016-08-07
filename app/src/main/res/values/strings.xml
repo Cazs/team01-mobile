@@ -127,5 +127,6 @@
     </string-array>
     <string name="title_activity_other__profile">Other_Profile</string>
     <string name="title_activity_rewards">RewardsActivity</string>
+    <string name="title_activity_main">MainActivity</string>
 
 </resources>
