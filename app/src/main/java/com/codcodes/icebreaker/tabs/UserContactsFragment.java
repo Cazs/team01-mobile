@@ -168,11 +168,9 @@ public class UserContactsFragment extends Fragment
                                         if (!new File(Environment.getExternalStorageDirectory().getPath().toString()
                                                 + "/Icebreak/profile/profile_default.png").exists())
                                         {
-                                            System.err.println("++++Attempting to download: profile_default.png+++++");
                                             //Attempt to download default profile image
                                             if (imageDownloader("profile_default.png", "/profile"))
                                             {
-                                                System.err.println(">>>Successfully downloaded: profile_default.png<<<<<<<");
                                                 bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
                                                         + "/Icebreak/profile/profile_default.png", options);
                                                 //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
@@ -308,6 +306,7 @@ public class UserContactsFragment extends Fragment
 
         try
         {
+            System.out.println("Attempting to download image: " + image);
             Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
             System.out.println("Connection established, Sending request..");
             PrintWriter out = new PrintWriter(soc.getOutputStream());
@@ -320,8 +319,8 @@ public class UserContactsFragment extends Fragment
             String headers = "GET /IBUserRequestService.svc/imageDownload/"+image+" HTTP/1.1\r\n"
                     + "Host: icebreak.azurewebsites.net\r\n"
                     //+ "Content-Type: application/x-www-form-urlencoded\r\n"
-                    + "Content-Type: text/plain;\r\n"// charset=utf-8
-                    + "Content-Length: 0\r\n\r\n";
+                    + "Content-Type: text/plain;charset=utf-8;\r\n\r\n";
+                    //+ "Content-Length: 0\r\n\r\n";
 
             out.print(headers);
             out.flush();
@@ -337,9 +336,14 @@ public class UserContactsFragment extends Fragment
             while ((resp = in.readLine()) != null)
             {
                 //System.out.println(resp);
+                if (resp.toLowerCase().contains("400 bad request"))
+                {
+                    System.out.println("<<<400 bad request>>>");
+                    return false;
+                }
                 if (resp.toLowerCase().contains("404 not found"))
                 {
-                    System.out.print("<<<404 not found>>>");
+                    System.out.println("<<<404 not found>>>");
                     return false;
                 }
                 if (resp.toLowerCase().contains("transfer-encoding"))
@@ -373,15 +377,11 @@ public class UserContactsFragment extends Fragment
             out.close();
             //in.close();
             soc.close();
-		/*payload = payload.replaceAll(" ", "");
-		payload = payload.replaceAll("\"", "");
-		payload = payload.replaceAll("\\\\","");*/
-            //payload = payload.replaceAll("\\", "");
+
             //System.out.println(payload);
             payload = payload.split(":")[1];
             payload = payload.replaceAll("\"", "");
 
-            //System.out.println(payload);
             payload = payload.substring(0,payload.length()-1);
             if(!payload.equals("FNE"))
             {

@@ -66,7 +66,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         setContentView(R.layout.activity_edit_profile);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-       // getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         final String username = SharedPreference.getUsername(getApplicationContext());
@@ -161,23 +161,23 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
 
 
 
-        public void onActivityResult(int requstCode,int resltCode,Intent data)
-        {
-               super.onActivityResult(requstCode,resltCode,data);
-                Uri targetUri = data.getData();
+    public void onActivityResult(int requstCode,int resltCode,Intent data)
+    {
+        super.onActivityResult(requstCode,resltCode,data);
+        Uri targetUri = data.getData();
 
-            //TODO: Upload image here
-                Bitmap bitmap;
-                try
-                {
-                    bitmap=BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
-                    circularImageView.setImageBitmap(bitmap);
-                }
-                catch (FileNotFoundException e)
-                {
-                    e.printStackTrace();
-                }
-            }
+        //TODO: Upload image here
+        Bitmap bitmap;
+        try
+        {
+            bitmap=BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
+            circularImageView.setImageBitmap(bitmap);
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {

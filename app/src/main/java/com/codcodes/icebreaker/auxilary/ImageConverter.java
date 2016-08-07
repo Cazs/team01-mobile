@@ -40,7 +40,7 @@ public class ImageConverter
         else
         {
             Log.d(EventsFragment.TAG,"Can't get rounded image because the Bitmap object is null");
-          return  null;
+            return  null;
         }
     }
 }
