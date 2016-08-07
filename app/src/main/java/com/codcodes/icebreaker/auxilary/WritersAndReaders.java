@@ -20,22 +20,37 @@ public class WritersAndReaders
 
 	public static void saveImage(byte[] data,String filename)
 	{
+        File f=null;
 		//make directory if it doesn't exist
-        File f = new File(path+"/Icebreak/");
-		if(!f.isDirectory())
-            System.out.println("/Icebreak directory creation: " + f.mkdirs());
+        if(filename.contains("/"))
+        {
+            String[] dirs = filename.split("/");
+            String directories = "";
+            for(int i=0;i<dirs.length-1;i++)
+                directories = directories +"/" + dirs[i];
+            f = new File(path+"/Icebreak" + directories);
+
+            //System.err.println("Directory structure: " + f.getPath().toString());
+
+            if(!f.isDirectory())
+                System.out.println(f.getPath() + " directory creation: " + f.mkdirs());
+
+            f = new File(path+"/Icebreak" + directories + "/"+ dirs[dirs.length-1]);
+
+            //System.err.println("File to write :" + f.getPath().toString());
+        }
 
 		try
 		{
-            FileOutputStream fos = new FileOutputStream(f.getPath().toString()+"/"+filename);
+            FileOutputStream fos = new FileOutputStream(f.getPath().toString());
             fos.write(data);
 			fos.flush();
             fos.close();
-			Log.d("W&R","Saved image to disk: " + f.getPath().toString() + "/" + filename);
+			Log.d("W&R","Saved image to disk: " + f.getPath().toString());
 		}
 		catch (IOException e)
 		{
-			System.err.println("Could not save backup: " + e.getMessage());
+			System.err.println("Could not write file: " + e.getMessage());
 		}
 	}
 

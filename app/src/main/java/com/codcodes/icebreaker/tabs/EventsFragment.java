@@ -52,8 +52,8 @@ public class EventsFragment extends android.support.v4.app.Fragment
     private ArrayList<String> eventNames;
     private ArrayList<String> eventDescriptions;
     private ArrayList<String> eventIcons;
-    private static final boolean DEBUG = true;
-    public static final String TAG = "ICEBREAK";
+    private static final boolean DEBUG = false;
+    public static final String TAG = "IB/EventsFragment";
     private static boolean CHUNKED = false;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -140,9 +140,9 @@ public class EventsFragment extends android.support.v4.app.Fragment
        });
         eventsThread.start();
 
-        Typeface h = Typeface.createFromAsset(mgr,"Ailerons-Typeface.otf");
+        /*Typeface h = Typeface.createFromAsset(mgr,"Ailerons-Typeface.otf");
         TextView headingTextView = (TextView) v.findViewById(R.id.main_heading);
-        headingTextView.setTypeface(h);
+        headingTextView.setTypeface(h);*/
 
         Bundle extras = getArguments();
         final PulsatorLayout pulsator = (PulsatorLayout) v.findViewById(R.id.pulsator);
@@ -236,8 +236,6 @@ public class EventsFragment extends android.support.v4.app.Fragment
         String resp,base64;
         while(!in.ready()){}
         Pattern pattern = Pattern.compile("^[A-F0-9]+$");//"((\\d*[A-Fa-f]\\d*){2,}|\\d{1})");//"([0-9A-Fa-f]{2,}|[0-9]{1})");//"[0-9A-Fa-f]");
-        //System.out.println(pattern.matcher("4FA3").find());
-        //System.out.println(hexToDecimal("7D0"));
         String payload = "";
         while((resp = in.readLine())!=null)
         {
@@ -391,26 +389,24 @@ public class EventsFragment extends android.support.v4.app.Fragment
         {
             int endPos = json.indexOf("}");
             int startPos = json.indexOf("{");
-            System.out.println(startPos+" to " + endPos);
             String event = json.substring(startPos,endPos+1);//remove braces
-            System.out.println("Event>>"+event);
+            if(DEBUG)System.out.println("Event>>"+event);
             Event ev = getEvent(event);
             events.add(ev);
             /*if(!(json.contains("{") && json.contains("}")))
                 break;*/
-            System.out.println("JSON: " + json);
             if(json.length()>endPos+2)
                 json = json.substring(endPos+2, json.length());
             else
                 break;
-            System.out.println("new json: " + json);
+            if(DEBUG)System.out.println("new JSON: " + json);
         }
         return events;
     }
 
     private static Event getEvent(String json)
     {
-        System.out.println("Reading Event: " + json);
+        if(DEBUG)System.out.println("Reading Event: " + json);
         String p2 = "\"([a-zA-Z0-9\\s~`!@#$%^&*)(_+-={}\\[\\];',./\\|<>?]*)\"\\:(\"[a-zA-Z0-9\\s~`!@#$%^&*()_+-={}\\[\\];',./\\|<>?]*\"|\"[0-9,]\"|\\d+)";
         Pattern p = Pattern.compile(p2);
         Matcher m = p.matcher(json);
@@ -422,7 +418,6 @@ public class EventsFragment extends android.support.v4.app.Fragment
             pair = pair.replaceAll("\"", "");
             if(pair.contains(":"))
             {
-                //if(DEBUG)System.out.println("Found good pair");
                 String[] kv_pair = pair.split(":");
                 String var = kv_pair[0];
                 String val = kv_pair[1];
