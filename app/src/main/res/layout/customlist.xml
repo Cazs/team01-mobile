@@ -37,10 +37,6 @@
             android:textSize="8pt"
             android:maxLength="50"
             android:layout_marginLeft="10dp"
-
             />
-
     </LinearLayout>
-
-
 </LinearLayout>

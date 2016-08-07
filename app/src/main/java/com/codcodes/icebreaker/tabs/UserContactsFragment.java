@@ -153,57 +153,57 @@ public class UserContactsFragment extends Fragment
                             for (User u : contacts)
                             {
                                 //Look for user profile image
-                                if (!new File(Environment.getExternalStorageDirectory().getPath()
-                                        + "/Icebreak/profile/" + u.getUsername() + ".png").exists())
+                        if (!new File(Environment.getExternalStorageDirectory().getPath()
+                                + "/Icebreak/profile/" + u.getUsername() + ".png").exists())
+                        {
+                            //if (imageDownload(u.getUsername() + ".png", "/profile")) {
+                            if (imageDownloader(u.getUsername() + ".png", "/profile"))
+                            {
+                                bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
+                                        + "/Icebreak/profile/" + u.getUsername() + ".png", options);
+                                //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
+                                circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
+                            } else //user has no profile yet - attempt to load default profile image
+                            {
+                                if (!new File(Environment.getExternalStorageDirectory().getPath().toString()
+                                        + "/Icebreak/profile/profile_default.png").exists())
                                 {
-                                    //if (imageDownload(u.getUsername() + ".png", "/profile")) {
-                                    if (imageDownloader(u.getUsername() + ".png", "/profile"))
+                                    //Attempt to download default profile image
+                                    if (imageDownloader("profile_default.png", "/profile"))
                                     {
                                         bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                                                + "/Icebreak/profile/" + u.getUsername() + ".png", options);
+                                                + "/Icebreak/profile/profile_default.png", options);
                                         //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
                                         circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                                    } else //user has no profile yet - attempt to load default profile image
+                                    } else //Couldn't download default profile image
                                     {
-                                        if (!new File(Environment.getExternalStorageDirectory().getPath().toString()
-                                                + "/Icebreak/profile/profile_default.png").exists())
-                                        {
-                                            //Attempt to download default profile image
-                                            if (imageDownloader("profile_default.png", "/profile"))
-                                            {
-                                                bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                                                        + "/Icebreak/profile/profile_default.png", options);
-                                                //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
-                                                circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                                            } else //Couldn't download default profile image
-                                            {
-                                                Toast.makeText(getActivity(), "Could not download default profile images, please check your internet connection.",
-                                                        Toast.LENGTH_LONG).show();
-                                            }
-                                        } else//default profile image exists
-                                        {
-                                            bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                                                    + "/Icebreak/profile/profile_default.png", options);
-                                            //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
-                                            circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                                        }
+                                        Toast.makeText(getActivity(), "Could not download default profile images, please check your internet connection.",
+                                                Toast.LENGTH_LONG).show();
                                     }
-                                } else//user profile image exists
+                                } else//default profile image exists
                                 {
                                     bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                                            + "/Icebreak/profile/" + u.getUsername() + ".png", options);
+                                            + "/Icebreak/profile/profile_default.png", options);
+                                    //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
                                     circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                                 }
-                                if(bitmap == null || circularbitmap == null)
-                                {
-                                    System.err.println("Bitmap is null");
-                                }
-                                else
-                                {
-                                    bitmaps.add(circularbitmap);
-                                    bitmap.recycle();
-                                }
                             }
+                        } else//user profile image exists
+                        {
+                            bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
+                                    + "/Icebreak/profile/" + u.getUsername() + ".png", options);
+                            circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
+                        }
+                        if(bitmap == null || circularbitmap == null)
+                        {
+                            System.err.println("Bitmap is null");
+                        }
+                        else
+                        {
+                            bitmaps.add(circularbitmap);
+                            bitmap.recycle();
+                        }
+                    }
                             runOnUiThread(new Runnable()
                             {
                                 @Override

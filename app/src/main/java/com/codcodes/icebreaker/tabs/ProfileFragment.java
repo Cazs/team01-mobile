@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.codcodes.icebreaker.screens.Edit_ProfileActivity;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
@@ -50,7 +51,8 @@ import static com.google.android.gms.internal.zzir.runOnUiThread;
 /**
  * Created by tevin on 2016/07/13.
  */
-public class ProfileFragment extends android.support.v4.app.Fragment {
+public class ProfileFragment extends android.support.v4.app.Fragment
+{
     private static AssetManager mgr;
     private TextView name;
     private TextView age;
@@ -62,16 +64,17 @@ public class ProfileFragment extends android.support.v4.app.Fragment {
     private String Bio;
     private String Catchphrase;
     private String Gender;
-    private Bitmap circularbitmap;
     private ImageView circularImageView;
     private User user;
     private View v;
-    private static final boolean DEBUG = true;
+    private Bitmap circularbitmap = null;
+    private static final boolean DEBUG = false;
     private final String TAG = "ICEBREAK";
     private static boolean CHUNKED = false;
 
 
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
         validateStoragePermissions(getActivity());
 
         v = inflater.inflate(R.layout.fragment_profile, container, false);
@@ -100,9 +103,15 @@ public class ProfileFragment extends android.support.v4.app.Fragment {
         settings.setText("Settings");
 
 
-        Thread thread = new Thread(new Runnable() {
+        Thread thread = new Thread(new Runnable()
+        {
             @Override
-            public void run() {
+            public void run()
+            {
+                Bitmap bitmap = null;
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+
                 user = readUser(username);
                 if(user==null)
                 {
@@ -111,44 +120,63 @@ public class ProfileFragment extends android.support.v4.app.Fragment {
                 }
                 else//All is well
                 {
-                    try {
-                        Name = user.getFirstname() + " " + user.getLastname();
-                        Age = String.valueOf(user.getAge());
-                        Occupation = user.getOccupation();
-                        Bio = user.getBio();
-                        Catchphrase = user.getCatchphrase();
-                        Gender = user.getGender();
-                        profilePicture = "/Icebreak/profile_" + username + ".png";
-                        Log.d(TAG, "Checking");
-                        if (!new File(Environment.getExternalStorageDirectory().getPath() + profilePicture).exists()) {
-                            Log.d(TAG, "No cached " + username + ",Image download in progress..");
-                            if (imageDownload("profile_" + username + ".png")) {
-                                Bitmap bitmap = BitmapFactory.decodeFile(profilePicture);
-                                circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
-                                Log.d(TAG, "Image download successful");
-                            }
-                            else
+                    Name = user.getFirstname() + " " + user.getLastname();
+                    Age = String.valueOf(user.getAge());
+                    Occupation = user.getOccupation();
+                    Bio = user.getBio();
+                    Catchphrase = user.getCatchphrase();
+                    Gender = user.getGender();
+                    profilePicture = "/Icebreak/profile/" + username + ".png";
+                    Log.d(TAG, "Checking");
+                    //Look for user profile image
+                    if (!new File(Environment.getExternalStorageDirectory().getPath()
+                            + profilePicture).exists())
+                    {
+                        //if (imageDownload(u.getUsername() + ".png", "/profile")) {
+                        if (imageDownloader(username + ".png", "/profile"))
+                        {
+                            bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
+                                    + profilePicture, options);
+                            //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
+                            circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
+                        } else //user has no profile yet - attempt to load default profile image
+                        {
+                            if (!new File(Environment.getExternalStorageDirectory().getPath().toString()
+                                    + "/Icebreak/profile/profile_default.png").exists())
                             {
-                                Log.d(TAG, "Image download unsuccessful");
-                                profilePicture = "/Icebreak/profile_default.png";
-                                if (!new File(Environment.getExternalStorageDirectory().getPath() + profilePicture).exists()) {
-                                    if (imageDownload("profile_default.png")) {
-                                        Bitmap bitmap = BitmapFactory.decodeFile(profilePicture);
-                                        circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
-                                        Log.d(TAG, "Image download successful");
-                                    }
+                                //Attempt to download default profile image
+                                if (imageDownloader("profile_default.png", "/profile"))
+                                {
+                                    bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
+                                            + "/Icebreak/profile/profile_default.png", options);
+                                    //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
+                                    circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
+                                } else //Couldn't download default profile image
+                                {
+                                    Toast.makeText(getActivity(), "Could not download default profile images, please check your internet connection.",
+                                            Toast.LENGTH_LONG).show();
                                 }
+                            } else//default profile image exists
+                            {
+                                bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
+                                        + "/Icebreak/profile/profile_default.png", options);
+                                //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
+                                circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                             }
-
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    } else//user profile image exists
+                    {
+                        bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
+                                + profilePicture, options);
+                        circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                     }
                 }
 
-                runOnUiThread(new Runnable() {
+                runOnUiThread(new Runnable()
+                {
                     @Override
-                    public void run() {
+                    public void run()
+                    {
                         age.setText(Age);
                         name.setText(Name);
                         occupation.setText(Occupation);
@@ -194,9 +222,11 @@ public class ProfileFragment extends android.support.v4.app.Fragment {
         setting_icon.setColorFilter(color);
 
         FloatingActionButton editButton = (FloatingActionButton) v.findViewById(R.id.Edit);
-        editButton.setOnClickListener(new View.OnClickListener() {
+        editButton.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
 
                 Intent intent = new Intent(view.getContext(), Edit_ProfileActivity.class);
                 intent.putExtra("First Name",user.getFirstname());
@@ -211,9 +241,11 @@ public class ProfileFragment extends android.support.v4.app.Fragment {
         });
 
         Button logOut = (Button) v.findViewById(R.id.logOut);
-        logOut.setOnClickListener(new View.OnClickListener() {
+        logOut.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
                 SharedPreference.logOut(view.getContext());
                 Intent intent = new Intent(view.getContext(), InitialActivity.class);
                 startActivity(intent);
@@ -223,7 +255,97 @@ public class ProfileFragment extends android.support.v4.app.Fragment {
         return v;
     }
 
-    public User readUser(String username) {
+    public static boolean imageDownloader(String image, String destPath)
+    {
+        try
+        {
+            System.out.println("Attempting to download image: " + image);
+            Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
+            System.out.println("Connection established, Sending request..");
+            PrintWriter out = new PrintWriter(soc.getOutputStream());
+            //Android: final String base64 = android.util.Base64.encodeToString(bytes, android.util.Base64.DEFAULT);
+            String headers = "GET /IBUserRequestService.svc/imageDownload/"+image+" HTTP/1.1\r\n"
+                    + "Host: icebreak.azurewebsites.net\r\n"
+                    + "Content-Type: text/plain;charset=utf-8;\r\n\r\n";
+
+            out.print(headers);
+            out.flush();
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
+            String resp, base64;
+            while (!in.ready()) {
+            }
+            Pattern pattern = Pattern.compile("^[A-F0-9]+$");//"((\\d*[A-Fa-f]\\d*){2,}|\\d{1})");//"([0-9A-Fa-f]{2,}|[0-9]{1})");//"[0-9A-Fa-f]");
+            String payload = "";
+            while ((resp = in.readLine()) != null)
+            {
+                //System.out.println(resp);
+                if (resp.toLowerCase().contains("400 bad request"))
+                {
+                    System.out.println("<<<400 bad request>>>");
+                    return false;
+                }
+                if (resp.toLowerCase().contains("404 not found"))
+                {
+                    System.out.println("<<<404 not found>>>");
+                    return false;
+                }
+                if (resp.toLowerCase().contains("transfer-encoding"))
+                {
+                    String encoding = resp.split(":")[1];
+                    if (encoding.toLowerCase().contains("chunked"))
+                    {
+                        CHUNKED = true;
+                        System.out.println("Preparing for chunked data.");
+                    }
+                }
+
+                if (CHUNKED)
+                {
+                    Matcher m = pattern.matcher(resp.toUpperCase());
+                    if (m.find())
+                    {
+                        int dec = hexToDecimal(m.group(0));
+                        String chunk = in.readLine();
+                        if (dec == 0)
+                            break;//End of chunks
+                        if (chunk.length() > 0)
+                            payload += chunk;//String.copyValueOf(chunk);
+                    }
+                }
+            }
+            out.close();
+            //in.close();
+            soc.close();
+
+            //System.out.println(payload);
+            payload = payload.split(":")[1];
+            payload = payload.replaceAll("\"", "");
+
+            payload = payload.substring(0,payload.length()-1);
+            if(!payload.equals("FNE"))
+            {
+                byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);//Base64.getDecoder().decode(payload.getBytes());
+                WritersAndReaders.saveImage(binFileArr, destPath + "/" + image);
+                System.out.println("Succesfully wrote to disk");//"\n>>>>>"+base64bytes);
+                return true;
+            }
+            else
+            {
+                //TODO: Throw FileNotFoundException
+                System.err.println("Server> File not found");
+                return false;
+            }
+        }
+        catch (IOException e)
+        {
+            System.err.println(e.getMessage());
+            return  false;
+        }
+    }
+
+    public User readUser(String username)
+    {
         try {
             Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
             Log.d(TAG, "Connection established");
@@ -241,12 +363,12 @@ public class ProfileFragment extends android.support.v4.app.Fragment {
             BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
             String resp;
             //Wait for response indefinitely TODO: Time-Out
-            while (!in.ready()) {
-            }
+            while (!in.ready()) {}
 
             String userJson = "";
             boolean openUserRead = false;
-            while ((resp = in.readLine()) != null) {
+            while ((resp = in.readLine()) != null)
+            {
                 if (DEBUG) System.out.println(resp);
 
                 if (resp.equals("0")) {
@@ -379,7 +501,8 @@ public class ProfileFragment extends android.support.v4.app.Fragment {
         return dec;
     }
 
-    private static User getUser(String json) {
+    private static User getUser(String json)
+    {
         System.out.println("Reading User: " + json);
         //TODO: Regex fo user string
 
