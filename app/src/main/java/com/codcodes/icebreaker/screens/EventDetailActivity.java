@@ -107,6 +107,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
             Eventid = extras.getInt("Event ID");
             AccessCode = extras.getInt("Access ID");
+            System.out.println(AccessCode);
 
             TextView eventDescription = (TextView)findViewById(R.id.event_description);
             eventDescription.setText(extras.getString("Event Description"));
@@ -130,7 +131,7 @@ public class EventDetailActivity extends AppCompatActivity {
         eventDetails = (TextView)findViewById(R.id.Event_Heading);
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         eventDetails.setTypeface(heading);
-
+        lv= (ListView) findViewById(R.id.contactList);
         final EditText accessCode = (EditText) findViewById(R.id.AccessCode);
         accessCode.setOnEditorActionListener(new TextView.OnEditorActionListener()
         {
@@ -345,7 +346,7 @@ public class EventDetailActivity extends AppCompatActivity {
                         public void run()
                         {
                             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-                            lv= (ListView) findViewById(R.id.contactList);
+
                             lv.setAdapter(adapter);
                             vf = (ViewFlipper) findViewById(R.id.viewFlipper);
                             eventDetails.setText("List Of People");
