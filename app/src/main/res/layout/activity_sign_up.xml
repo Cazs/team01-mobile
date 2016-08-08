@@ -17,8 +17,8 @@
         <ImageView
             android:layout_width="@dimen/icon_width"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/icon_height"
-            android:layout_marginLeft="@dimen/icon_left"
+            android:layout_marginTop="@dimen/dp_size_102"
+            android:layout_marginLeft="@dimen/dp_size_20"
             android:src="@mipmap/ic_launcher"
             />
 
@@ -28,11 +28,17 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/text_top"
             android:text="@string/app_name"
-            android:paddingLeft="@dimen/title_padding"
             android:id="@+id/SignUp"
             android:textSize="29pt"
             android:textColor="@color/white"
             />
+        <RelativeLayout
+            android:id="@+id/loadingPanel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            >
+        </RelativeLayout>
 
 
     </LinearLayout>
@@ -44,6 +50,11 @@
         android:gravity="center_horizontal"
         >
 
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressbar"
+            android:indeterminate="false" />
 
         <EditText
         android:id="@+id/email_sign_up"
@@ -91,17 +102,7 @@
             android:fontFamily="monospace"
             />
 
-        <RelativeLayout
-            android:id="@+id/loadingPanel"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center" >
 
-            <ProgressBar
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:indeterminate="false" />
-        </RelativeLayout>
 
     </LinearLayout>
 </android.support.design.widget.CoordinatorLayout>

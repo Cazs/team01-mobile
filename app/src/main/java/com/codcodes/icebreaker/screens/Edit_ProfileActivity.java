@@ -310,7 +310,6 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
     @Override
     public void onBackPressed()
     {
-
         super.onBackPressed();
         Intent intent = new Intent(this,MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

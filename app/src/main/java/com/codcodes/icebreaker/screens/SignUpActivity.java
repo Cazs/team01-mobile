@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,7 +33,7 @@ public class SignUpActivity extends AppCompatActivity {
     EditText password;
     EditText confirmPassword;
     Button btnSignUp;
-
+    ProgressBar bar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,10 +48,14 @@ public class SignUpActivity extends AppCompatActivity {
         password = (EditText) findViewById(R.id.password_sign_up);
         confirmPassword = (EditText) findViewById(R.id.confirm_password);
         btnSignUp = (Button) findViewById(R.id.sign_up_button);
-
+        bar = (ProgressBar) findViewById(R.id.progressbar);
+        bar.setVisibility(View.GONE);
         btnSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                bar = (ProgressBar) findViewById(R.id.progressbar);
+
+
                 final String e = email.getText().toString();
                 final String p = password.getText().toString();
                 final String u = username.getText().toString();
@@ -62,6 +67,7 @@ public class SignUpActivity extends AppCompatActivity {
                 }
                 if (!isValidPassword(p))
                 {
+                    bar.setVisibility(View.GONE);
                     password.setError("Password must include:" +
                             " \n • A minimum of 6 characters" +
                             " \n • At least one uppercase alphabet" +
@@ -72,6 +78,7 @@ public class SignUpActivity extends AppCompatActivity {
                 }
                 if(!isValidUsername(u))
                 {
+                    bar.setVisibility(View.GONE);
                     username.setError("Username must not include:" +
                     "\n • White spaces" +
                     "\n • Special characters");
@@ -79,9 +86,11 @@ public class SignUpActivity extends AppCompatActivity {
                 }
                 if(!Compare(cp,p))
                 {
+                    bar.setVisibility(View.GONE);
                     confirmPassword.setError("Passwords do not match");
                     return;
                 }
+                bar.setVisibility(View.VISIBLE);
                 PostToDB(e,u,cp,view);
 
             }
@@ -90,6 +99,7 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void showEditProfile(View view)
     {
+
         Intent editScreen = new Intent(this,Edit_ProfileActivity.class);
         startActivity(editScreen);
     }

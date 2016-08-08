@@ -15,18 +15,15 @@
         <ImageView
             android:layout_width="@dimen/dp_size_50"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin_top_icon"
-            android:layout_marginLeft="@dimen/dp_size_10"
+            android:layout_marginTop="@dimen/dp_size_167"
+            android:layout_marginLeft="@dimen/dp_size_20"
             android:src="@mipmap/ic_launcher"
             />
-
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/dp_size_165"
             android:text="@string/app_name"
-            android:paddingLeft="@dimen/title_padding"
             android:id="@+id/LogIn"
             android:textSize="29pt"
             android:textColor="@color/white"
@@ -39,6 +36,12 @@
         android:layout_marginTop="@dimen/text_box_size"
         android:gravity="center_horizontal"
         >
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/loginprogressbar"
+            android:indeterminate="false" />
+
         <EditText
             android:id="@+id/username_login"
             android:layout_width="@dimen/text_box_size"

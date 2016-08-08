@@ -36,4 +36,6 @@ public class RewardFragment extends android.support.v4.app.Fragment
         e.setArguments(b);
         return e;
     }
+
+
 }
