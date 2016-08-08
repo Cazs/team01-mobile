@@ -3,8 +3,7 @@ package com.codcodes.icebreaker.model;
 /**
  * Created by USER on 2016/08/02.
  */
-public class User implements IJsonable
-{
+public class User implements IJsonable {
     private String firstname;
     private String lastname;
     private int age;
@@ -109,6 +108,11 @@ public class User implements IJsonable
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    @Override
+    public String toString() {
+        return age + " " + occupation + " " + bio + " " + catchphrase + " " + gender + " " + username;
     }
 
     @Override
