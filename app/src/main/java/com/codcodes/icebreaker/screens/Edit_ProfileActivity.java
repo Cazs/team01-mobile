@@ -7,6 +7,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -146,6 +149,7 @@ public class Edit_ProfileActivity extends AppCompatActivity
         editphoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(intent, 0);
 
@@ -158,10 +162,12 @@ public class Edit_ProfileActivity extends AppCompatActivity
 
         public void onActivityResult(int requstCode,int resltCode,Intent data)
         {
-               super.onActivityResult(requstCode,resltCode,data);
+            if(data != null)
+            {
+                super.onActivityResult(requstCode,resltCode,data);
                 Uri targetUri = data.getData();
 
-            //TODO: Upload image here
+                //TODO: Upload image here
                 Bitmap bitmap;
                 try
                 {
@@ -173,6 +179,7 @@ public class Edit_ProfileActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
             }
+        }
 
     public class SpinnerActivity extends Activity implements AdapterView.OnItemSelectedListener {
 
@@ -187,7 +194,6 @@ public class Edit_ProfileActivity extends AppCompatActivity
             // Another interface callback
         }
     }
-
 
     public User readUser(String username)
     {
@@ -265,6 +271,8 @@ public class Edit_ProfileActivity extends AppCompatActivity
         catch (IOException e)
         {
             e.printStackTrace();
+            Message message = toastHandler("Couldn't refresh feeds").obtainMessage();
+            message.sendToTarget();
         }
         return null;
     }
@@ -329,11 +337,13 @@ public class Edit_ProfileActivity extends AppCompatActivity
                 catch (UnknownHostException e)
                 {
                     e.printStackTrace();
-                    Toast.makeText(getBaseContext(), "No internet access", Toast.LENGTH_LONG).show();
-
+                    Message message = toastHandler("No Internet Access").obtainMessage();
+                    message.sendToTarget();
                 }
                 catch (IOException e)
                 {
+                    Message message = toastHandler("Couldn't refresh feed").obtainMessage();
+                    message.sendToTarget();
                     e.printStackTrace();
                 }
             }
@@ -397,46 +407,54 @@ public class Edit_ProfileActivity extends AppCompatActivity
         return user;
     }
 
-    public static boolean imageUpload(Socket soc,String iconName) throws IOException
+    public boolean imageUpload(Socket soc, String iconName)
     {
         System.out.println("Sending image download request");
-        PrintWriter out = new PrintWriter(soc.getOutputStream());
-        //Android: final String base64 = ;
-        String headers = "GET /IBUserRequestService.svc/imageUpload/"+iconName+" HTTP/1.1\r\n"
-                + "Host: icebreak.azurewebsites.net\r\n"
-                //+ "Content-Type: application/x-www-form-urlencoded\r\n"
-                + "Content-Type: text/plain;\r\n"// charset=utf-8
-                + "Content-Length: 0\r\n\r\n";
+        PrintWriter out = null;
+        try {
+            out = new PrintWriter(soc.getOutputStream());
+            //Android: final String base64 = ;
+            String headers = "GET /IBUserRequestService.svc/imageUpload/"+iconName+" HTTP/1.1\r\n"
+                    + "Host: icebreak.azurewebsites.net\r\n"
+                    //+ "Content-Type: application/x-www-form-urlencoded\r\n"
+                    + "Content-Type: text/plain;\r\n"// charset=utf-8
+                    + "Content-Length: 0\r\n\r\n";
 
-        out.print(headers);
-        out.flush();
+            out.print(headers);
+            out.flush();
 
-        //TODO: Not Sure what do
-        BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-        String resp;
-        while(!in.ready()){}
-        while((resp = in.readLine())!=null)
-        {
-            //System.out.println(resp);
-
-            if(resp.toLowerCase().contains("payload"))
+            //TODO: Not Sure what do
+            BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
+            String resp;
+            while(!in.ready()){}
+            while((resp = in.readLine())!=null)
             {
-                String base64bytes = resp.split(":")[1];
-                base64bytes = base64bytes.substring(1, base64bytes.length());
-                byte[] binFileArr = android.util.Base64.decode(base64bytes, android.util.Base64.DEFAULT);
-                WritersAndReaders.saveImage(binFileArr,iconName);
-                return true;
-            }
+                //System.out.println(resp);
 
-            if(!in.ready())
-            {
-                //if(DEBUG)System.out.println(">>Done<<");
-                break;
+                if(resp.toLowerCase().contains("payload"))
+                {
+                    String base64bytes = resp.split(":")[1];
+                    base64bytes = base64bytes.substring(1, base64bytes.length());
+                    byte[] binFileArr = android.util.Base64.decode(base64bytes, android.util.Base64.DEFAULT);
+                    WritersAndReaders.saveImage(binFileArr,iconName);
+                    return true;
+                }
+
+                if(!in.ready())
+                {
+                    //if(DEBUG)System.out.println(">>Done<<");
+                    break;
+                }
             }
+            out.close();
+            //in.close();
+            soc.close();
+        } catch (IOException e) {
+           Message messaage = toastHandler("Couldn't refreash feeds").obtainMessage();
+            messaage.sendToTarget();
+            e.printStackTrace();
         }
-        out.close();
-        //in.close();
-        soc.close();
+
         return false;
     }
 
@@ -451,5 +469,14 @@ public class Edit_ProfileActivity extends AppCompatActivity
         finish();
     }
 
-
+    private Handler toastHandler(final String text)
+    {
+        Handler toastHandler = new Handler(Looper.getMainLooper()) {
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+            }
+        };
+        return toastHandler;
+    }
 }

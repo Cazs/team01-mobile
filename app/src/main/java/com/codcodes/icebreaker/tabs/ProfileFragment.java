@@ -12,6 +12,9 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
@@ -21,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.codcodes.icebreaker.screens.Edit_ProfileActivity;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
@@ -63,7 +67,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
     private static final boolean DEBUG = true;
     private final String TAG = "ICEBREAK";
     private static boolean CHUNKED = false;
-
+    private boolean isOnline = true;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
@@ -100,10 +104,13 @@ public class ProfileFragment extends android.support.v4.app.Fragment
             @Override
             public void run()
             {
-               user = readUser(username);
-                Name = user.getFirstname()+" "+user.getLastname();
-                Age = String.valueOf(user.getAge());
-                Occupation = user.getOccupation();
+                if(isOnline)
+                {
+                    user = readUser(username);
+                    Name = user.getFirstname()+" "+user.getLastname();
+                    Age = String.valueOf(user.getAge());
+                    Occupation = user.getOccupation();
+                }
 
                 runOnUiThread(new Runnable()
                 {
@@ -187,6 +194,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
         try
         {
             Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
+            isOnline = true;
             Log.d(TAG,"Connection established");
                     profilePicture = "/Icebreak/profile_"+username+".png";
                     if(!new File(Environment.getExternalStorageDirectory().getPath()+profilePicture).exists())
@@ -203,6 +211,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                         }
                         else
                             Log.d(TAG,"Image download unsuccessful");
+                            Toast.makeText(getActivity(), "Image Download Error", Toast.LENGTH_SHORT).show();
                     }
 
             PrintWriter out = new PrintWriter(soc.getOutputStream());
@@ -257,11 +266,23 @@ public class ProfileFragment extends android.support.v4.app.Fragment
         }
         catch (IOException e)
         {
+            isOnline = false;
+            Message message = toastHandler("Couldn't refresh feeds").obtainMessage();
+            message.sendToTarget();
             e.printStackTrace();
         }
         return null;
     }
-
+    private Handler toastHandler(final String text)
+    {
+        Handler toastHandler = new Handler(Looper.getMainLooper()) {
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
+            }
+        };
+        return toastHandler;
+    }
 
     public void validateStoragePermissions(Activity activity)
     {
@@ -292,71 +313,80 @@ public class ProfileFragment extends android.support.v4.app.Fragment
         e.setArguments(b);
         return e;
     }
-    public static boolean imageDownload(String filename) throws IOException
+    public boolean imageDownload(String filename)
     {
-        Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-        System.out.println("Sending image download request");
-        PrintWriter out = new PrintWriter(soc.getOutputStream());
+        Socket soc = null;
+        try {
+            soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
+            System.out.println("Sending image download request");
+            PrintWriter out = new PrintWriter(soc.getOutputStream());
 
-        String headers = "GET /IBUserRequestService.svc/imageDownload/"+filename+" HTTP/1.1\r\n"
-                + "Host: icebreak.azurewebsites.net\r\n"
-                + "Content-Type: text/plain;charset=utf-8\r\n"
-                + "Content-Length: 0\r\n\r\n";
-        out.print(headers);
-        out.flush();
+            String headers = "GET /IBUserRequestService.svc/imageDownload/"+filename+" HTTP/1.1\r\n"
+                    + "Host: icebreak.azurewebsites.net\r\n"
+                    + "Content-Type: text/plain;charset=utf-8\r\n"
+                    + "Content-Length: 0\r\n\r\n";
+            out.print(headers);
+            out.flush();
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-        String resp,base64;
-        while(!in.ready()){}
-        Pattern pattern = Pattern.compile("^[A-F0-9]+$");//"((\\d*[A-Fa-f]\\d*){2,}|\\d{1})");//"([0-9A-Fa-f]{2,}|[0-9]{1})");//"[0-9A-Fa-f]");
-        //System.out.println(pattern.matcher("4FA3").find());
-        //System.out.println(hexToDecimal("7D0"));
-        String payload = "";
-        while((resp = in.readLine())!=null)
-        {
-            if(resp.toLowerCase().contains("transfer-encoding"))
+            BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
+            String resp,base64;
+            while(!in.ready()){}
+            Pattern pattern = Pattern.compile("^[A-F0-9]+$");//"((\\d*[A-Fa-f]\\d*){2,}|\\d{1})");//"([0-9A-Fa-f]{2,}|[0-9]{1})");//"[0-9A-Fa-f]");
+            //System.out.println(pattern.matcher("4FA3").find());
+            //System.out.println(hexToDecimal("7D0"));
+            String payload = "";
+            while((resp = in.readLine())!=null)
             {
-                String encoding = resp.split(":")[1];
-                if(encoding.toLowerCase().contains("chunked"))
+                if(resp.toLowerCase().contains("transfer-encoding"))
                 {
-                    CHUNKED = true;
-                    System.out.println("Preparing for chunked data.");
+                    String encoding = resp.split(":")[1];
+                    if(encoding.toLowerCase().contains("chunked"))
+                    {
+                        CHUNKED = true;
+                        System.out.println("Preparing for chunked data.");
+                    }
+                }
+
+                if(CHUNKED)
+                {
+                    Matcher m = pattern.matcher(resp.toUpperCase());
+                    if(m.find())
+                    {
+                        int dec = hexToDecimal(m.group(0));
+                        String chunk = in.readLine();
+                        //char[] chunk = new char[dec];
+                        //int readCount = in.read(chunk,0,chunk.length);//sjv3
+                        if(dec==0)
+                            break;//End of chunks
+                        if(chunk.length()>0)
+                            payload += chunk;//String.copyValueOf(chunk);
+                    }
                 }
             }
-
-            if(CHUNKED)
+            out.close();
+            //in.close();
+            soc.close();
+            if(payload.length()>0)
             {
-                Matcher m = pattern.matcher(resp.toUpperCase());
-                if(m.find())
-                {
-                    int dec = hexToDecimal(m.group(0));
-                    String chunk = in.readLine();
-                    //char[] chunk = new char[dec];
-                    //int readCount = in.read(chunk,0,chunk.length);//sjv3
-                    if(dec==0)
-                        break;//End of chunks
-                    if(chunk.length()>0)
-                        payload += chunk;//String.copyValueOf(chunk);
-                }
+                //payload = payload.split(":")[1];
+                payload = payload.replaceAll("\"", "");
+                //System.out.println(payload)
+                byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);
+                WritersAndReaders.saveImage(binFileArr,filename);
+                return true;
             }
+            else
+            {
+                return false;
+            }
+        } catch (IOException e) {
+            Message message = toastHandler("Couldn't refresh feeds").obtainMessage();
+            message.sendToTarget();
+            e.printStackTrace();
         }
-        out.close();
-        //in.close();
-        soc.close();
-        if(payload.length()>0)
-        {
-            //payload = payload.split(":")[1];
-            payload = payload.replaceAll("\"", "");
-            //System.out.println(payload)
-            byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);
-            WritersAndReaders.saveImage(binFileArr,filename);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return false;
     }
+
 
     public static int hexToDecimal(String hex)
     {

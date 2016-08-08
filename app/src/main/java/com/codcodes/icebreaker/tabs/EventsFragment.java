@@ -8,7 +8,9 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,7 +28,6 @@ import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -55,10 +56,13 @@ public class EventsFragment extends android.support.v4.app.Fragment
     private static final boolean DEBUG = true;
     public static final String TAG = "ICEBREAK";
     private static boolean CHUNKED = false;
+    private static Context context;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         validateStoragePermissions(getActivity());
+        context = this.getActivity();
+
 
         final View v = inflater.inflate(R.layout.fragment_events,container,false);
         list = (ListView) v.findViewById(R.id.list);
@@ -81,35 +85,31 @@ public class EventsFragment extends android.support.v4.app.Fragment
                {
                    //TODO: Notify user
                    Log.d(TAG,"No events were found");
+                   Toast.makeText(context, "No Events Found", Toast.LENGTH_SHORT).show();
                }
                else//All is well
                {
-                   try
+                   //Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
+                   //Log.d(TAG,"Connection established");
+                   for(Event e:events)
                    {
-                       //Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-                       //Log.d(TAG,"Connection established");
-                       for(Event e:events)
+                       eventNames.add(e.getTitle());
+                       eventDescriptions.add(e.getDescription());
+                       //eventIcons.add(R.drawable.ultra_icon);//temporarily use this icon for all events
+                       String iconName = "event_icons-"+e.getId()+".png";
+                       //String iconName = "event_icons-10.png";
+                       eventIcons.add("/Icebreak/"+iconName);
+                       //Download the file only if it has not been cached
+                       /*  if(!new File(Environment.getExternalStorageDirectory().getPath()+"/Icebreak/" + iconName).exists())
                        {
-                           eventNames.add(e.getTitle());
-                           eventDescriptions.add(e.getDescription());
-                           //eventIcons.add(R.drawable.ultra_icon);//temporarily use this icon for all events
-                           String iconName = "event_icons-"+e.getId()+".png";
-                           //String iconName = "event_icons-10.png";
-                           eventIcons.add("/Icebreak/"+iconName);
-                           //Download the file only if it has not been cached
-                           if(!new File(Environment.getExternalStorageDirectory().getPath()+"/Icebreak/" + iconName).exists())
-                           {
-                               Log.d(TAG,"No cached "+iconName+",Image download in progress..");
-                               if(imageDownload(iconName))
-                                   Log.d(TAG,"Image download successful");
-                               else
-                                   Log.d(TAG,"Image download unsuccessful");
-                           }
-                       }
-                   }
-                   catch (IOException e)
-                   {
-                       e.printStackTrace();
+                           Log.d(TAG,"No cached "+iconName+",Image download in progress..");
+                        if(imageDownload(iconName))
+                                Log.d(TAG,"Image download successful");
+
+                           else
+                                Log.d(TAG,"Image download unsuccessful");
+                                Toast.makeText(context, "Image download unsuccessful", Toast.LENGTH_SHORT).show();
+                       }*/
                    }
                    /*String[] eventNamesArr = (String[])eventNames.toArray();
                    Integer[] eventIconsArr = (Integer[])eventIcons.toArray();
@@ -252,6 +252,7 @@ public class EventsFragment extends android.support.v4.app.Fragment
                 }
             }
 
+
             if(CHUNKED)
             {
                 Matcher m = pattern.matcher(resp.toUpperCase());
@@ -273,12 +274,13 @@ public class EventsFragment extends android.support.v4.app.Fragment
         out.close();
         //in.close();
         soc.close();
+        byte[] binFileArr;
         if(payload.length()>0)
         {
             //payload = payload.split(":")[1];
             payload = payload.replaceAll("\"", "");
             //System.out.println(payload)
-            byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);
+            binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);
             WritersAndReaders.saveImage(binFileArr,iconName);
             return true;
         }
@@ -312,6 +314,7 @@ public class EventsFragment extends android.support.v4.app.Fragment
 
     public ArrayList<Event> readEvents()
     {
+        Message messaage;
             try
             {
                 Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
@@ -371,7 +374,10 @@ public class EventsFragment extends android.support.v4.app.Fragment
             }
             catch (UnknownHostException e)
             {
-                System.err.println(e.getMessage());
+
+                messaage = toastHandler("No Internet Access").obtainMessage();
+                messaage.sendToTarget();
+                //System.err.println(e.getMessage());
             }
             catch (IOException e)
             {
@@ -455,6 +461,14 @@ public class EventsFragment extends android.support.v4.app.Fragment
         return ev;
     }
 
-
-
+    private Handler toastHandler(final String text)
+    {
+        Handler toastHandler = new Handler(Looper.getMainLooper()) {
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+            }
+        };
+        return toastHandler;
+    }
 }
