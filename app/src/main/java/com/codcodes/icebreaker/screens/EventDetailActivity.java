@@ -54,24 +54,6 @@ public class EventDetailActivity extends AppCompatActivity {
     private static final boolean DEBUG = true;
     private final String TAG = "ICEBREAK";
 
-    private String[] PeopleNames =
-            {
-                    "Selena Gomez",
-                    "Lindsey Morgan"
-
-
-            };
-    private String[] PeopleDescrp =
-            {
-                    "They call me casanova",
-                    "Where Dreams come true"
-
-            };
-    private Integer[] imgid=
-            {
-                    R.drawable.seleena,
-                    R.drawable.seleena
-            };
     private int Eventid;
     private ArrayList<User> users;
     private ArrayList<String> name;
@@ -220,19 +202,7 @@ public class EventDetailActivity extends AppCompatActivity {
                             break;
                         }
                     }
-                    if(found)
-                    {
-                        if (DEBUG) System.out.println("Success");
-                        Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-                        startActivity(intent);
-                    }
-                    else
-                    {
-                        if (DEBUG) System.out.println("UnSuccess");
-                        //TODO: send message that editing was unsucessful try again
-                        finish();
-                        startActivity(getIntent());
-                    }
+
                     out.close();
                     in.close();
                 }
@@ -304,6 +274,7 @@ public class EventDetailActivity extends AppCompatActivity {
                         //Log.d(TAG,"Connection established");
                         for(User u:users)
                         {
+                            System.out.println(u.getFirstname());
                             name.add(u.getFirstname()+" "+ u.getLastname());
                             Catchphrase.add(u.getCatchphrase());
                             //eventIcons.add(R.drawable.ultra_icon);//temporarily use this icon for all events
@@ -362,31 +333,6 @@ public class EventDetailActivity extends AppCompatActivity {
         t.start();
 
         //read from database
-
-
-
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener()
-        {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id)
-            {
-                // TODO Auto-generated method stub
-                String Selcteditem = PeopleNames[+position];
-                String eventDescrip = PeopleDescrp[+position];
-                int imageID = imgid[+position];
-
-
-                Intent intent = new Intent(view.getContext(),Other_Profile.class);
-                startActivity(intent);
-            }
-        });
-        View view = this.getCurrentFocus();
-        if (view != null) {
-            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
     }
 
 
@@ -411,7 +357,7 @@ public class EventDetailActivity extends AppCompatActivity {
             PrintWriter out = new PrintWriter(soc.getOutputStream());
             Log.d(TAG,"Sending request");
 
-            out.print("GET /IBUserRequestService.svc/getUsersAtEvent/"+eventID+"HTTP/1.1\r\n"
+            out.print("GET /IBUserRequestService.svc/getUsersAtEvent/"+eventID+" HTTP/1.1\r\n"
                     + "Host: icebreak.azurewebsites.net\r\n"
                     + "Content-Type: text/plain;\r\n"// charset=utf-8
                     + "Content-Length: 0\r\n\r\n");
@@ -456,7 +402,7 @@ public class EventDetailActivity extends AppCompatActivity {
                 }
             }
 
-            if(DEBUG)System.out.println("Reading events.");
+            if(DEBUG)System.out.println("Reading users.");
             //System.out.println(eventsJson);
             ArrayList<User> users = getUsers(usersJson);
             return users;
@@ -484,7 +430,7 @@ public class EventDetailActivity extends AppCompatActivity {
             int endPos = json.indexOf("}");
             int startPos = json.indexOf("{");
             String user = json.substring(startPos,endPos+1);//remove braces
-            if(DEBUG)System.out.println("Event>>"+user);
+            if(DEBUG)System.out.println("User>>"+user);
             User u = getUser(user);
             users.add(u);
             /*if(!(json.contains("{") && json.contains("}")))

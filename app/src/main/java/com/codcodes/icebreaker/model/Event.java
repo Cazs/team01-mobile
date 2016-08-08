@@ -35,7 +35,6 @@ public class Event implements IJsonable
     public String getAddress(){return this.address;}
     public int getRadius(){return this.radius;}
     public String getGPS(){return this.gps;}
-
     public int getAccessID() {
         return accessID;
     }
@@ -43,7 +42,6 @@ public class Event implements IJsonable
     public void setAccessID(int accessID) {
         this.accessID = accessID;
     }
-
     public void setId(int id){this.id = id;}
     public void setTitle(String title){this.title = title;}
     public void setDescription(String description){this.description = description;}
@@ -73,6 +71,9 @@ public class Event implements IJsonable
                 break;
             case "Title":
                 setTitle(value);
+                break;
+            case "AccessID":
+                setAccessID(Integer.valueOf(value));
                 break;
         }
     }

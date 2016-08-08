@@ -8,10 +8,13 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  * Created by austin on 2016/07/24.
@@ -98,9 +101,31 @@ public class ImageUtils
         Canvas canvas = new Canvas(scaledBitmap);
         canvas.setMatrix(scaleMatrix);
         canvas.drawBitmap(bmp, middleX - bmp.getWidth() / 2, middleY - bmp.getHeight() / 2, new Paint(Paint.FILTER_BITMAP_FLAG));
+        ExifInterface exif;
+        try {
+            exif = new ExifInterface(filePath);
 
-        scaledBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0, scaledBitmap.getWidth(), scaledBitmap.getHeight(), scaleMatrix, true);
-
+            int orientation = exif.getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION, 1);
+            Log.d("EXIF", "Exif: " + orientation);
+            Matrix matrix = new Matrix();
+            if (orientation == 6) {
+                matrix.postRotate(90);
+                Log.d("EXIF", "Exif: " + orientation);
+            } else if (orientation == 3) {
+                matrix.postRotate(180);
+                Log.d("EXIF", "Exif: " + orientation);
+            } else if (orientation == 8) {
+                matrix.postRotate(270);
+                Log.d("EXIF", "Exif: " + orientation);
+            }
+            scaledBitmap = Bitmap.createBitmap(scaledBitmap, 0, 0,
+                    scaledBitmap.getWidth(), scaledBitmap.getHeight(), matrix,
+                    true);
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
 

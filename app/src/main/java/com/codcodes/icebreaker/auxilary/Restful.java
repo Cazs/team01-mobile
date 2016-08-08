@@ -36,8 +36,9 @@ public class Restful
         String response = "";
 
         while (s.hasNextLine())
-            response += s.nextLine();
 
+            response += s.nextLine();
+        System.out.println(response);
         if(httpConn.getResponseCode() == HttpURLConnection.HTTP_OK)
         {
             return response;
@@ -47,13 +48,18 @@ public class Restful
 
     public static boolean imageDownloader(String image, String ext, String destPath, Activity context)
     {
+
         //Check for storage permissions
         validateStoragePermissions(context);
         //Check for invalid filenames
-        if(image.equals("null") || image==null || ext == null)
+        if( image==null || ext == null)
         {
             Log.d(TAG, "The image filename or extension is null");
             return false;
+        }
+        if (image.equals("null"))
+        {
+            return  false;
         }
         if(image.isEmpty() || ext.isEmpty())
         {
