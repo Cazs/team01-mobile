@@ -194,7 +194,6 @@ public class EventsFragment extends android.support.v4.app.Fragment
                 intent.putExtra("Event Description",event.getDescription());
                 intent.putExtra("Image ID",eventIcons.get(position));
                 intent.putExtra("Event ID",event.getId());
-                System.out.println(event.getAccessID()+" "+event.getId());
                 intent.putExtra("Access ID",event.getAccessID());
 
                 startActivity(intent);

@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"
             android:textColor="@color/black"
             android:textSize="20pt"
-            android:layout_marginLeft="@dimen/dp_size_70"
+            android:layout_centerHorizontal="true"
             android:layout_marginTop="@dimen/dp_size_10"
             />
 
@@ -35,8 +35,7 @@
             android:layout_height="@dimen/dp_size_200"
             android:layout_marginTop="@dimen/dp_size_60"
             android:layout_centerHorizontal="true"
-            android:src="@drawable/seleena"
-            android:id="@+id/circleview"
+            android:id="@+id/other_pic"
             />
 
         <TextView
@@ -45,7 +44,7 @@
             android:layout_height="wrap_content"
             android:textColor="@color/black"
             android:textSize="12pt"
-            android:layout_marginLeft="@dimen/dp_size_140"
+            android:layout_centerHorizontal="true"
             android:layout_marginTop="@dimen/dp_size_265"
             />
 
@@ -55,11 +54,22 @@
             android:layout_height="wrap_content"
             android:textColor="@color/black"
             android:textSize="10pt"
-            android:layout_marginLeft="@dimen/dp_size_70"
+            android:layout_centerHorizontal="true"
             android:layout_marginTop="@dimen/dp_size_290"
             android:maxLines="1"
             android:maxLength="30"
             android:ellipsize="end"
+            />
+        <TextView
+            android:id="@+id/other_profile_gender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textSize="10pt"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/dp_size_320"
+            android:maxLines="1"
+            android:maxLength="20"
             />
 
         <TextView
@@ -68,19 +78,18 @@
             android:layout_height="wrap_content"
             android:textColor="@color/black"
             android:textSize="12pt"
-            android:layout_marginLeft="@dimen/dp_size_145"
-            android:layout_marginTop="@dimen/dp_size_320"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/dp_size_340"
             />
 
         <TextView
             android:id="@+id/other_profile_bio"
             android:layout_width="wrap_content"
-
             android:layout_height="wrap_content"
             android:textColor="@color/black"
             android:gravity="center"
             android:textSize="10pt"
-            android:layout_marginTop="@dimen/dp_size_350"
+            android:layout_marginTop="@dimen/dp_size_360"
             android:maxLength="150"
             />
 

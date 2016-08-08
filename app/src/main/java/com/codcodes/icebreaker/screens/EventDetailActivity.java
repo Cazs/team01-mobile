@@ -28,6 +28,7 @@ import android.widget.ViewFlipper;
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.CustomListAdapter;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
+import com.codcodes.icebreaker.auxilary.Restful;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.Event;
@@ -56,7 +57,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
     private int Eventid;
     private ArrayList<User> users;
-    private ArrayList<String> name;
+    private ArrayList<String> Name;
     private ArrayList<String> Catchphrase;
     private ArrayList<String> userIcon;
     private int AccessCode;
@@ -73,12 +74,13 @@ public class EventDetailActivity extends AppCompatActivity {
        // getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        Name = new ArrayList<String>();
+        Catchphrase= new ArrayList<String>();
+        userIcon = new ArrayList<String>();
         final String username = SharedPreference.getUsername(getApplicationContext());
 
         Bundle extras = getIntent().getExtras();
         final Activity act =this;
-
-
 
         if(extras != null)
         {
@@ -157,6 +159,7 @@ public class EventDetailActivity extends AppCompatActivity {
                 intent.putExtra("Gender",user.getGender());
                 intent.putExtra("Occupation",user.getOccupation());
                 intent.putExtra("Bio",user.getBio());
+                intent.putExtra("ImageID",userIcon.get(position));
 
                 startActivity(intent);
             }
@@ -268,41 +271,34 @@ public class EventDetailActivity extends AppCompatActivity {
                 }
                 else//All is well
                 {
-                    try
-                    {
-                        //Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
+                   //Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
                         //Log.d(TAG,"Connection established");
                         for(User u:users)
                         {
-                            System.out.println(u.getFirstname());
-                            name.add(u.getFirstname()+" "+ u.getLastname());
+                            Name.add(u.getFirstname()+" "+ u.getLastname());
                             Catchphrase.add(u.getCatchphrase());
                             //eventIcons.add(R.drawable.ultra_icon);//temporarily use this icon for all events
                             String iconName = "profile_"+u.getUsername()+".png";
                             //String iconName = "event_icons-10.png";
                             userIcon.add("/Icebreak/"+iconName);
                             //Download the file only if it has not been cached
-                            if(!new File(Environment.getExternalStorageDirectory().getPath()+"/Icebreak/" + iconName).exists())
+                            if(!new File(Environment.getExternalStorageDirectory().getPath()+"/Icebreak/users/" + iconName).exists())
                             {
                                 Log.d(TAG,"No cached "+iconName+",Image download in progress..");
-                                if(imageDownload(iconName))
+                                if(Restful.imageDownloader(iconName,".png", "/users",act))
                                     Log.d(TAG,"Image download successful");
                                 else
                                     Log.d(TAG,"Image download unsuccessful");
                             }
                         }
-                    }
-                    catch (IOException e)
-                    {
-                        e.printStackTrace();
-                    }
+
                    /*String[] eventNamesArr = (String[])eventNames.toArray();
                    Integer[] eventIconsArr = (Integer[])eventIcons.toArray();
                    String[] eventDescriptionsArr = (String[])eventDescriptions.toArray();*/
                     String[] userNamesArr = new String[users.size()];
                     String[] userIconsArr = new String[users.size()];
                     String[] catchphrase = new String[users.size()];
-                    userNamesArr = name.toArray(userNamesArr);
+                    userNamesArr = Name.toArray(userNamesArr);
                     catchphrase = Catchphrase.toArray(catchphrase);
                     userIconsArr = userIcon.toArray(userIconsArr);
 
@@ -317,7 +313,6 @@ public class EventDetailActivity extends AppCompatActivity {
                         public void run()
                         {
                             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-
                             lv.setAdapter(adapter);
                             vf = (ViewFlipper) findViewById(R.id.viewFlipper);
                             eventDetails.setText("List Of People");
