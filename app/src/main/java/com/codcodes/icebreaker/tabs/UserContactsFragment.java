@@ -8,6 +8,7 @@ import android.os.Environment;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -51,7 +52,7 @@ import static com.google.android.gms.internal.zzir.runOnUiThread;
  * Activities containing this fragment MUST implement the {@link IOnListFragmentInteractionListener}
  * interface.
  */
-public class UserContactsFragment extends Fragment
+public class UserContactsFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener
 {
 
     // TODO: Customize parameter argument names
@@ -61,7 +62,8 @@ public class UserContactsFragment extends Fragment
     private int mColumnCount = 1;
     private static boolean CHUNKED = false;
     private IOnListFragmentInteractionListener mListener;
-
+    //private SwipeListAdapter swipeAdapter;
+    private SwipeRefreshLayout swipeRefreshLayout;
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -104,6 +106,25 @@ public class UserContactsFragment extends Fragment
     {
         View view = inflater.inflate(R.layout.fragment_usercontacts_list, container, false);
         View rview = null;
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_layout);
+
+        swipeRefreshLayout.setOnRefreshListener(this);
+
+        /**
+         * Showing Swipe Refresh animation on activity create
+         * As animation won't start on onCreate, post runnable is used
+         */
+        swipeRefreshLayout.post(new Runnable()
+        {
+                @Override
+                public void run()
+                {
+                    swipeRefreshLayout.setRefreshing(false);
+
+                    //TODO: Refresh action
+                }
+            }
+        );
         if(view != null)
             rview = view.findViewById(R.id.userContactList);
         // Set the adapter
@@ -209,6 +230,7 @@ public class UserContactsFragment extends Fragment
                                 @Override
                                 public void run()
                                 {
+
                                     recyclerView.setAdapter(new UserContactsRecyclerViewAdapter(contacts, bitmaps, mListener));
                                 }
                             });
@@ -338,12 +360,12 @@ public class UserContactsFragment extends Fragment
                 //System.out.println(resp);
                 if (resp.toLowerCase().contains("400 bad request"))
                 {
-                    System.out.println("<<<400 bad request>>>");
+                    //System.out.println("<<<400 bad request>>>");
                     return false;
                 }
                 if (resp.toLowerCase().contains("404 not found"))
                 {
-                    System.out.println("<<<404 not found>>>");
+                    //System.out.println("<<<404 not found>>>");
                     return false;
                 }
                 if (resp.toLowerCase().contains("transfer-encoding"))
@@ -352,7 +374,7 @@ public class UserContactsFragment extends Fragment
                     if (encoding.toLowerCase().contains("chunked"))
                     {
                         CHUNKED = true;
-                        System.out.println("Preparing for chunked data.");
+                        //System.out.println("Preparing for chunked data.");
                     }
                 }
 
@@ -363,10 +385,6 @@ public class UserContactsFragment extends Fragment
                     {
                         int dec = hexToDecimal(m.group(0));
                         String chunk = in.readLine();
-                        //char[] chunk = new char[dec];
-                        //int readCount = in.read(chunk,0,chunk.length);//sjv3
-                        //System.out.println(chunk);
-                        //System.out.println("Chunk size: "+ readCount);
                         if (dec == 0)
                             break;//End of chunks
                         if (chunk.length() > 0)
@@ -554,5 +572,11 @@ public class UserContactsFragment extends Fragment
     {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onRefresh()
+    {
+
     }
 }

@@ -3,7 +3,7 @@ package com.codcodes.icebreaker.model;
 /**
  * Created by tevin on 2016/07/25.
  */
-public class Event
+public class Event implements IJsonable
 {
     private int id;
     private String title;
@@ -50,4 +50,30 @@ public class Event
     public void setAddress(String address){this.address = address;}
     public void setRadius(int radius){this.radius = radius;}
     public void setGPS(String gps){this.gps = gps;}
+
+    @Override
+    public void setVarValue(String var, String value)
+    {
+        switch (var)
+        {
+            case "Id":
+                setId(Integer.valueOf(value));
+                break;
+            case "Radius":
+                setRadius(Integer.valueOf(value));
+                break;
+            case "Address":
+                setAddress(value);
+                break;
+            case "Description":
+                setDescription(value);
+                break;
+            case "Gps_location":
+                setGPS(value);
+                break;
+            case "Title":
+                setTitle(value);
+                break;
+        }
+    }
 }

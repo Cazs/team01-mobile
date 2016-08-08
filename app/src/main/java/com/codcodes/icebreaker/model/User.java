@@ -145,7 +145,7 @@ public class User implements IJsonable {
             case "Gender":
                 setGender(value);
                 break;
-            case "Occupaton":
+            case "Occupation":
                 setOccupation(value);
                 break;
             case "Catchphrase":
