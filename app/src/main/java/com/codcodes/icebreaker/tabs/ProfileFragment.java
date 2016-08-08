@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.util.Base64;
@@ -25,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.screens.Edit_ProfileActivity;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.screens.InitialActivity;
@@ -39,9 +41,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -69,7 +76,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
     private View v;
     private Bitmap circularbitmap = null;
     private static final boolean DEBUG = false;
-    private final String TAG = "ICEBREAK";
+    private final String TAG = "IB/ProfileFragment";
     private static boolean CHUNKED = false;
 
 
@@ -98,6 +105,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
         rewards.setText("Rewards");
 
 
+
         TextView settings = (TextView) v.findViewById(R.id.profile_settings);
         settings.setTypeface(h);
         settings.setText("Settings");
@@ -108,26 +116,72 @@ public class ProfileFragment extends android.support.v4.app.Fragment
             @Override
             public void run()
             {
+                Looper.prepare();
                 Bitmap bitmap = null;
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-
-                user = readUser(username);
-                if(user==null)
+                ArrayList<User> userList = null;
+                String usrJson = null;
+                try
+                {
+                    System.err.println("Preparing to read user from db");
+                    usrJson = getUserJson(username);
+                    //System.out.println(usrJson);
+                    userList = new ArrayList<>();
+                    JSON.<User>getJsonableObjectsFromJson(usrJson,userList,User.class);
+                } catch (IOException e)
+                {
+                    Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_LONG).show();
+                    Log.d(TAG,e.getMessage());
+                    //TODO: Error Logging
+                    try
+                    {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e1)
+                    {
+                        e1.printStackTrace();
+                    }
+                    System.exit(-1);
+                } catch (java.lang.InstantiationException e)
+                {
+                    Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_LONG).show();
+                    Log.d(TAG,e.getMessage());
+                    //TODO: Error Logging
+                } catch (IllegalAccessException e)
+                {
+                    Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_LONG).show();
+                    Log.d(TAG,e.getMessage());
+                    //TODO: Error Logging
+                }
+                //user = readUser(username);
+                if(userList==null)
                 {
                     //TODO: Notify user
                     Log.d(TAG,"Something went wrong while we were trying to read your profile.");
                 }
+                else if(userList.isEmpty())
+                {
+                    Toast.makeText(getActivity(),"Your username was not found",Toast.LENGTH_LONG).show();
+                    Log.d(TAG,"Username '" + username + "' not found on DB");
+                    //TODO: Error Logging
+                }
+                else if(userList.size()>1)//More than one user returned - unlikely but it doesn't hurt to be sure
+                {
+                    Toast.makeText(getActivity(),"Your username was not found",Toast.LENGTH_LONG).show();
+                    Log.d(TAG,"Found multiple users for user '" + username + "' on DB");
+                    //TODO: Error Logging
+                }
                 else//All is well
                 {
+                    user= userList.get(0);
                     Name = user.getFirstname() + " " + user.getLastname();
                     Age = String.valueOf(user.getAge());
                     Occupation = user.getOccupation();
+
                     Bio = user.getBio();
                     Catchphrase = user.getCatchphrase();
                     Gender = user.getGender();
                     profilePicture = "/Icebreak/profile/" + username + ".png";
-                    Log.d(TAG, "Checking");
                     //Look for user profile image
                     if (!new File(Environment.getExternalStorageDirectory().getPath()
                             + profilePicture).exists())
@@ -206,12 +260,6 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                 startActivity(intent);
             }
         });
-
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.seleena);
-        Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
-
-        ImageView circularImageView = (ImageView) v.findViewById(R.id.circleview);
-        circularImageView.setImageBitmap(circularbitmap);
 
         ImageView reward_icon = (ImageView) v.findViewById(R.id.rewards_icon);
 
@@ -342,6 +390,25 @@ public class ProfileFragment extends android.support.v4.app.Fragment
             System.err.println(e.getMessage());
             return  false;
         }
+    }
+
+    public static String getUserJson(String username) throws IOException
+    {
+        URL urlConn = urlConn = new URL("http://icebreak.azurewebsites.net/IBUserRequestService.svc/getUser/" + username);
+        HttpURLConnection httpConn =  (HttpURLConnection)urlConn.openConnection();
+        //httpConn.setRequestProperty("Transfer-Encoding","chunked");
+        Scanner s = new Scanner(httpConn.getInputStream());
+        String response = "";
+
+        while (s.hasNextLine())
+            response += s.nextLine();
+
+        if(httpConn.getResponseCode() == HttpURLConnection.HTTP_OK)
+        {
+            System.out.println(response);
+            return response;
+        }else
+            return  "";
     }
 
     public User readUser(String username)

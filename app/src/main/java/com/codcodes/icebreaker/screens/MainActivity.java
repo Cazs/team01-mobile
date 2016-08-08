@@ -2,7 +2,9 @@ package com.codcodes.icebreaker.screens;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Typeface;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 
@@ -75,6 +77,34 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         Typeface h = Typeface.createFromAsset(this.getAssets(),"Ailerons-Typeface.otf");
         TextView headingTextView = (TextView) findViewById(R.id.main_heading);
         headingTextView.setTypeface(h);
+
+        final FloatingActionButton fabSwitch = (FloatingActionButton)findViewById(R.id.fabSwitch);
+        fabSwitch.hide();
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener()
+        {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
+            {
+                if(position == 1)
+                {
+                    fabSwitch.show();
+                    fabSwitch.setBackgroundColor(Color.TRANSPARENT);
+                }else
+                {
+                    fabSwitch.hide();
+                }
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
     @Override
