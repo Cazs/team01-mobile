@@ -7,6 +7,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -22,7 +25,6 @@ import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
-import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.User;
@@ -41,7 +43,7 @@ import java.util.regex.Pattern;
 
 import static com.google.android.gms.internal.zzir.runOnUiThread;
 
-public class Edit_ProfileActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener
+public class Edit_ProfileActivity extends AppCompatActivity
 {
     private ImageView circularImageView;
     private EditText Firstname;
@@ -56,8 +58,6 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
     private String Gender;
     private User user;
 
-    private Bitmap circularbitmap = null;
-
     private static final boolean DEBUG = true;
     private final String TAG = "ICEBREAK";
     private static boolean CHUNKED = false;
@@ -69,7 +69,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         setContentView(R.layout.activity_edit_profile);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        // getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         final String username = SharedPreference.getUsername(getApplicationContext());
@@ -85,8 +85,11 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         TextView name = (TextView) toolbar.findViewById(R.id.Edit_Heading);
         name.setTypeface(h);
 
-        circularImageView = (ImageView) findViewById(R.id.editprofilepic);
+        Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.seleena);
+        Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
 
+        circularImageView = (ImageView) findViewById(R.id.editprofilepic);
+        circularImageView.setImageBitmap(circularbitmap);
 
         Typeface EditFont = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
         TextView editphoto = (TextView) findViewById(R.id.editphoto);
@@ -95,56 +98,50 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
 
         Spinner spinner = (Spinner) findViewById(R.id.spinner1);
         // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.gender, R.layout.spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,R.array.gender, R.layout.spinner);
         // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         spinner.setAdapter(adapter);
-        spinner.setOnItemSelectedListener(this);
-
 
         ImageView done = (ImageView) findViewById(R.id.edit_profile_done);
 
 
-        Bundle extras = getIntent().getExtras();
-
-        if (extras != null) {
-            Firstname.setText(extras.getString("First Name"));
-            Lastname.setText(extras.getString("Last Name"));
-            Age.setText(extras.getString("Age"));
-            Occupation.setText(extras.getString("Occupation"));
-            Catchphrase.setText(extras.getString("Catchphrase"));
-            Bio.setText(extras.getString("Bio"));
-            Gender = extras.getString("Gender");
-            circularbitmap = (Bitmap)extras.get("Picture");
-            int gender = 0;
-            switch(Gender)
+        Thread thread = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
             {
-                case "Male":
-                    gender = 0;
-                    break;
-                case "Female":
-                    gender = 1;
-                    break;
-                case "Unspecified":
-                    gender = 2;
-                    break;
-            }
-            circularImageView.setImageBitmap(circularbitmap);
-            spinner.setSelection(gender);
-        }
+                user = readUser(username);
 
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        Firstname.setText(user.getFirstname());
+                        Lastname.setText(user.getLastname());
+                        Age.setText(Integer.toString(user.getAge()));
+                        Occupation.setText(user.getOccupation());
+                        Catchphrase.setText(user.getCatchphrase());
+                        Bio.setText(user.getBio());
+                    }
+                });
+            }
+        });
+        thread.start();
         done.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
                 String fname = Firstname.getText().toString();
                 String lname = Lastname.getText().toString();
-                String age = Age.getText().toString();
-                String occupation = Occupation.getText().toString();
-                String bio = Bio.getText().toString();
-                String catchphrase = Catchphrase.getText().toString();
-                String g = Gender;
-                updateProfile(username,fname, lname, age, occupation, bio, catchphrase,g);
+                String age =  Age.getText().toString();
+                String occupation =  Occupation.getText().toString();
+                String bio =  Bio.getText().toString();
+                String catchphrase=  Catchphrase.getText().toString();
+                String gender = Gender;
+                updateProfile(fname,lname,age,occupation,bio,catchphrase,gender);
             }
 
         });
@@ -152,8 +149,8 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         editphoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                System.out.println("Edit photo");
                 startActivityForResult(intent, 0);
 
             }
@@ -163,29 +160,124 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
 
 
 
-    public void onActivityResult(int requstCode,int resltCode,Intent data)
+        public void onActivityResult(int requstCode,int resltCode,Intent data)
+        {
+            if(data != null)
+            {
+                super.onActivityResult(requstCode,resltCode,data);
+                Uri targetUri = data.getData();
+
+                //TODO: Upload image here
+                Bitmap bitmap;
+                try
+                {
+                    bitmap=BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
+                    circularImageView.setImageBitmap(bitmap);
+                }
+                catch (FileNotFoundException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    public class SpinnerActivity extends Activity implements AdapterView.OnItemSelectedListener {
+
+
+        public void onItemSelected(AdapterView<?> parent, View view,int pos, long id) {
+            // An item was selected. You can retrieve the selected item using
+            // parent.getItemAtPosition(pos)
+          Gender = parent.getItemAtPosition(pos).toString();
+        }
+
+        public void onNothingSelected(AdapterView<?> parent) {
+            // Another interface callback
+        }
+    }
+
+    public User readUser(String username)
     {
-        super.onActivityResult(requstCode,resltCode,data);
-        Uri targetUri = data.getData();
+        try
+        {
+            Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
+            Log.d(TAG,"Connection established");
+                    /*profilePicture = "/Icebreak/profile_"+username+".png";
+                    if(!new File(Environment.getExternalStorageDirectory().getPath()+profilePicture).exists())
+                    {
+                        Log.d(TAG,"No cached "+username+",Image download in progress..");
+                        if(imageDownload("profile_"+username+".png"))
+                        {
+                            Bitmap bitmap = BitmapFactory.decodeFile(profilePicture);
+                            Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap,100);
 
-        //TODO: Upload image here
-            Bitmap b = ImageUtils.getInstant().compressBitmapImage(targetUri.toString(),getApplicationContext());
-            circularImageView.setImageBitmap(b);
+                            ImageView circularImageView = (ImageView) v.findViewById(R.id.circleview);
+                            circularImageView.setImageBitmap(circularbitmap);
+                            Log.d(TAG,"Image download successful");
+                        }
+                        else
+                            Log.d(TAG,"Image download unsuccessful");
+                    }*/
 
+            PrintWriter out = new PrintWriter(soc.getOutputStream());
+            Log.d(TAG,"Sending request");
+            //String data = URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(username, "UTF-8");
+
+            out.print("GET /IBUserRequestService.svc/getUser/"+username+" HTTP/1.1\r\n"
+                    + "Host: icebreak.azurewebsites.net\r\n"
+                    + "Content-Type: text/plain;\r\n"
+                    + "Content-Length: 0\r\n\r\n");
+            out.flush();
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
+            String resp;
+            //Wait for response indefinitely TODO: Time-Out
+            while(!in.ready()){}
+
+            String userJson = "";
+            boolean openUserRead = false;
+            while((resp = in.readLine())!=null)
+            {
+                if(DEBUG)System.out.println(resp);
+
+                if(resp.equals("0"))
+                {
+                    out.close();
+                    //in.close();
+                    soc.close();
+                    if(DEBUG)System.out.println(">>Done<<");
+                    break;//EOF
+                }
+
+                if(resp.isEmpty())
+                    if(DEBUG)System.out.println("\n\nEmpty Line\n\n");
+
+                if(resp.contains("{"))
+                {
+                    if(DEBUG)System.out.println("Opening at>>" + resp.indexOf("{"));
+                    openUserRead = true;
+                }
+
+                if(openUserRead)
+                    userJson += resp;//.substring(resp.indexOf('['));
+
+                if(resp.contains("}"))
+                {
+                    if(DEBUG)System.out.println("Closing at>>" + resp.indexOf("}"));
+                    openUserRead = false;
+                }
+            }
+            return getUser(userJson);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            Message message = toastHandler("Couldn't refresh feeds").obtainMessage();
+            message.sendToTarget();
+        }
+        return null;
     }
 
-    @Override
-    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        Gender = adapterView.getItemAtPosition(i).toString();
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> adapterView) {
-
-    }
-
-
-    public void updateProfile(final String username,final String firstname, final String lastname, final String age,final String occupation, final String bio, final String catchphrase,final String gender)
+    public void updateProfile(final String firstname, final String lastname, final String age,final String occupation, final String bio, final String catchphrase,final String gender)
     {
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -206,8 +298,9 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                             + URLEncoder.encode("occupation", "UTF-8") + "=" + URLEncoder.encode(occupation, "UTF-8") + "&"
                             + URLEncoder.encode("catchphrase", "UTF-8") + "=" + URLEncoder.encode(catchphrase, "UTF-8");
 
-                    out.print("POST /IBUserRequestService.svc/userUpdate/"+username+" HTTP/1.1\r\n"
+                    out.print("POST /IBUserRequestService.svc/userUpdate HTTP/1.1\r\n"
                             + "Host: icebreak.azurewebsites.net\r\n"
+                            //+ "Content-Type: application/x-www-form-urlencoded\r\n"
                             + "Content-Type: text/plain; charset=utf-8\r\n"
                             + "Content-Length: " + data.length() + "\r\n\r\n"
                             + data);
@@ -218,7 +311,6 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                     boolean found = false;
                     while((resp = in.readLine())!=null)
                     {
-                        if (DEBUG) System.out.println(resp);
                         Log.d("ICEBREAK",resp);
                         if(resp.contains("HTTP/1.1 200 OK"))
                         {
@@ -230,13 +322,11 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                     if(found)
                     {
                         //TODO: Figure out how o go back to profile fragment
-                        if (DEBUG) System.out.println("Success");
                         Intent intent = new Intent(getApplicationContext(),MainActivity.class);
                         startActivity(intent);
                     }
                     else
                     {
-                        if (DEBUG) System.out.println("UnSuccess");
                         //TODO: send message that editing was unsucessful try again
                         finish();
                         startActivity(getIntent());
@@ -247,64 +337,131 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                 catch (UnknownHostException e)
                 {
                     e.printStackTrace();
-                    Toast.makeText(getBaseContext(), "No internet access", Toast.LENGTH_LONG).show();
-
+                    Message message = toastHandler("No Internet Access").obtainMessage();
+                    message.sendToTarget();
                 }
                 catch (IOException e)
                 {
+                    Message message = toastHandler("Couldn't refresh feed").obtainMessage();
+                    message.sendToTarget();
                     e.printStackTrace();
                 }
             }
         });
         thread.start();
     }
-
-    public static boolean imageUpload(Socket soc,String iconName) throws IOException
+    private static User getUser(String json)
     {
-        System.out.println("Sending image upload request");
-        PrintWriter out = new PrintWriter(soc.getOutputStream());
-        //Android: final String base64 = ;
-        String headers = "GET /IBUserRequestService.svc/imageUpload/"+iconName+" HTTP/1.1\r\n"
-                + "Host: icebreak.azurewebsites.net\r\n"
-                //+ "Content-Type: application/x-www-form-urlencoded\r\n"
-                + "Content-Type: text/plain;\r\n"// charset=utf-8
-                + "Content-Length: 0\r\n\r\n";
+        System.out.println("Reading User: " + json);
+        //TODO: Regex fo user string
 
-        out.print(headers);
-        out.flush();
+        int endPos = json.indexOf("}");
+        int startPos = json.indexOf("{");
+        System.out.println(startPos+" to " + endPos);
+        String userJson = json.substring(startPos,endPos+1);
 
-        //TODO: Not Sure what do
-        BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-        String resp;
-        while(!in.ready()){}
-        while((resp = in.readLine())!=null)
+        String p2 = "\"([a-zA-Z0-9\\s~`!@#$%^&*)(_+-={}\\[\\];',./\\|<>?]*)\"\\:(\"[a-zA-Z0-9\\s~`!@#$%^&*()_+-={}\\[\\];',./\\|<>?]*\"|\"[0-9,]\"|\\d+)";
+        Pattern p = Pattern.compile(p2);
+        Matcher m = p.matcher(userJson);
+        User user = new User();
+        while(m.find())
         {
-            //System.out.println(resp);
-
-            if(resp.toLowerCase().contains("payload"))
+            String pair = m.group(0);
+            //process key value pair
+            pair = pair.replaceAll("\"", "");
+            if(pair.contains(":"))
             {
-                String base64bytes = resp.split(":")[1];
-                base64bytes = base64bytes.substring(1, base64bytes.length());
-                byte[] binFileArr = android.util.Base64.decode(base64bytes, android.util.Base64.DEFAULT);
-                WritersAndReaders.saveImage(binFileArr,iconName);
-                return true;
+                //if(DEBUG)System.out.println("Found good pair");
+                String[] kv_pair = pair.split(":");
+                String var = kv_pair[0];
+                String val = kv_pair[1];
+                switch(var)
+                {
+                    case "Fname":
+                        user.setFirstname(val);
+                        break;
+                    case "Lname":
+                        user.setLastname(val);
+                        break;
+                    case "Age":
+                        user.setAge(Integer.valueOf(val));
+                        break;
+                    case "Occupation":
+                        user.setOccupation(val);
+                        break;
+                    case "Bio":
+                        user.setBio(val);
+                        break;
+                    case "Catchphrase":
+                        user.setCatchphrase(val);
+                        break;
+                    case "Gender":
+                        user.setGender(val);
+                        break;
+                }
             }
-
-            if(!in.ready())
-            {
-                //if(DEBUG)System.out.println(">>Done<<");
-                break;
-            }
+            //look for next pair
+            json = json.substring(m.end());
+            m = p.matcher(json);
         }
-        out.close();
-        //in.close();
-        soc.close();
+        return user;
+    }
+
+    public boolean imageUpload(Socket soc, String iconName)
+    {
+        System.out.println("Sending image download request");
+        PrintWriter out = null;
+        try {
+            out = new PrintWriter(soc.getOutputStream());
+            //Android: final String base64 = ;
+            String headers = "GET /IBUserRequestService.svc/imageUpload/"+iconName+" HTTP/1.1\r\n"
+                    + "Host: icebreak.azurewebsites.net\r\n"
+                    //+ "Content-Type: application/x-www-form-urlencoded\r\n"
+                    + "Content-Type: text/plain;\r\n"// charset=utf-8
+                    + "Content-Length: 0\r\n\r\n";
+
+            out.print(headers);
+            out.flush();
+
+            //TODO: Not Sure what do
+            BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
+            String resp;
+            while(!in.ready()){}
+            while((resp = in.readLine())!=null)
+            {
+                //System.out.println(resp);
+
+                if(resp.toLowerCase().contains("payload"))
+                {
+                    String base64bytes = resp.split(":")[1];
+                    base64bytes = base64bytes.substring(1, base64bytes.length());
+                    byte[] binFileArr = android.util.Base64.decode(base64bytes, android.util.Base64.DEFAULT);
+                    WritersAndReaders.saveImage(binFileArr,iconName);
+                    return true;
+                }
+
+                if(!in.ready())
+                {
+                    //if(DEBUG)System.out.println(">>Done<<");
+                    break;
+                }
+            }
+            out.close();
+            //in.close();
+            soc.close();
+        } catch (IOException e) {
+           Message messaage = toastHandler("Couldn't refreash feeds").obtainMessage();
+            messaage.sendToTarget();
+            e.printStackTrace();
+        }
+
         return false;
     }
 
     @Override
     public void onBackPressed()
     {
+
         super.onBackPressed();
         Intent intent = new Intent(this,MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -312,5 +469,14 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         finish();
     }
 
-
+    private Handler toastHandler(final String text)
+    {
+        Handler toastHandler = new Handler(Looper.getMainLooper()) {
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+            }
+        };
+        return toastHandler;
+    }
 }

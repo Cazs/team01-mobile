@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +36,7 @@ public class SignUpActivity extends AppCompatActivity {
     EditText password;
     EditText confirmPassword;
     Button btnSignUp;
+    ProgressBar bar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,19 +52,26 @@ public class SignUpActivity extends AppCompatActivity {
         password = (EditText) findViewById(R.id.password_sign_up);
         confirmPassword = (EditText) findViewById(R.id.confirm_password);
         btnSignUp = (Button) findViewById(R.id.sign_up_button);
-
+        bar = (ProgressBar) findViewById(R.id.progressbar);
+        bar.setVisibility(View.GONE);
         btnSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                bar = (ProgressBar) findViewById(R.id.progressbar);
+
+
                 final String e = email.getText().toString();
                 final String p = password.getText().toString();
                 final String u = username.getText().toString();
                 final String cp = confirmPassword.getText().toString();
-                if (!isValidEmail(e)) {
+                if (!isValidEmail(e))
+                {
                     email.setError("Invalid Email");
                     return;
                 }
-                if (!isValidPassword(p)) {
+                if (!isValidPassword(p))
+                {
+                    bar.setVisibility(View.GONE);
                     password.setError("Password must include:" +
                             " \n • A minimum of 6 characters" +
                             " \n • At least one uppercase alphabet" +
@@ -71,29 +80,48 @@ public class SignUpActivity extends AppCompatActivity {
                             " \n • Special case character");
                     return;
                 }
-                if (!isValidUsername(u)) {
+                if(!isValidUsername(u))
+                {
+                    bar.setVisibility(View.GONE);
                     username.setError("Username must not include:" +
                             "\n • White spaces" +
                             "\n • Special characters");
                     return;
                 }
-                if (!Compare(cp, p)) {
+                if(!Compare(cp,p))
+                {
+                    bar.setVisibility(View.GONE);
                     confirmPassword.setError("Passwords do not match");
                     return;
                 }
-                PostToDB(e, u, cp, view);
+                bar.setVisibility(View.VISIBLE);
+                PostToDB(e,u,cp,view);
 
             }
         });
     }
 
-    private void showEditProfile(View view) {
-        Intent editScreen = new Intent(this, Edit_ProfileActivity.class);
+
+    private Handler toastHandler(final String text)
+    {
+        Handler toastHandler = new Handler(Looper.getMainLooper()) {
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+            }
+        };
+        return toastHandler;
+    }
+
+    private void showEditProfile(View view)
+    {
+        Intent editScreen = new Intent(this,Edit_ProfileActivity.class);
         startActivity(editScreen);
     }
 
 
-    private boolean isValidEmail(String email) {
+    private boolean isValidEmail(String email)
+    {
         String Email_pattern = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
                 + "[A-Za-z0-9-]+(\\.[A=Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
@@ -102,17 +130,17 @@ public class SignUpActivity extends AppCompatActivity {
         return matcher.matches();
     }
 
-    private boolean isValidUsername(String username) {
+    private boolean isValidUsername(String username)
+    {
         String Username_pattern = "^(?=.{5,15}$)(?![-.])[a-zA-Z0-9._]+(?<![_.])$";
 
         Pattern pattern = Pattern.compile(Username_pattern);
         Matcher matcher = pattern.matcher(username);
         return matcher.matches();
-
-
     }
 
-    private boolean isValidPassword(String password) {
+    private boolean isValidPassword(String password)
+    {
         String password_pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[$@#!%*?&])[A-Za-z\\d$@#!%*?&]{6,}";
 
         Pattern pattern = Pattern.compile(password_pattern);
@@ -120,20 +148,23 @@ public class SignUpActivity extends AppCompatActivity {
         return matcher.matches();
     }
 
-    private boolean Compare(String confirmPassword, String password) {
-        if (password.equals(confirmPassword)) {
+    private boolean Compare(String confirmPassword,String password)
+    {
+        if(password.equals(confirmPassword))
+        {
             return true;
         }
         return false;
 
     }
 
-
-    private void PostToDB(final String email, final String username, final String confirmPassword, final View view) {
+    private void PostToDB(final String email, final String username, final String confirmPassword, final View view)
+    {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
+                try
+                {
                     Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
                     System.out.println("Connection established");
                     PrintWriter out = new PrintWriter(soc.getOutputStream());
@@ -156,56 +187,55 @@ public class SignUpActivity extends AppCompatActivity {
                     BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
                     String resp;
                     boolean found = false;
-                    while ((resp = in.readLine()) != null) {
-                        Log.d("ICEBREAK", resp);
-                        if (resp.contains("HTTP/1.1 200 OK")) {
-                            Log.d("ICEBREAK", "Found HTTP attr");
+                    while((resp = in.readLine())!=null)
+                    {
+                        Log.d("ICEBREAK",resp);
+                        if(resp.contains("HTTP/1.1 200 OK"))
+                        {
+                            Log.d("ICEBREAK","Found HTTP attr");
                             found = true;
                             break;
                         }
                     }
-                    if (found) {
+                    if(found) {
 
-                        SharedPreference.setUsername(getApplicationContext(), username);
+                        SharedPreference.setUsername(getApplicationContext(),username);
                         //Toast.makeText(getBaseContext(), "Successful sign up", Toast.LENGTH_LONG).show();
                         //findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
                         showEditProfile(view);
 
 
-                    } else {
+                    }
+                    else {
                         //Toast.makeText(getApplicationContext(), "Unsuccessful sign up", Toast.LENGTH_LONG).show();
                         finish();
                         startActivity(getIntent());
                     }
                     out.close();
                     in.close();
-                } catch (UnknownHostException e) {
-                    Message message = toastHandler("No Internet access").obtainMessage();
-                    message.sendToTarget();
+                }
+                catch (UnknownHostException e)
+                {
+                    bar.setVisibility(View.GONE);
+                    Message messaage = toastHandler("No Internet Access").obtainMessage();
+                    messaage.sendToTarget();
                     e.printStackTrace();
 
-                } catch (IOException e) {
-                    Message message = toastHandler("Couldn't refresh feeds").obtainMessage();
-                    message.sendToTarget();
+                }
+                catch (IOException e)
+                {
+                    bar.setVisibility(View.GONE);
+                    Message messaage = toastHandler("Couldn't refreash feeds").obtainMessage();
+                    messaage.sendToTarget();
                     e.printStackTrace();
                 }
             }
         });
         thread.start();
-
-    }
-
-
-    private Handler toastHandler(final String text) {
-        Handler toastHandler = new Handler(Looper.getMainLooper()) {
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
-            }
-        };
-        return toastHandler;
     }
 }
+
+
 
 
 

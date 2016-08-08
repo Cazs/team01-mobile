@@ -3,6 +3,9 @@ package com.codcodes.icebreaker.screens;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -10,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
@@ -56,7 +60,7 @@ public class LoginActivity extends AppCompatActivity {
                 final String u = username.getText().toString();
 
 
-            if (!isValidUsername(u))
+                if (!isValidUsername(u))
                 {
                     username.setError("Invalid Username");
                     return;
@@ -135,10 +139,16 @@ public class LoginActivity extends AppCompatActivity {
                         }
                         catch (UnknownHostException e)
                         {
+                            loginbar.setVisibility(View.GONE);
+                            Message messaage = toastHandler("No Internet Access").obtainMessage();
+                            messaage.sendToTarget();
                             e.printStackTrace();
                         }
                         catch (IOException e)
                         {
+                            loginbar.setVisibility(View.GONE);
+                            Message messaage = toastHandler("Couldn't refreash feeds").obtainMessage();
+                            messaage.sendToTarget();
                             e.printStackTrace();
                         }
                     }
@@ -149,6 +159,16 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    private Handler toastHandler(final String text)
+    {
+        Handler toastHandler = new Handler(Looper.getMainLooper()) {
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+            }
+        };
+        return toastHandler;
+    }
     private boolean isValidUsername(String username)
     {
         String Username_pattern = "^(?=.{5,15}$)(?![-.])[a-zA-Z0-9._]+(?<![_.])$";
