@@ -82,11 +82,8 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         TextView name = (TextView) toolbar.findViewById(R.id.Edit_Heading);
         name.setTypeface(h);
 
-        Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.seleena);
-        Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
-
         circularImageView = (ImageView) findViewById(R.id.editprofilepic);
-        circularImageView.setImageBitmap(circularbitmap);
+
 
         Typeface EditFont = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
         TextView editphoto = (TextView) findViewById(R.id.editphoto);

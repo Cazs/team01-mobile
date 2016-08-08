@@ -207,11 +207,10 @@ public class ProfileFragment extends android.support.v4.app.Fragment
             }
         });
 
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.seleena);
-        Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
+
 
         ImageView circularImageView = (ImageView) v.findViewById(R.id.circleview);
-        circularImageView.setImageBitmap(circularbitmap);
+     
 
         ImageView reward_icon = (ImageView) v.findViewById(R.id.rewards_icon);
 
