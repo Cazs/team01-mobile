@@ -20,6 +20,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.auxilary.CustomListAdapter;
+import com.codcodes.icebreaker.auxilary.JSON;
+import com.codcodes.icebreaker.auxilary.Restful;
 import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.screens.EventDetailActivity;
 import com.codcodes.icebreaker.R;
@@ -30,10 +32,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,7 +76,30 @@ public class EventsFragment extends android.support.v4.app.Fragment
            @Override
            public void run()
            {
-               events = readEvents();
+               //events = readEvents();
+               events = new ArrayList<>();
+               try
+               {
+                   System.out.println("Preparing to read events...");
+                   String eventsJson = Restful.getJsonFromURL("readEvents");
+                   JSON.<Event>getJsonableObjectsFromJson(eventsJson,events,Event.class);
+               } catch (IOException e)
+               {
+                   Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_LONG).show();
+                   Log.d(TAG,e.getMessage());
+                   //TODO: Error Logging
+               }
+               catch (java.lang.InstantiationException e)
+               {
+                   Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_LONG).show();
+                   Log.d(TAG,e.getMessage());
+                   //TODO: Error Logging
+               } catch (IllegalAccessException e)
+               {
+                   Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_LONG).show();
+                   Log.d(TAG,e.getMessage());
+                   //TODO: Error Logging
+               }
                if(events==null)
                {
                    //TODO: Notify user
@@ -84,8 +112,6 @@ public class EventsFragment extends android.support.v4.app.Fragment
                }
                else//All is well
                {
-                   try
-                   {
                        //Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
                        //Log.d(TAG,"Connection established");
                        for(Event e:events)
@@ -95,22 +121,17 @@ public class EventsFragment extends android.support.v4.app.Fragment
                            //eventIcons.add(R.drawable.ultra_icon);//temporarily use this icon for all events
                            String iconName = "event_icons-"+e.getId()+".png";
                            //String iconName = "event_icons-10.png";
-                           eventIcons.add("/Icebreak/"+iconName);
+                           eventIcons.add("/Icebreak/events/"+iconName);
                            //Download the file only if it has not been cached
                            if(!new File(Environment.getExternalStorageDirectory().getPath()+"/Icebreak/" + iconName).exists())
                            {
                                Log.d(TAG,"No cached "+iconName+",Image download in progress..");
-                               if(imageDownload(iconName))
+                               if(imageDownloader(iconName, "/events"))
                                    Log.d(TAG,"Image download successful");
                                else
                                    Log.d(TAG,"Image download unsuccessful");
                            }
                        }
-                   }
-                   catch (IOException e)
-                   {
-                       e.printStackTrace();
-                   }
                    /*String[] eventNamesArr = (String[])eventNames.toArray();
                    Integer[] eventIconsArr = (Integer[])eventIcons.toArray();
                    String[] eventDescriptionsArr = (String[])eventDescriptions.toArray();*/
@@ -124,7 +145,7 @@ public class EventsFragment extends android.support.v4.app.Fragment
                    /*Object[] eventNamesArr = eventNames.toArray();
                    Object[] eventIconsArr = eventIcons.toArray();
                    Object[] eventDescriptionsArr = eventDescriptions.toArray();*/
-                   Log.d(TAG,"Preparing to read events..");
+                   Log.d(TAG,"Preparing to apply events adapter...");
                    final CustomListAdapter adapter = new CustomListAdapter(getActivity(),eventNamesArr,eventIconsArr,eventDescriptionsArr);
                    runOnUiThread(new Runnable()
                    {
@@ -132,9 +153,9 @@ public class EventsFragment extends android.support.v4.app.Fragment
                        public void run()
                        {
                            list.setAdapter(adapter);
+                           Log.d(TAG,"Done applying events");
                        }
                    });
-                   Log.d(TAG,"Done reading events");
                }
            }
        });
@@ -218,71 +239,92 @@ public class EventsFragment extends android.support.v4.app.Fragment
         }
     }
 
-    public static boolean imageDownload(String iconName) throws IOException
+    public static boolean imageDownloader(String image, String destPath)
     {
-        Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-        System.out.println("Sending image download request");
-        PrintWriter out = new PrintWriter(soc.getOutputStream());
-        //Android: final String base64 = ;
-        String headers = "GET /IBUserRequestService.svc/imageDownload/"+iconName+" HTTP/1.1\r\n"
-                + "Host: icebreak.azurewebsites.net\r\n"
-                //+ "Content-Type: application/x-www-form-urlencoded\r\n"
-                + "Content-Type: text/plain;\r\n"// charset=utf-8
-                + "Content-Length: 0\r\n\r\n";
-        out.print(headers);
-        out.flush();
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-        String resp,base64;
-        while(!in.ready()){}
-        Pattern pattern = Pattern.compile("^[A-F0-9]+$");//"((\\d*[A-Fa-f]\\d*){2,}|\\d{1})");//"([0-9A-Fa-f]{2,}|[0-9]{1})");//"[0-9A-Fa-f]");
-        String payload = "";
-        while((resp = in.readLine())!=null)
+        try
         {
-            //System.out.println(resp);
-            if(resp.toLowerCase().contains("transfer-encoding"))
+            System.out.println("Attempting to download image: " + image);
+            Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
+            System.out.println("Connection established, Sending request..");
+            PrintWriter out = new PrintWriter(soc.getOutputStream());
+            //Android: final String base64 = android.util.Base64.encodeToString(bytes, android.util.Base64.DEFAULT);
+            String headers = "GET /IBUserRequestService.svc/imageDownload/"+image+" HTTP/1.1\r\n"
+                    + "Host: icebreak.azurewebsites.net\r\n"
+                    + "Content-Type: text/plain;charset=utf-8;\r\n\r\n";
+
+            out.print(headers);
+            out.flush();
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
+            String resp, base64;
+            while (!in.ready()) {
+            }
+            Pattern pattern = Pattern.compile("^[A-F0-9]+$");//"((\\d*[A-Fa-f]\\d*){2,}|\\d{1})");//"([0-9A-Fa-f]{2,}|[0-9]{1})");//"[0-9A-Fa-f]");
+            String payload = "";
+            while ((resp = in.readLine()) != null)
             {
-                String encoding = resp.split(":")[1];
-                if(encoding.toLowerCase().contains("chunked"))
+                //System.out.println(resp);
+                if (resp.toLowerCase().contains("400 bad request"))
                 {
-                    CHUNKED = true;
-                    System.out.println("Preparing for chunked data.");
+                    System.out.println("<<<400 bad request>>>");
+                    return false;
+                }
+                if (resp.toLowerCase().contains("404 not found"))
+                {
+                    System.out.println("<<<404 not found>>>");
+                    return false;
+                }
+                if (resp.toLowerCase().contains("transfer-encoding"))
+                {
+                    String encoding = resp.split(":")[1];
+                    if (encoding.toLowerCase().contains("chunked"))
+                    {
+                        CHUNKED = true;
+                        System.out.println("Preparing for chunked data.");
+                    }
+                }
+
+                if (CHUNKED)
+                {
+                    Matcher m = pattern.matcher(resp.toUpperCase());
+                    if (m.find())
+                    {
+                        int dec = hexToDecimal(m.group(0));
+                        String chunk = in.readLine();
+                        if (dec == 0)
+                            break;//End of chunks
+                        if (chunk.length() > 0)
+                            payload += chunk;//String.copyValueOf(chunk);
+                    }
                 }
             }
+            out.close();
+            //in.close();
+            soc.close();
 
-            if(CHUNKED)
-            {
-                Matcher m = pattern.matcher(resp.toUpperCase());
-                if(m.find())
-                {
-                    int dec = hexToDecimal(m.group(0));
-                    String chunk = in.readLine();
-                    //char[] chunk = new char[dec];
-                    //int readCount = in.read(chunk,0,chunk.length);//sjv3
-                    //System.out.println(chunk);
-                    //System.out.println("Chunk size: "+ readCount);
-                    if(dec==0)
-                        break;//End of chunks
-                    if(chunk.length()>0)
-                        payload += chunk;//String.copyValueOf(chunk);
-                }
-            }
-        }
-        out.close();
-        //in.close();
-        soc.close();
-        if(payload.length()>0)
-        {
-            //payload = payload.split(":")[1];
+            //System.out.println(payload);
+            payload = payload.split(":")[1];
             payload = payload.replaceAll("\"", "");
-            //System.out.println(payload)
-            byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);
-            WritersAndReaders.saveImage(binFileArr,iconName);
-            return true;
+
+            payload = payload.substring(0,payload.length()-1);
+            if(!payload.equals("FNE"))
+            {
+                byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);//Base64.getDecoder().decode(payload.getBytes());
+                WritersAndReaders.saveImage(binFileArr, destPath + "/" + image);
+                System.out.println("Succesfully wrote to disk");//"\n>>>>>"+base64bytes);
+                return true;
+            }
+            else
+            {
+                //TODO: Throw FileNotFoundException
+                System.err.println("Server> File not found");
+                return false;
+            }
         }
-        else
+        catch (IOException e)
         {
-            return false;
+            System.err.println(e.getMessage());
+            return  false;
         }
     }
 
@@ -306,150 +348,4 @@ public class EventsFragment extends android.support.v4.app.Fragment
         e.setArguments(b);
         return e;
     }
-
-
-    public ArrayList<Event> readEvents()
-    {
-            try
-            {
-                Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-                Log.d(TAG,"Connection established");
-                PrintWriter out = new PrintWriter(soc.getOutputStream());
-                Log.d(TAG,"Sending request");
-
-                out.print("GET /IBUserRequestService.svc/readEvents HTTP/1.1\r\n"
-                        + "Host: icebreak.azurewebsites.net\r\n"
-                        + "Content-Type: text/plain;\r\n"// charset=utf-8
-                        + "Content-Length: 0\r\n\r\n");
-                out.flush();
-
-                BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-                String resp;
-                //Wait for response indefinitely TODO: Time-Out
-                while(!in.ready()){}
-
-                String eventsJson = "";
-                boolean openEventRead = false;
-                while((resp = in.readLine())!=null)
-                {
-                    if(DEBUG)System.out.println(resp);
-
-                    if(resp.equals("0"))
-                    {
-                        out.close();
-                        //in.close();
-                        soc.close();
-                        if(DEBUG)System.out.println(">>Done<<");
-                        break;//EOF
-                    }
-
-                    if(resp.isEmpty())
-                        if(DEBUG)System.out.println("\n\nEmpty Line\n\n");
-
-                    if(resp.contains("["))
-                    {
-                        if(DEBUG)System.out.println("Opening at>>" + resp.indexOf("["));
-                        openEventRead = true;
-                    }
-
-                    if(openEventRead)
-                        eventsJson += resp;//.substring(resp.indexOf('['));
-
-                    if(resp.contains("]"))
-                    {
-                        if(DEBUG)System.out.println("Closing at>>" + resp.indexOf("]"));
-                        openEventRead = false;
-                    }
-                }
-
-                if(DEBUG)System.out.println("Reading events.");
-                //System.out.println(eventsJson);
-                ArrayList<Event> events = getEvents(eventsJson);
-                return events;
-            }
-            catch (UnknownHostException e)
-            {
-                System.err.println(e.getMessage());
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-            return null;
-    }
-
-    private static ArrayList<Event> getEvents(String json)
-    {
-        ArrayList<Event> events = new ArrayList<Event>();
-        //remove square brackets
-        json = json.replaceAll("\\[", "");
-        json = json.replaceAll("\\]", "");
-        //System.out.println("Processing: " + json);
-        while(json.contains("{") && json.contains("}"))
-        {
-            int endPos = json.indexOf("}");
-            int startPos = json.indexOf("{");
-            String event = json.substring(startPos,endPos+1);//remove braces
-            if(DEBUG)System.out.println("Event>>"+event);
-            Event ev = getEvent(event);
-            events.add(ev);
-            /*if(!(json.contains("{") && json.contains("}")))
-                break;*/
-            if(json.length()>endPos+2)
-                json = json.substring(endPos+2, json.length());
-            else
-                break;
-            if(DEBUG)System.out.println("new JSON: " + json);
-        }
-        return events;
-    }
-
-    private static Event getEvent(String json)
-    {
-        if(DEBUG)System.out.println("Reading Event: " + json);
-        String p2 = "\"([a-zA-Z0-9\\s~`!@#$%^&*)(_+-={}\\[\\];',./\\|<>?]*)\"\\:(\"[a-zA-Z0-9\\s~`!@#$%^&*()_+-={}\\[\\];',./\\|<>?]*\"|\"[0-9,]\"|\\d+)";
-        Pattern p = Pattern.compile(p2);
-        Matcher m = p.matcher(json);
-        Event ev = new Event();
-        while(m.find())
-        {
-            String pair = m.group(0);
-            //process key value pair
-            pair = pair.replaceAll("\"", "");
-            if(pair.contains(":"))
-            {
-                String[] kv_pair = pair.split(":");
-                String var = kv_pair[0];
-                String val = kv_pair[1];
-                switch(var)
-                {
-                    case "Title":
-                        ev.setTitle(val);
-                        break;
-                    case "Id":
-                        ev.setId(Integer.valueOf(val));
-                        break;
-                    case "Gps_Location":
-                        ev.setGPS(val);
-                        break;
-                    case "Address":
-                        ev.setAddress(val);
-                        break;
-                    case "Radius":
-                        ev.setRadius(Integer.valueOf(val));
-                        break;
-                    case "Description":
-                        ev.setDescription(val);
-                        break;
-                }
-            }
-            //look for next pair
-            json = json.substring(m.end());
-            m = p.matcher(json);
-        }
-        return ev;
-    }
-
-
-
 }
