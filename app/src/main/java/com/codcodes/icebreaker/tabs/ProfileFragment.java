@@ -210,7 +210,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
 
 
         ImageView circularImageView = (ImageView) v.findViewById(R.id.circleview);
-     
+
 
         ImageView reward_icon = (ImageView) v.findViewById(R.id.rewards_icon);
 

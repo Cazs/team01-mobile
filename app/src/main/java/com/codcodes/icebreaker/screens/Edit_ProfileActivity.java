@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
+import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.User;
@@ -168,16 +169,9 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         Uri targetUri = data.getData();
 
         //TODO: Upload image here
-        Bitmap bitmap;
-        try
-        {
-            bitmap=BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
-            circularImageView.setImageBitmap(bitmap);
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
+            Bitmap b = ImageUtils.getInstant().compressBitmapImage(targetUri.toString(),getApplicationContext());
+            circularImageView.setImageBitmap(b);
+
     }
 
     @Override

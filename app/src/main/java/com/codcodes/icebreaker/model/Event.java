@@ -11,13 +11,14 @@ public class Event
     private String address;
     private int radius;
     private String gps;
+    private int accessID;
 
     public Event()
     {
 
     }
 
-    public Event(int id, String title, String description, String address, int radius, String gps)
+    public Event(int id, String title, String description, String address, int radius, String gps,int accessID)
     {
         this.id = id;
         this.title=title;
@@ -25,6 +26,7 @@ public class Event
         this.address = address;
         this.radius =  radius;
         this.gps = gps;
+        this.accessID = accessID;
     }
 
     public int getId(){return this.id;}
@@ -33,6 +35,14 @@ public class Event
     public String getAddress(){return this.address;}
     public int getRadius(){return this.radius;}
     public String getGPS(){return this.gps;}
+
+    public int getAccessID() {
+        return accessID;
+    }
+
+    public void setAccessID(int accessID) {
+        this.accessID = accessID;
+    }
 
     public void setId(int id){this.id = id;}
     public void setTitle(String title){this.title = title;}

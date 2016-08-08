@@ -48,8 +48,9 @@ public class CustomListAdapter extends ArrayAdapter<String>
                 + eventIcons[position], options);
         //selected_photo.setImageBitmap(bitmap);
 
-        //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(rowView.getResources(),eventIcons[position]);
-        Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
+        Bitmap b = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
+                + eventIcons[position],getContext());
+        Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(b, R.dimen.dp_size_300);
 
        // Typeface h = Typeface.createFromAsset(mgr,"Infinity.ttf");
 

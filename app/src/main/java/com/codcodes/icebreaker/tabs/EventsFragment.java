@@ -178,7 +178,6 @@ public class EventsFragment extends android.support.v4.app.Fragment
             {
                 Log.d(TAG,"Clicked on item: " + position);
                 Event event = events.get(position);
-                Toast.makeText(getActivity(),"Event: " + event.getTitle(),Toast.LENGTH_LONG).show();
                 // TODO Auto-generated method stub
                 /*String Selcteditem = EventNames[+position];
                 String eventDescrip = EventDescrp[+position];
@@ -189,6 +188,8 @@ public class EventsFragment extends android.support.v4.app.Fragment
                 intent.putExtra("Event Name",event.getTitle());
                 intent.putExtra("Event Description",event.getDescription());
                 intent.putExtra("Image ID",eventIcons.get(position));
+                intent.putExtra("Event ID",event.getId());
+                intent.putExtra("Access ID",event.getAccessID());
 
                 startActivity(intent);
             }
@@ -441,6 +442,8 @@ public class EventsFragment extends android.support.v4.app.Fragment
                     case "Description":
                         ev.setDescription(val);
                         break;
+                    case "AccessID":
+                        ev.setAccessID(Integer.valueOf(val));
                 }
             }
             //look for next pair
