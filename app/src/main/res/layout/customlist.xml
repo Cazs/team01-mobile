@@ -2,15 +2,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent">
-    
-    <ImageView
+
+    <de.hdodenhof.circleimageview.CircleImageView
         android:layout_width="70dp"
         android:layout_height="70dp"
         android:id="@+id/event_icon"
         android:padding="5dp"
 
         />
-    
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -37,10 +37,6 @@
             android:textSize="8pt"
             android:maxLength="50"
             android:layout_marginLeft="10dp"
-
-        />
-
+            />
     </LinearLayout>
-
-
 </LinearLayout>

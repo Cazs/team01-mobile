@@ -121,16 +121,19 @@
                     android:layout_marginTop="@dimen/dp_size_355"
                     android:textColorHint="@color/red"
                     />
-                <Button
-                    android:layout_width="wrap_content"
-                    android:text="Sign Out"
-                    android:fontFamily="monospace"
-                    android:id="@+id/logOut"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/dp_size_400"
-                    />
+
 
             </LinearLayout>
+            <Button
+                android:layout_width="wrap_content"
+                android:text="Sign Out"
+                android:fontFamily="monospace"
+                android:background="@drawable/buttonshape"
+                android:id="@+id/logOut"
+                android:layout_marginLeft="@dimen/dp_size_140"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/dp_size_450"
+                />
         </RelativeLayout>
 
 

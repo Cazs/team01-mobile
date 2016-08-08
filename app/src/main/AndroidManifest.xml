@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.codcodes.icebreaker">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.codcodes.icebreaker">
 
-    <uses-sdk
-        android:minSdkVersion="14"
-        android:targetSdkVersion="24" />
+    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="24" />
 
     <supports-screens
         android:anyDensity="true"
@@ -13,11 +10,11 @@
         android:resizeable="true"
         android:smallScreens="true"
         android:xlargeScreens="true" />
-    <!--
-         The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
-         Google Maps Android API v2, but you must specify either coarse or fine
-         location permissions for the 'MyLocation' functionality. 
-    -->
+        <!--
+             The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
+             Google Maps Android API v2, but you must specify either coarse or fine
+             location permissions for the 'MyLocation' functionality.
+        -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -32,137 +29,80 @@
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
-    <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity
-            android:name=".screens.InitialActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+    <application android:allowBackup="true" android:icon="@mipmap/ic_launcher" android:label="@string/app_name"
+        android:supportsRtl="true" android:theme="@style/AppTheme">
+        <activity android:name="com.codcodes.icebreaker.screens.InitialActivity" android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".screens.AchievementsActivity"
-            android:label="@string/ach_name"
-            android:parentActivityName=".screens.MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".screens.MainActivity" />
+        <activity android:name="com.codcodes.icebreaker.screens.AchievementsActivity" android:label="@string/ach_name"
+            android:parentActivityName="com.codcodes.icebreaker.screens.MainActivity">
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.MainActivity" />
         </activity>
 
-        <activity
-            android:name=".screens.IceBreakActivity"
-            android:label="@string/title_activity_settings"
-            android:parentActivityName=".screens.MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".screens.MainActivity" />
+        <activity android:name="com.codcodes.icebreaker.screens.IceBreakActivity" android:label="@string/title_activity_settings"
+            android:parentActivityName="com.codcodes.icebreaker.screens.MainActivity">
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.MainActivity" />
         </activity>
         <!--<activity
-            android:name=".EventsFragment"
-            android:label="@string/app_name"
-            android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.codcodes.icebreaker.activities.MainActivity" />
-        </activity>-->
+                android:name=".EventsFragment"
+                android:label="@string/app_name"
+                android:parentActivityName=".MainActivity">
+                <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="com.codcodes.icebreaker.activities.MainActivity" />
+            </activity>-->
         <!--
-             The API key for Google Maps-based APIs is defined as a string resource.
-             (See the file "res/values/google_maps_api.xml").
-             Note that the API key is linked to the encryption key used to sign the APK.
-             You need a different API key for each encryption key, including the release key that is used to
-             sign the APK for publishing.
-             You can define the keys for the debug and release targets in src/debug/ and src/release/. 
-        -->
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" />
+                 The API key for Google Maps-based APIs is defined as a string resource.
+                 (See the file "res/values/google_maps_api.xml").
+                 Note that the API key is linked to the encryption key used to sign the APK.
+                 You need a different API key for each encryption key, including the release key that is used to
+                 sign the APK for publishing.
+                 You can define the keys for the debug and release targets in src/debug/ and src/release/.
+            -->
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="@string/google_maps_key" />
 
-        <activity
-            android:name=".screens.EventMapActivity"
-            android:label="@string/title_activity_event_map" />
-        <activity
-            android:name=".screens.SignUpActivity"
-            android:label="@string/title_activity_sign_up"
-            android:parentActivityName=".screens.InitialActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".screens.InitialActivity" />
+        <activity android:name="com.codcodes.icebreaker.screens.EventMapActivity" android:label="@string/title_activity_event_map" />
+        <activity android:name="com.codcodes.icebreaker.screens.SignUpActivity" android:label="@string/title_activity_sign_up"
+            android:parentActivityName="com.codcodes.icebreaker.screens.InitialActivity" android:theme="@style/AppTheme.NoActionBar">
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.InitialActivity" />
         </activity>
-        <activity
-            android:name=".screens.LoginActivity"
-            android:label="@string/title_activity_login"
-            android:parentActivityName=".screens.InitialActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".screens.InitialActivity" />
+        <activity android:name="com.codcodes.icebreaker.screens.LoginActivity" android:label="@string/title_activity_login"
+            android:parentActivityName="com.codcodes.icebreaker.screens.InitialActivity" android:theme="@style/AppTheme.NoActionBar">
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.InitialActivity" />
         </activity>
-        <activity
-            android:name=".screens.MainActivity"
-            android:label="@string/title_activity_main_page"
-            android:parentActivityName=".screens.LoginActivity"
-            android:screenOrientation="portrait"
+        <activity android:name="com.codcodes.icebreaker.screens.MainActivity" android:label="@string/title_activity_main_page"
+            android:parentActivityName="com.codcodes.icebreaker.screens.LoginActivity" android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".screens.LoginActivity" />
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.LoginActivity" />
         </activity>
-        <activity
-            android:name=".screens.Edit_ProfileActivity"
-            android:label=""
-            android:parentActivityName=".screens.MainActivity"
-            android:screenOrientation="portrait"
+        <activity android:name="com.codcodes.icebreaker.screens.Edit_ProfileActivity" android:label=""
+            android:parentActivityName="com.codcodes.icebreaker.screens.MainActivity" android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".screens.MainActivity" />
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.MainActivity" />
         </activity>
-        <activity
-            android:name=".screens.EventDetailActivity"
-            android:label=" "
-            android:parentActivityName=".screens.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar"
+        <activity android:name="com.codcodes.icebreaker.screens.EventDetailActivity" android:label=" "
+            android:parentActivityName="com.codcodes.icebreaker.screens.MainActivity" android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateAlwaysHidden">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".screens.MainActivity"
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.MainActivity"
                 android:windowSoftInputMode="stateAlwaysHidden" />
         </activity>
-        <activity
-            android:name=".screens.Other_Profile"
-            android:label=" "
-            android:parentActivityName=".screens.EventDetailActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="stateAlwaysHidden">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".screens.EventDetailActivity" />
+        <activity android:name="com.codcodes.icebreaker.screens.Other_Profile" android:label=" " android:parentActivityName="com.codcodes.icebreaker.screens.EventDetailActivity"
+            android:theme="@style/AppTheme.NoActionBar" android:windowSoftInputMode="stateAlwaysHidden">
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.EventDetailActivity" />
         </activity>
-        <!--
- ATTENTION: This was auto-generated to add Google Play services to your project for
-     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
-        -->
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
+            <!--
+            ATTENTION: This was auto-generated to add Google Play services to your project for
+            App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
+            -->
+        <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
 
-        <activity
-            android:name=".screens.RewardsActivity"
-            android:label="Rewards"
-            android:parentActivityName=".screens.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".screens.MainActivity" />
+        <activity android:name="com.codcodes.icebreaker.screens.RewardsActivity" android:label="Rewards"
+            android:parentActivityName="com.codcodes.icebreaker.screens.MainActivity" android:theme="@style/AppTheme.NoActionBar">
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.MainActivity" />
         </activity>
     </application>
-
 </manifest>

@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
+    android:background="@color/white"
     tools:context=".screens.Edit_ProfileActivity">
 
     <android.support.design.widget.AppBarLayout
@@ -18,160 +19,27 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             app:popupTheme="@style/AppTheme.PopupOverlay">
-        <TextView
-            android:id="@+id/Edit_Heading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Edit Profile"
-            android:textColor="@color/white"
-            android:textSize="16pt"
-            />
+            <TextView
+                android:id="@+id/Edit_Heading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit Profile"
+                android:textColor="@color/white"
+                android:textSize="16pt"
+                />
 
-        <ImageView
-            android:layout_width="@dimen/dp_size_40"
-            android:layout_height="@dimen/dp_size_40"
-            android:src="@drawable/ic_done_white_24dp"
-            android:layout_marginLeft="@dimen/dp_size_22"
-            android:id="@+id/edit_profile_done"
-
-
-            />
+            <ImageView
+                android:layout_width="@dimen/dp_size_40"
+                android:layout_height="@dimen/dp_size_40"
+                android:src="@drawable/ic_done_white_24dp"
+                android:layout_marginLeft="@dimen/dp_size_22"
+                android:id="@+id/edit_profile_done"
+                />
 
         </android.support.v7.widget.Toolbar>
 
     </android.support.design.widget.AppBarLayout>
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/white"
-        >
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-
-            >
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_width="@dimen/dp_size_120"
-                android:layout_height="@dimen/dp_size_120"
-                android:layout_marginTop="@dimen/dp_size_70"
-                android:layout_centerHorizontal="true"
-                android:src="@drawable/seleena"
-                android:id="@+id/editprofilepic"
-                />
-
-           <TextView
-               android:layout_width="wrap_content"
-               android:layout_height="match_parent"
-               android:text="Edit Photo"
-               android:textSize="14pt"
-               android:textColor="@color/black"
-               android:id="@+id/editphoto"
-               android:layout_marginTop="@dimen/dp_size_195"
-               android:layout_centerHorizontal="true"
-               />
-            <EditText
-                android:layout_width="@dimen/text_box_size"
-                android:layout_height="match_parent"
-                android:hint="First Name"
-                android:textSize="10pt"
-                android:id="@+id/editName"
-                android:layout_marginTop="@dimen/dp_size_230"
-                android:layout_centerHorizontal="true"
-                android:fontFamily="monospace"
-                android:maxLines="1"
-                android:inputType="text"
-                android:drawableLeft="@drawable/ic_perm_identity_black_24dp"
-                />
-            <EditText
-                android:layout_width="@dimen/text_box_size"
-                android:layout_height="match_parent"
-                android:hint="Last Name"
-                android:textSize="10pt"
-                android:id="@+id/editLastName"
-                android:layout_marginTop="@dimen/dp_size_280"
-                android:layout_centerHorizontal="true"
-                android:fontFamily="monospace"
-                android:maxLines="1"
-                android:inputType="text"
-                android:drawableLeft="@drawable/ic_perm_identity_black_24dp"
-                />
-            <EditText
-                android:layout_width="@dimen/text_box_size"
-                android:layout_height="match_parent"
-                android:hint="Age"
-                android:textSize="10pt"
-                android:id="@+id/editAge"
-                android:maxLines="1"
-                android:layout_marginTop="330dp"
-                android:layout_centerHorizontal="true"
-                android:fontFamily="monospace"
-                android:drawableLeft="@drawable/ic_date_range_black_24dp"
-                android:inputType="text"
-                />
-            <EditText
-                android:layout_width="@dimen/text_box_size"
-                android:layout_height="match_parent"
-                android:hint="Occupation"
-                android:textSize="10pt"
-                android:id="@+id/editOccupation"
-                android:layout_marginTop="380dp"
-                android:layout_centerHorizontal="true"
-                android:fontFamily="monospace"
-                android:maxLines="1"
-                android:inputType="text"
-                android:drawableLeft="@drawable/ic_local_library_black_24dp"
-                />
-            <Spinner
-                android:id="@+id/spinner1"
-                android:layout_width="@dimen/text_box_size"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="430dp"
-                >
-            </Spinner>
-            <EditText
-                android:layout_width="@dimen/text_box_size"
-                android:layout_height="match_parent"
-                android:fontFamily="monospace"
-                android:textSize="10pt"
-                android:hint="Catchphrase"
-                android:id="@+id/CatchPhrase"
-                android:inputType="textMultiLine"
-                android:maxLines="10"
-                android:layout_centerHorizontal="true"
-                android:scrollbars="vertical"
-                android:layout_marginTop="480dp"
-                android:drawableLeft="@drawable/ic_description_black_24dp"
-
-                />
-            <EditText
-                android:id="@+id/editbio"
-                android:inputType="textMultiLine"
-                android:layout_width="@dimen/text_box_size"
-                android:layout_height="match_parent"
-                android:fontFamily="monospace"
-                android:textSize="10pt"
-                android:hint="Bio"
-                android:maxLines="10"
-                android:layout_centerHorizontal="true"
-                android:scrollbars="vertical"
-                android:layout_marginTop="530dp"
-                android:drawableLeft="@drawable/ic_description_black_24dp"
-            />
-
-
-
-
-        </RelativeLayout>
-
-
-    </ScrollView>
-
 
     <include layout="@layout/content_edit_profile" />
-
-
-
 </android.support.design.widget.CoordinatorLayout>

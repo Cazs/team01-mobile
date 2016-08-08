@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.codcodes.icebreaker.R;
@@ -21,17 +22,21 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LoginActivity extends AppCompatActivity {
 
     EditText username;
     EditText password;
     Button btnLogin;
-
+    ProgressBar loginbar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        loginbar = (ProgressBar) findViewById(R.id.loginprogressbar);
+        loginbar.setVisibility(View.GONE);
 
 
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
@@ -44,18 +49,37 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin=(Button) findViewById(R.id.btn_login);
 
 
-
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
                 final String p = password.getText().toString();
                 final String u = username.getText().toString();
 
+
+            if (!isValidUsername(u))
+                {
+                    username.setError("Invalid Username");
+                    return;
+                }
+
+                if (!isValidPassword(p))
+                {
+                    password.setError("Invalid Password");
+                    return;
+                }
+
+                if(isValidUsername(u)||isValidPassword(p))
+                {
+                    loginbar.setVisibility(View.VISIBLE);
+                }
+
+
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try
                         {
+
                             Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
                             System.out.println("Connection established");
                             PrintWriter out = new PrintWriter(soc.getOutputStream());
@@ -85,13 +109,24 @@ public class LoginActivity extends AppCompatActivity {
                                 }
                             }
                             if(found) {
+
                                 SharedPreference.setUsername(getApplicationContext(),u);
                                 //Toast.makeText(getApplicationContext(), "User credentials are correct", Toast.LENGTH_LONG).show();
                                 Intent mainscreen = new Intent(getApplicationContext(),MainActivity.class);
                                 startActivity(mainscreen);
                             }
                             else {
-                               // Toast.makeText(getApplicationContext(), "User credentials are incorrect", Toast.LENGTH_LONG).show();
+                                if (!isValidUsername(u))
+                                {
+                                    username.setError("Invalid Username");
+                                    return;
+                                }
+
+                                if (!isValidPassword(p))
+                                {
+                                    password.setError("Invalid Password");
+                                    return;
+                                }
                                 finish();
                                 startActivity(getIntent());
                             }
@@ -109,14 +144,33 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
                 thread.start();
-
             }
         });
 
     }
 
+    private boolean isValidUsername(String username)
+    {
+        String Username_pattern = "^(?=.{5,15}$)(?![-.])[a-zA-Z0-9._]+(?<![_.])$";
+
+        Pattern pattern = Pattern.compile(Username_pattern);
+        Matcher matcher = pattern.matcher(username);
+        return matcher.matches();
+    }
+
+    private boolean isValidPassword(String password)
+    {
+        String password_pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[$@#!%*?&])[A-Za-z\\d$@#!%*?&]{6,}";
+
+        Pattern pattern = Pattern.compile(password_pattern);
+        Matcher matcher = pattern.matcher(password);
+        return matcher.matches();
+    }
+
     private void showMainPage(View view)
     {
+        loginbar = (ProgressBar) findViewById(R.id.loginprogressbar);
+        loginbar.setVisibility(View.GONE);
         Intent mainscreen = new Intent(this,MainActivity.class);
         startActivity(mainscreen);
     }
