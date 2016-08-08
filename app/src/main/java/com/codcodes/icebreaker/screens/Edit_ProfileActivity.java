@@ -55,6 +55,8 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
     private String Gender;
     private User user;
 
+    private Bitmap circularbitmap = null;
+
     private static final boolean DEBUG = true;
     private final String TAG = "ICEBREAK";
     private static boolean CHUNKED = false;
@@ -113,6 +115,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
             Catchphrase.setText(extras.getString("Catchphrase"));
             Bio.setText(extras.getString("Bio"));
             Gender = extras.getString("Gender");
+            circularbitmap = (Bitmap)extras.get("Picture");
             int gender = 0;
             switch(Gender)
             {
@@ -126,6 +129,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                     gender = 2;
                     break;
             }
+            circularImageView.setImageBitmap(circularbitmap);
             spinner.setSelection(gender);
         }
 
