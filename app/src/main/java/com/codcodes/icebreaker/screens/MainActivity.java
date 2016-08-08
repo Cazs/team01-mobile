@@ -16,6 +16,8 @@ import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     /**
      * The {@link ViewPager} that will host the section contents.
      */
+    private LinearLayout actionBar;
     private ViewPager mViewPager;
 
     private int[] imageResId =
@@ -57,29 +60,23 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
-        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-
-
-        // Set up the ViewPager with the sections adapter.
+        //Load components
+        actionBar = (LinearLayout)findViewById(R.id.actionBar);
         mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(new FragmentAdapter(getSupportFragmentManager(),MainActivity.this));
-
         TabLayout tablayout = (TabLayout) findViewById(R.id.tab_layout);
-        tablayout.setupWithViewPager(mViewPager);
+        TextView headingTextView = (TextView) findViewById(R.id.main_heading);
+        Typeface h = Typeface.createFromAsset(this.getAssets(),"Ailerons-Typeface.otf");
+        final FloatingActionButton fabSwitch = (FloatingActionButton)findViewById(R.id.fabSwitch);
+
+        //Setup components
+        mViewPager.setAdapter(new FragmentAdapter(getSupportFragmentManager(),MainActivity.this));
+        tablayout.setupWithViewPager(mViewPager);// Set up the ViewPager with the sections adapter.
         tablayout.getTabAt(0).setIcon(imageResId[0]);
         tablayout.getTabAt(1).setIcon(imageResId[1]);
         tablayout.getTabAt(2).setIcon(imageResId[2]);
-
-        Typeface h = Typeface.createFromAsset(this.getAssets(),"Ailerons-Typeface.otf");
-        TextView headingTextView = (TextView) findViewById(R.id.main_heading);
         headingTextView.setTypeface(h);
-
-        final FloatingActionButton fabSwitch = (FloatingActionButton)findViewById(R.id.fabSwitch);
         fabSwitch.hide();
+
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener()
         {
             @Override
@@ -88,7 +85,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 if(position == 1)
                 {
                     fabSwitch.show();
-                    fabSwitch.setBackgroundColor(Color.TRANSPARENT);
                 }else
                 {
                     fabSwitch.hide();
@@ -96,12 +92,14 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             }
 
             @Override
-            public void onPageSelected(int position) {
+            public void onPageSelected(int position)
+            {
 
             }
 
             @Override
-            public void onPageScrollStateChanged(int state) {
+            public void onPageScrollStateChanged(int state)
+            {
 
             }
         });
@@ -124,7 +122,8 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_settings)
+        {
             return true;
         }
 
@@ -139,7 +138,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
     public class FragmentAdapter extends FragmentPagerAdapter
     {
-
         final int PAGE_COUNT = 3;
         private Context context;
 
@@ -154,9 +152,15 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         {
             switch (position)
             {
-                case 0: return EventsFragment.newInstance(context,getIntent().getExtras());
-                case 1: return UserContactsFragment.newInstance(context, getIntent().getExtras());
-                case 2: return ProfileFragment.newInstance(context);
+                case 0:
+                    //actionBar.setVisibility(View.VISIBLE);
+                    return EventsFragment.newInstance(context,getIntent().getExtras());
+                case 1:
+                    //actionBar.setVisibility(View.INVISIBLE);
+                    return UserContactsFragment.newInstance(context, getIntent().getExtras());
+                case 2:
+                    //actionBar.setVisibility(View.INVISIBLE);
+                    return ProfileFragment.newInstance(context);
                 default: return null;
             }
         }
@@ -166,15 +170,10 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             return PAGE_COUNT;
         }
 
-
-
-
         public CharSequence getPageTitle(int position)
         {
-
             return null;
         }
-
     }
 
     @Override

@@ -12,8 +12,6 @@
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-
-
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
@@ -31,26 +29,14 @@
                     android:textColor="@color/white"
                     android:textSize="16pt"
                     />
-
-
             </android.support.v7.widget.Toolbar>
-
-
-
-
     </android.support.design.widget.AppBarLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-
-        >
-
-
+        android:layout_height="wrap_content">
     </LinearLayout>
 
     <include layout="@layout/content_other_profile" />
-
-
 
 </android.support.design.widget.CoordinatorLayout>
