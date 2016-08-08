@@ -14,20 +14,24 @@ import android.provider.MediaStore;
 import java.io.ByteArrayOutputStream;
 
 /**
- * Created by USER on 2016/07/24.
+ * Created by austin on 2016/07/24.
  */
-public class ImageUtils {
+public class ImageUtils
+{
     public static ImageUtils mInstant;
 
-    public static ImageUtils getInstant() {
-        if (mInstant == null) {
+    public static ImageUtils getInstant()
+    {
+        if (mInstant == null)
+        {
             mInstant = new ImageUtils();
         }
         return mInstant;
 
     }
 
-    public Bitmap compressBitmapImage(String imagePath, Context c) {
+    public Bitmap compressBitmapImage(String imagePath, Context c)
+    {
         String filePath = getRealPathFromURI(imagePath, c);
         float maxHeight = 816.0f;
         float maxWidth = 612.0f;

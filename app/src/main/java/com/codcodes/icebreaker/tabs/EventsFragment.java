@@ -63,8 +63,6 @@ public class EventsFragment extends android.support.v4.app.Fragment
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        validateStoragePermissions(getActivity());
-
         final View v = inflater.inflate(R.layout.fragment_events,container,false);
         list = (ListView) v.findViewById(R.id.list);
         eventNames = new ArrayList<>();
@@ -76,11 +74,9 @@ public class EventsFragment extends android.support.v4.app.Fragment
            @Override
            public void run()
            {
-               //events = readEvents();
                events = new ArrayList<>();
                try
                {
-                   System.out.println("Preparing to read events...");
                    String eventsJson = Restful.getJsonFromURL("readEvents");
                    JSON.<Event>getJsonableObjectsFromJson(eventsJson,events,Event.class);
                } catch (IOException e)
@@ -112,29 +108,22 @@ public class EventsFragment extends android.support.v4.app.Fragment
                }
                else//All is well
                {
-                       //Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-                       //Log.d(TAG,"Connection established");
-                       for(Event e:events)
+                   for(Event e:events)
+                   {
+                       eventNames.add(e.getTitle());
+                       eventDescriptions.add(e.getDescription());
+                       String iconName = "event_icons-"+e.getId();
+                       eventIcons.add("/Icebreak/events/"+iconName + ".png");
+                       //Download the file only if it has not been cached
+                       if(!new File(Environment.getExternalStorageDirectory().getPath()+"/Icebreak/events/" + iconName + ".png").exists())
                        {
-                           eventNames.add(e.getTitle());
-                           eventDescriptions.add(e.getDescription());
-                           //eventIcons.add(R.drawable.ultra_icon);//temporarily use this icon for all events
-                           String iconName = "event_icons-"+e.getId()+".png";
-                           //String iconName = "event_icons-10.png";
-                           eventIcons.add("/Icebreak/events/"+iconName);
-                           //Download the file only if it has not been cached
-                           if(!new File(Environment.getExternalStorageDirectory().getPath()+"/Icebreak/" + iconName).exists())
-                           {
-                               Log.d(TAG,"No cached "+iconName+",Image download in progress..");
-                               if(imageDownloader(iconName, "/events"))
-                                   Log.d(TAG,"Image download successful");
-                               else
-                                   Log.d(TAG,"Image download unsuccessful");
-                           }
+                           Log.d(TAG,"No cached "+iconName+",Image download in progress..");
+                           if(Restful.imageDownloader(iconName,".png", "/events", getActivity()))
+                               Log.d(TAG,"Image download successful");
+                           else
+                               Log.d(TAG,"Image download unsuccessful");
                        }
-                   /*String[] eventNamesArr = (String[])eventNames.toArray();
-                   Integer[] eventIconsArr = (Integer[])eventIcons.toArray();
-                   String[] eventDescriptionsArr = (String[])eventDescriptions.toArray();*/
+                   }
                    String[] eventNamesArr = new String[events.size()];
                    String[] eventIconsArr = new String[events.size()];
                    String[] eventDescriptionsArr = new String[events.size()];
@@ -142,10 +131,6 @@ public class EventsFragment extends android.support.v4.app.Fragment
                    eventDescriptionsArr = eventDescriptions.toArray(eventDescriptionsArr);
                    eventIconsArr = eventIcons.toArray(eventIconsArr);
 
-                   /*Object[] eventNamesArr = eventNames.toArray();
-                   Object[] eventIconsArr = eventIcons.toArray();
-                   Object[] eventDescriptionsArr = eventDescriptions.toArray();*/
-                   Log.d(TAG,"Preparing to apply events adapter...");
                    final CustomListAdapter adapter = new CustomListAdapter(getActivity(),eventNamesArr,eventIconsArr,eventDescriptionsArr);
                    runOnUiThread(new Runnable()
                    {
@@ -153,17 +138,13 @@ public class EventsFragment extends android.support.v4.app.Fragment
                        public void run()
                        {
                            list.setAdapter(adapter);
-                           Log.d(TAG,"Done applying events");
+                           Log.d(TAG,"Set events list");
                        }
                    });
                }
            }
        });
         eventsThread.start();
-
-        /*Typeface h = Typeface.createFromAsset(mgr,"Ailerons-Typeface.otf");
-        TextView headingTextView = (TextView) v.findViewById(R.id.main_heading);
-        headingTextView.setTypeface(h);*/
 
         Bundle extras = getArguments();
         final PulsatorLayout pulsator = (PulsatorLayout) v.findViewById(R.id.pulsator);
@@ -181,9 +162,11 @@ public class EventsFragment extends android.support.v4.app.Fragment
         {
 
             pulsator.start();
-            pulsator.postDelayed(new Runnable() {
+            pulsator.postDelayed(new Runnable()
+            {
                 @Override
-                public void run() {
+                public void run()
+                {
                     pulsator.setVisibility(View.GONE);
                     list.setVisibility(View.VISIBLE);
 
@@ -215,130 +198,6 @@ public class EventsFragment extends android.support.v4.app.Fragment
             }
         });
         return v;
-    }
-
-    public void validateStoragePermissions(Activity activity)
-    {
-        int REQUEST_EXTERNAL_STORAGE = 1;
-        String[] PERMISSIONS_STORAGE =
-                {
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                };
-        //Check for write permissions
-        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permission != PackageManager.PERMISSION_GRANTED)
-        {
-            //No permission - prompt the user for permission
-            ActivityCompat.requestPermissions
-                    (
-                        activity,
-                        PERMISSIONS_STORAGE,
-                        REQUEST_EXTERNAL_STORAGE
-                    );
-        }
-    }
-
-    public static boolean imageDownloader(String image, String destPath)
-    {
-        try
-        {
-            System.out.println("Attempting to download image: " + image);
-            Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-            System.out.println("Connection established, Sending request..");
-            PrintWriter out = new PrintWriter(soc.getOutputStream());
-            //Android: final String base64 = android.util.Base64.encodeToString(bytes, android.util.Base64.DEFAULT);
-            String headers = "GET /IBUserRequestService.svc/imageDownload/"+image+" HTTP/1.1\r\n"
-                    + "Host: icebreak.azurewebsites.net\r\n"
-                    + "Content-Type: text/plain;charset=utf-8;\r\n\r\n";
-
-            out.print(headers);
-            out.flush();
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-            String resp, base64;
-            while (!in.ready()) {
-            }
-            Pattern pattern = Pattern.compile("^[A-F0-9]+$");//"((\\d*[A-Fa-f]\\d*){2,}|\\d{1})");//"([0-9A-Fa-f]{2,}|[0-9]{1})");//"[0-9A-Fa-f]");
-            String payload = "";
-            while ((resp = in.readLine()) != null)
-            {
-                //System.out.println(resp);
-                if (resp.toLowerCase().contains("400 bad request"))
-                {
-                    System.out.println("<<<400 bad request>>>");
-                    return false;
-                }
-                if (resp.toLowerCase().contains("404 not found"))
-                {
-                    System.out.println("<<<404 not found>>>");
-                    return false;
-                }
-                if (resp.toLowerCase().contains("transfer-encoding"))
-                {
-                    String encoding = resp.split(":")[1];
-                    if (encoding.toLowerCase().contains("chunked"))
-                    {
-                        CHUNKED = true;
-                        System.out.println("Preparing for chunked data.");
-                    }
-                }
-
-                if (CHUNKED)
-                {
-                    Matcher m = pattern.matcher(resp.toUpperCase());
-                    if (m.find())
-                    {
-                        int dec = hexToDecimal(m.group(0));
-                        String chunk = in.readLine();
-                        if (dec == 0)
-                            break;//End of chunks
-                        if (chunk.length() > 0)
-                            payload += chunk;//String.copyValueOf(chunk);
-                    }
-                }
-            }
-            out.close();
-            //in.close();
-            soc.close();
-
-            //System.out.println(payload);
-            payload = payload.split(":")[1];
-            payload = payload.replaceAll("\"", "");
-
-            payload = payload.substring(0,payload.length()-1);
-            if(!payload.equals("FNE"))
-            {
-                byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);//Base64.getDecoder().decode(payload.getBytes());
-                WritersAndReaders.saveImage(binFileArr, destPath + "/" + image);
-                System.out.println("Succesfully wrote to disk");//"\n>>>>>"+base64bytes);
-                return true;
-            }
-            else
-            {
-                //TODO: Throw FileNotFoundException
-                System.err.println("Server> File not found");
-                return false;
-            }
-        }
-        catch (IOException e)
-        {
-            System.err.println(e.getMessage());
-            return  false;
-        }
-    }
-
-    public static int hexToDecimal(String hex)
-    {
-        String possibleDigits = "0123456789ABCDEF";
-        int dec = 0;
-        for(int i=0;i<hex.length();i++)
-        {
-            char currChar = hex.charAt(i);
-            int x = possibleDigits.indexOf(currChar);
-            dec = 16*dec + x;
-        }
-        return dec;
     }
 
     public static EventsFragment newInstance(Context context, Bundle b)
