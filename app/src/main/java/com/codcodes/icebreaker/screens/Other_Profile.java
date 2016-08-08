@@ -13,7 +13,12 @@ public class Other_Profile extends AppCompatActivity
 {
 
     private TextView profile;
-
+    private String fName;
+    private String LName;
+    private String Age;
+    private String Occupation;
+    private String Bio;
+    private String Gender;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -21,6 +26,12 @@ public class Other_Profile extends AppCompatActivity
         setContentView(R.layout.activity_other_profile);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        Bundle extras = this.getIntent().getExtras();
+        if(extras!=null)
+        {
+            fName = extras.getString("First Name");
+        }
 
         profile = (TextView)findViewById(R.id.Profile);
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
@@ -33,16 +44,18 @@ public class Other_Profile extends AppCompatActivity
         Typeface h = Typeface.createFromAsset(getAssets(),"Infinity.ttf");
         TextView name = (TextView) findViewById(R.id.other_profile_name);
         name.setTypeface(h);
-        name.setText("Selena Gomez"); // TODO: get name from database
+
+        name.setText(fName+" "+LName); // TODO: get name from database
 
 
         TextView age = (TextView) findViewById(R.id.other_profile_age);
         age.setTypeface(h);
-        age.setText("Age: 21");
+
+        age.setText("Age:"+ Age);
 
         TextView occupation = (TextView) findViewById(R.id.other_profile_occupation);
         occupation.setTypeface(h);
-        occupation.setText("Singer/Songwriter/Actress");
+        occupation.setText(Occupation);
 
         TextView bio_title = (TextView) findViewById(R.id.other_profile_bio_title);
         bio_title.setTypeface(h);
@@ -50,7 +63,7 @@ public class Other_Profile extends AppCompatActivity
 
         TextView bio = (TextView) findViewById(R.id.other_profile_bio);
         bio.setTypeface(h);
-        bio.setText("A Caffeine dependent life-form. A human Being. A Women of mystery and power,whose power is exceeded only by her mystery. Absolutely awkward...");
+        bio.setText(Bio);
     }
 
 

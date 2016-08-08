@@ -153,7 +153,31 @@ public class EventDetailActivity extends AppCompatActivity {
             }
         });
 
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
 
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                Log.d(TAG,"Clicked on item: " + position);
+                User user = users.get(position);
+                // TODO Auto-generated method stub
+                /*String Selcteditem = EventNames[+position];
+                String eventDescrip = EventDescrp[+position];
+                int imageID = imgid[+position];
+                */
+
+                Intent intent = new Intent(view.getContext(),Other_Profile.class);
+                intent.putExtra("First Name",user.getFirstname());
+                intent.putExtra("Last Name",user.getLastname());
+                intent.putExtra("Age",user.getAge());
+                intent.putExtra("Gender",user.getGender());
+                intent.putExtra("Occupation",user.getOccupation());
+                intent.putExtra("Bio",user.getBio());
+
+                startActivity(intent);
+            }
+        });
 
 
 
