@@ -134,6 +134,8 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     public void onListFragmentInteraction(User item)
     {
         Toast.makeText(this,item.getFirstname(),Toast.LENGTH_LONG).show();
+        Intent intent = new Intent(getApplicationContext(),messaging.class);
+        startActivity(intent);
     }
 
     public class FragmentAdapter extends FragmentPagerAdapter

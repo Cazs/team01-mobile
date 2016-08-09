@@ -129,4 +129,6 @@
     <string name="title_activity_rewards">RewardsActivity</string>
     <string name="title_activity_main">MainActivity</string>
 
+    <string name="fb_login_protocol_scheme">fbAPP_ID</string>
+
 </resources>

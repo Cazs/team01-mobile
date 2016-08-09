@@ -17,6 +17,8 @@ import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookSdk;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,13 +37,14 @@ public class LoginActivity extends AppCompatActivity {
     EditText password;
     Button btnLogin;
     ProgressBar loginbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_login);
         loginbar = (ProgressBar) findViewById(R.id.loginprogressbar);
         loginbar.setVisibility(View.GONE);
-
 
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         TextView headingTextView = (TextView) findViewById(R.id.LogIn);
