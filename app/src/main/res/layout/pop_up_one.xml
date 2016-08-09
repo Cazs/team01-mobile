@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/transparent"
+        >
+
+        <TextView
+            android:id="@+id/popup1_profile_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textSize="20pt"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/dp_size_10"
+            />
+
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="@dimen/dp_size_200"
+            android:layout_height="@dimen/dp_size_200"
+            android:layout_marginTop="@dimen/dp_size_60"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/other_pic"
+            />
+
+        <TextView
+            android:id="@+id/popup1_profile_age"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textSize="12pt"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/dp_size_265"
+            />
+
+        <TextView
+            android:id="@+id/popup1_profile_occupation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textSize="10pt"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/dp_size_290"
+            android:maxLines="1"
+            android:maxLength="30"
+            android:ellipsize="end"
+            />
+        <TextView
+            android:id="@+id/popup1_profile_gender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textSize="10pt"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/dp_size_320"
+            android:maxLines="1"
+            android:maxLength="20"
+            />
+
+        <TextView
+            android:id="@+id/popup1_profile_bio_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textSize="12pt"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/dp_size_340"
+            />
+
+        <TextView
+            android:id="@+id/popup1_profile_bio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:gravity="center"
+            android:textSize="10pt"
+            android:layout_marginTop="@dimen/dp_size_360"
+            android:maxLength="150"
+            />
+
+        <Button
+            android:id="@+id/popup1_Accept"
+            android:layout_marginTop="@dimen/dp_size_410"
+            android:layout_marginLeft="@dimen/dp_size_60"
+            android:layout_width="170dp"
+            android:layout_height="40dp"
+            android:fontFamily="monospace"
+            android:textSize="12pt"
+            android:text="Accept"
+            android:background="@drawable/icebreak_button"
+
+            />
+
+        <Button
+            android:id="@+id/popup1_Reject"
+            android:layout_marginTop="@dimen/dp_size_460"
+            android:layout_marginLeft="@dimen/dp_size_60"
+            android:layout_width="170dp"
+            android:layout_height="40dp"
+            android:fontFamily="monospace"
+            android:textSize="12pt"
+            android:text="Reject"
+            android:background="@drawable/buttonshape"
+
+            />
+
+    </RelativeLayout>
+
+</RelativeLayout>

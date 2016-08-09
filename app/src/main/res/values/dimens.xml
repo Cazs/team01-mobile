@@ -119,4 +119,5 @@
     <dimen name="dp_size_102">102dp</dimen>
     <dimen name="dp_size_2">2dp</dimen>
     <dimen name="dp_size_540dp">540dp</dimen>
+    <dimen name="dp_size_410">410dp</dimen>
 </resources>
