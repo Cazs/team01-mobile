@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
      */
     private LinearLayout actionBar;
     private ViewPager mViewPager;
-    public static ContactListSwitches val_switch = ContactListSwitches.SHOW_USER_CONTACTS;
+    public static ContactListSwitches val_switch = ContactListSwitches.SHOW_USERS_AT_EVENT;
 
     private int[] imageResId =
             {

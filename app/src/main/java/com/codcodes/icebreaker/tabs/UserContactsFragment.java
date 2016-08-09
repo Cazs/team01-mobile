@@ -130,7 +130,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 {
                     swipeRefreshLayout.setRefreshing(true);
                     Toast.makeText(getActivity(),"Refreshing",Toast.LENGTH_SHORT).show();
-                    refresh();
+                    //refresh();
                 }
             }
         );
@@ -355,6 +355,6 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
         //refresh();
         swipeRefreshLayout.setRefreshing(true);
         Toast.makeText(getActivity(),"Refreshing",Toast.LENGTH_SHORT).show();
-        refresh();
+        //refresh();
     }
 }
