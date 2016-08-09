@@ -19,6 +19,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.codcodes.icebreaker.auxilary.ContactListSwitches;
 import com.codcodes.icebreaker.auxilary.CustomListAdapter;
 import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.auxilary.Restful;
@@ -38,6 +39,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -108,49 +110,52 @@ public class EventsFragment extends android.support.v4.app.Fragment
                }
                else//All is well
                {
-                   for(Event e:events)
+                   try
                    {
-                       eventNames.add(e.getTitle());
-                       eventDescriptions.add(e.getDescription());
-                       String iconName = "event_icons-"+e.getId();
-                       eventIcons.add("/Icebreak/events/"+iconName + ".png");
-                       //Download the file only if it has not been cached
-                       if(!new File(Environment.getExternalStorageDirectory().getPath()+"/Icebreak/events/" + iconName + ".png").exists())
+                       for (Event e : events)
                        {
-                           Log.d(TAG,"No cached "+iconName+",Image download in progress..");
-                           if(Restful.imageDownloader(iconName,".png", "/events", getActivity()))
-                               Log.d(TAG,"Image download successful");
-                           else
-                               Log.d(TAG,"Image download unsuccessful");
+                           eventNames.add(e.getTitle());
+                           eventDescriptions.add(e.getDescription());
+                           String iconName = "event_icons-" + e.getId();
+                           eventIcons.add("/Icebreak/events/" + iconName + ".png");
+                           //Download the file only if it has not been cached
+                           if (!new File(Environment.getExternalStorageDirectory().getPath() + "/Icebreak/events/" + iconName + ".png").exists()) {
+                               Log.d(TAG, "No cached " + iconName + ",Image download in progress..");
+                               if (Restful.imageDownloader(iconName, ".png", "/events", getActivity()))
+                                   Log.d(TAG, "Image download successful");
+                               else
+                                   Log.d(TAG, "Image download unsuccessful");
+                           }
                        }
-                   }
-                   String[] eventNamesArr = new String[events.size()];
-                   String[] eventIconsArr = new String[events.size()];
-                   String[] eventDescriptionsArr = new String[events.size()];
-                   eventNamesArr = eventNames.toArray(eventNamesArr);
-                   eventDescriptionsArr = eventDescriptions.toArray(eventDescriptionsArr);
-                   eventIconsArr = eventIcons.toArray(eventIconsArr);
+                       String[] eventNamesArr = new String[events.size()];
+                       String[] eventIconsArr = new String[events.size()];
+                       String[] eventDescriptionsArr = new String[events.size()];
+                       eventNamesArr = eventNames.toArray(eventNamesArr);
+                       eventDescriptionsArr = eventDescriptions.toArray(eventDescriptionsArr);
+                       eventIconsArr = eventIcons.toArray(eventIconsArr);
 
-                   final CustomListAdapter adapter = new CustomListAdapter(getActivity(),eventNamesArr,eventIconsArr,eventDescriptionsArr);
-                   runOnUiThread(new Runnable()
+                       final CustomListAdapter adapter = new CustomListAdapter(getActivity(), eventNamesArr, eventIconsArr, eventDescriptionsArr);
+                       runOnUiThread(new Runnable() {
+                           @Override
+                           public void run() {
+                               list.setAdapter(adapter);
+                               Log.d(TAG, "Set events list");
+                           }
+                       });
+                   }
+                   catch(ConcurrentModificationException e)
                    {
-                       @Override
-                       public void run()
-                       {
-                           list.setAdapter(adapter);
-                           Log.d(TAG,"Set events list");
-                       }
-                   });
+                       Log.d(TAG, e.getMessage());
+                   }
                }
            }
-       });
+        });
         eventsThread.start();
 
         Bundle extras = getArguments();
         final PulsatorLayout pulsator = (PulsatorLayout) v.findViewById(R.id.pulsator);
         if(extras!=null)
         {
-
             boolean check = extras.getBoolean("com.codcodes.icebreaker.Back");
             if (check)
             {

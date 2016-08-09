@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.ContactListSwitches;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
@@ -27,6 +28,7 @@ import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.auxilary.UserContactsRecyclerViewAdapter;
 import com.codcodes.icebreaker.model.User;
+import com.codcodes.icebreaker.screens.MainActivity;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -59,10 +61,13 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
     private static final String TAG = "IB/UserContactsFragment";
+    private static final boolean DEBUG = true;
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private static boolean CHUNKED = false;
     private IOnListFragmentInteractionListener mListener;
+    private int curr_event_id;
+    private RecyclerView recyclerView;
     //private SwipeListAdapter swipeAdapter;
     private SwipeRefreshLayout swipeRefreshLayout;
     /**
@@ -71,6 +76,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
      */
     public UserContactsFragment()
     {
+        this.curr_event_id = DEBUG?0:-1;
     }
 
     // TODO: Customize parameter initialization
@@ -93,6 +99,8 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
         {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
+
+
     }
 
     public static UserContactsFragment newInstance(Context context, Bundle b)
@@ -120,9 +128,9 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 @Override
                 public void run()
                 {
-                    swipeRefreshLayout.setRefreshing(false);
-
-                    //TODO: Refresh action
+                    swipeRefreshLayout.setRefreshing(true);
+                    Toast.makeText(getActivity(),"Refreshing",Toast.LENGTH_SHORT).show();
+                    refresh();
                 }
             }
         );
@@ -132,7 +140,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
         if (rview instanceof RecyclerView)
         {
             Context context = view.getContext();
-            final RecyclerView recyclerView = (RecyclerView) rview;
+            recyclerView = (RecyclerView) rview;
             if (mColumnCount <= 1)
             {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
@@ -142,17 +150,33 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
 
-            Thread tContactsLoader = new Thread(new Runnable()
+            refresh();
+        }
+        return view;
+    }
+
+    public void loadEventId()
+    {
+        //TODO: Do SQLliteDB stuff
+        //for now leave at 0 - if DEBUG else -1
+    }
+
+    public void refresh()
+    {
+        Thread tContactsLoader = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
             {
-                @Override
-                public void run()
+                Looper.prepare();
+                if(curr_event_id >= 0)
                 {
-                    Looper.prepare();
                     try
                     {
-                        String contactsJson = Restful.getJsonFromURL("getUserContacts");
+                        String contactsJson = Restful.getJsonFromURL("getUsersAtEvent/" + curr_event_id);
                         final ArrayList<User> contacts = new ArrayList<>();
                         JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
+                        System.err.println("Contacts at event: " + curr_event_id+ " " + contacts.size() + " people");
                         //Attempt to load images into memory and set the list adapter
                         final ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
                         Bitmap circularbitmap = null;
@@ -160,15 +184,12 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                         BitmapFactory.Options options = new BitmapFactory.Options();
                         options.inPreferredConfig = Bitmap.Config.ALPHA_8;
 
-                        for (User u : contacts)
-                        {
+                        for (User u : contacts) {
                             //Look for user profile image
                             if (!new File(Environment.getExternalStorageDirectory().getPath()
-                                    + "/Icebreak/profile/" + u.getUsername() + ".png").exists())
-                            {
+                                    + "/Icebreak/profile/" + u.getUsername() + ".png").exists()) {
                                 //if (imageDownload(u.getUsername() + ".png", "/profile")) {
-                                if (Restful.imageDownloader(u.getUsername(), ".png", "/profile", getActivity()))
-                                {
+                                if (Restful.imageDownloader(u.getUsername(), ".png", "/profile", getActivity())) {
                                     bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
                                             + "/Icebreak/profile/" + u.getUsername() + ".png", options);
                                     //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
@@ -176,11 +197,9 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                                 } else //user has no profile yet - attempt to load default profile image
                                 {
                                     if (!new File(Environment.getExternalStorageDirectory().getPath().toString()
-                                            + "/Icebreak/profile/profile_default.png").exists())
-                                    {
+                                            + "/Icebreak/profile/profile_default.png").exists()) {
                                         //Attempt to download default profile image
-                                        if (Restful.imageDownloader("profile_default",".png", "/profile", getActivity()))
-                                        {
+                                        if (Restful.imageDownloader("profile_default", ".png", "/profile", getActivity())) {
                                             /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
                                                     + "/Icebreak/profile/profile_default.png", getActivity());*/
                                             options = new BitmapFactory.Options();
@@ -207,50 +226,106 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                             } else//user profile image exists
                             {
                                 bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                        + "/Icebreak/profile/" + u.getUsername() + ".png",getActivity());
+                                        + "/Icebreak/profile/" + u.getUsername() + ".png", getActivity());
                                 circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                             }
-                            if(bitmap == null || circularbitmap == null)
-                            {
+                            if (bitmap == null || circularbitmap == null) {
                                 System.err.println("Bitmap is null");
-                            }
-                            else
-                            {
+                            } else {
                                 bitmaps.add(circularbitmap);
                                 bitmap.recycle();
                             }
                         }
-                        runOnUiThread(new Runnable()
+                        if(MainActivity.val_switch == ContactListSwitches.SHOW_USERS_AT_EVENT)
                         {
-                            @Override
-                            public void run()
+                            runOnUiThread(new Runnable()
                             {
-                                recyclerView.setAdapter(new UserContactsRecyclerViewAdapter(contacts, bitmaps, mListener));
-                                Log.d(TAG,"Set contact list");
+                                @Override
+                                public void run()
+                                {
+                                    if (recyclerView != null)
+                                    {
+                                        recyclerView.setAdapter(new UserContactsRecyclerViewAdapter(contacts, bitmaps, mListener));
+                                        Log.d(TAG, "Set contact list");
+                                    }
+                                }
+                            });
+                        }
+                    } catch (IOException e) {
+                        //TODO: Error Logging
+                        e.printStackTrace();
+                    } catch (java.lang.InstantiationException e) {
+                        //TODO: Error Logging
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        //TODO: Error Logging
+                        e.printStackTrace();
+                    }
+                }
+                //TODO:load contacts from local SQLiteDB and check with remote DB
+                if(MainActivity.val_switch == ContactListSwitches.SHOW_USER_CONTACTS) {
+                    /**Load contacts from local DB (and double check with server) and set adapter
+                     *
+                     * runOnUiThread(new Runnable() {
+                    @Override public void run() {
+                    if (recyclerView != null) {
+                    recyclerView.setAdapter(new UserContactsRecyclerViewAdapter(contacts, bitmaps, mListener));
+                    Log.d(TAG, "Set contact list");
+                    }
+                    }
+                    });
+                     */
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            if (recyclerView != null)
+                            {
+                                swipeRefreshLayout.setRefreshing(false);
+                                Log.d(TAG, "Disabled refresh");
                             }
-                        });
-                    }
-                    catch (IOException e)
-                    {
-                        //TODO: Error Logging
-                        e.printStackTrace();
-                    }
-                    catch (java.lang.InstantiationException e)
-                    {
-                        //TODO: Error Logging
-                        e.printStackTrace();
-                    }
-                    catch (IllegalAccessException e)
-                    {
-                        //TODO: Error Logging
-                        e.printStackTrace();
+                        }
+                    });
+                }
+            }
+        });
+        tContactsLoader.start();
+    }
+
+    /*public void refreshContacts()
+    {
+        if(curr_event_id >= 0) {
+            //TODO: load contacts at that event
+            Thread tContactsLoader = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Looper.prepare();
+                    try {
+                        String contactsJson = Restful.getJsonFromURL("getUsersAtEvent/" + curr_event_id);
+                        final ArrayList<User> contacts = new ArrayList<>();
+                        JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
+                        //Attempt to load images into memory and set the list adapter
+
+                        for (User u : contacts) {
+
+                        }
+                    } catch (java.lang.InstantiationException e) {
+                        Log.d(TAG, e.getMessage());
+                    } catch (IllegalAccessException e) {
+                        Log.d(TAG, e.getMessage());
+                    } catch (IOException e) {
+                        Log.d(TAG, e.getMessage());
                     }
                 }
             });
             tContactsLoader.start();
         }
-        return view;
-    }
+        else
+        {
+            //TODO:load contacts from local SQLiteDB and check with remote DB
+        }
+    }*/
 
     @Override
     public void onAttach(Context context)
@@ -277,6 +352,9 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
     @Override
     public void onRefresh()
     {
-
+        //refresh();
+        swipeRefreshLayout.setRefreshing(true);
+        Toast.makeText(getActivity(),"Refreshing",Toast.LENGTH_SHORT).show();
+        refresh();
     }
 }

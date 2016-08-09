@@ -1,9 +1,12 @@
 package com.codcodes.icebreaker.screens;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -17,16 +20,21 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.ContactListSwitches;
+import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.tabs.EventsFragment;
 import com.codcodes.icebreaker.tabs.ProfileFragment;
 import com.codcodes.icebreaker.tabs.UserContactsFragment;
+
+import java.io.File;
 
 public class MainActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
 {
@@ -46,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
      */
     private LinearLayout actionBar;
     private ViewPager mViewPager;
+    public static ContactListSwitches val_switch = ContactListSwitches.SHOW_USER_CONTACTS;
 
     private int[] imageResId =
             {
@@ -76,6 +85,18 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         tablayout.getTabAt(2).setIcon(imageResId[2]);
         headingTextView.setTypeface(h);
         fabSwitch.hide();
+
+        fabSwitch.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                if(val_switch==ContactListSwitches.SHOW_USER_CONTACTS)
+                    val_switch=ContactListSwitches.SHOW_USERS_AT_EVENT;
+                else
+                    val_switch=ContactListSwitches.SHOW_USER_CONTACTS;
+            }
+        });
 
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener()
         {
@@ -134,6 +155,57 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     public void onListFragmentInteraction(User item)
     {
         Toast.makeText(this,item.getFirstname(),Toast.LENGTH_LONG).show();
+        Dialog userProfileScreen = new Dialog(this);
+        userProfileScreen.setContentView(R.layout.content_other_user_profile);
+
+        TextView username = (TextView)userProfileScreen.findViewById(R.id.other_user_name);
+        ImageView profile_image = (ImageView)userProfileScreen.findViewById(R.id.other_user_profile_image);
+        TextView level = (TextView)userProfileScreen.findViewById(R.id.other_user_level);
+        TextView age = (TextView)userProfileScreen.findViewById(R.id.other_user_age);
+        TextView gender = (TextView)userProfileScreen.findViewById(R.id.other_user_gender);
+        TextView occupation = (TextView)userProfileScreen.findViewById(R.id.other_user_occupation);
+        TextView phrase = (TextView)userProfileScreen.findViewById(R.id.other_user_phrase);
+        TextView bio = (TextView)userProfileScreen.findViewById(R.id.other_user_bio);
+
+        username.setText(item.getUsername());
+        /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
+                                                + "/Icebreak/profile/profile_default.png",getActivity());*/
+        Bitmap bitmap = null;
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+        if(new File(Environment.getExternalStorageDirectory().getPath().toString()
+                + "/Icebreak/profile/"+item.getUsername()+".png").exists())
+        {
+            bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
+                    + "/Icebreak/profile/"+item.getUsername()+".png", options);
+        }
+        else
+        {
+            if(new File(Environment.getExternalStorageDirectory().getPath().toString()
+                    + "/Icebreak/profile/profile_default.png").exists())
+            {
+                bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
+                        + "/Icebreak/profile/profile_default.png", options);
+            }
+        }
+        if(bitmap!=null)
+        {
+            Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
+            profile_image.setImageBitmap(circularbitmap);
+        }
+        else
+        {
+            Toast.makeText(this,"Could not get profile for selected user, nor could we find the default image.",Toast.LENGTH_LONG).show();
+        }
+
+        //level.setText(item.getLevel());
+        //age.setText(item.getAge());
+        gender.setText(item.getGender());
+        occupation.setText(item.getOccupation());
+        phrase.setText(item.getCatchphrase());
+        bio.setText(item.getBio());
+
+        userProfileScreen.show();
     }
 
     public class FragmentAdapter extends FragmentPagerAdapter
