@@ -169,7 +169,12 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         Uri targetUri = data.getData();
 
         //TODO: Upload image here
-        Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(targetUri.getPath(),getApplicationContext());
+        Bitmap bitmap = null;
+        try {
+            bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         circularImageView.setImageBitmap(bitmap);
 
     }

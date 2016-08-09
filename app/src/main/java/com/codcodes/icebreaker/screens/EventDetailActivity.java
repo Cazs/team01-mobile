@@ -267,7 +267,7 @@ public class EventDetailActivity extends AppCompatActivity {
                 else if(users.isEmpty())
                 {
                     //TODO: Notify user
-                    Log.d(TAG,"No events were found");
+                    Log.d(TAG,"No users were found");
                 }
                 else//All is well
                 {
