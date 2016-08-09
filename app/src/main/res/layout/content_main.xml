@@ -20,7 +20,8 @@
         <ImageView
             android:layout_width="@dimen/logo_h"
             android:layout_height="@dimen/logo_w"
-            android:layout_marginTop="@dimen/logo_tmargin"
+            android:layout_marginTop="@dimen/dp_size_2"
+            android:layout_marginLeft="@dimen/dp_size_20"
             android:src="@mipmap/ic_launcher"
             />
 
@@ -29,7 +30,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/app_name"
-            android:paddingLeft="@dimen/title_padding"
             android:textSize="29pt"
             android:textColor="@color/white"
             />

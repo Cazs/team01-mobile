@@ -29,10 +29,10 @@
                 />
 
             <ImageView
-                android:layout_width="@dimen/dp_size_40"
-                android:layout_height="@dimen/dp_size_40"
+                android:layout_width="@dimen/dp_size_30"
+                android:layout_height="@dimen/dp_size_30"
                 android:src="@drawable/ic_done_white_24dp"
-                android:layout_marginLeft="@dimen/dp_size_100"
+                android:layout_marginLeft="@dimen/dp_size_30"
                 android:id="@+id/edit_profile_done"
                 />
 

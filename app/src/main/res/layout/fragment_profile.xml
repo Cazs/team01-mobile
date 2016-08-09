@@ -120,14 +120,22 @@
                     />
 
             </LinearLayout>
-
-            <Button
-                android:id="@+id/logOut"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_below="@+id/link_container"
-                android:text="Sign Out"
-                android:fontFamily="monospace"/>
         </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:id="@+id/logOut"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/dp_size_430"
+            android:background="@drawable/buttonshape"
+            android:layout_marginLeft="@dimen/dp_size_140"
+            android:text="Sign Out"
+            android:fontFamily="monospace"/>
+    </RelativeLayout>
+
 </RelativeLayout>
