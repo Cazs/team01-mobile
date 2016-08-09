@@ -120,4 +120,7 @@
     <dimen name="dp_size_2">2dp</dimen>
     <dimen name="dp_size_540dp">540dp</dimen>
     <dimen name="dp_size_410">410dp</dimen>
+    <dimen name="dp_size_490">490dp</dimen>
+    <dimen name="dp_size_440">440dp</dimen>
+    <dimen name="dp_size_510">510dp</dimen>
 </resources>

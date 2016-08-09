@@ -5,7 +5,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/transparent"
+        android:background="@android:color/transparent"
         >
 
         <TextView
@@ -84,8 +84,8 @@
 
         <Button
             android:id="@+id/popup1_Accept"
-            android:layout_marginTop="@dimen/dp_size_410"
-            android:layout_marginLeft="@dimen/dp_size_60"
+            android:layout_marginTop="@dimen/dp_size_440"
+            android:layout_marginLeft="@dimen/dp_size_70"
             android:layout_width="170dp"
             android:layout_height="40dp"
             android:fontFamily="monospace"
@@ -97,8 +97,8 @@
 
         <Button
             android:id="@+id/popup1_Reject"
-            android:layout_marginTop="@dimen/dp_size_460"
-            android:layout_marginLeft="@dimen/dp_size_60"
+            android:layout_marginTop="@dimen/dp_size_510"
+            android:layout_marginLeft="@dimen/dp_size_70"
             android:layout_width="170dp"
             android:layout_height="40dp"
             android:fontFamily="monospace"

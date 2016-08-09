@@ -182,7 +182,6 @@ public class EventsFragment extends android.support.v4.app.Fragment
             {
                 Log.d(TAG,"Clicked on item: " + position);
                 Event event = events.get(position);
-                Toast.makeText(getActivity(),"Event: " + event.getTitle(),Toast.LENGTH_LONG).show();
                 // TODO Auto-generated method stub
                 /*String Selcteditem = EventNames[+position];
                 String eventDescrip = EventDescrp[+position];

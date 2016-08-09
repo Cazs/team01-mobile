@@ -1,6 +1,7 @@
 package com.codcodes.icebreaker.screens;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -21,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
@@ -64,6 +66,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private ListView lv;
     private ViewFlipper vf;
     private TextView eventDetails;
+    private ProgressDialog progress;
     private static boolean CHUNKED = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,8 +129,10 @@ public class EventDetailActivity extends AppCompatActivity {
                 {
                     if(matchAccessCode(Integer.parseInt(accessCode.getText().toString())))
                     {
+                        download();
                         updateProfile(Eventid,username);
                         listPeople(act);
+
                     }
                     else
                     {
@@ -167,6 +172,15 @@ public class EventDetailActivity extends AppCompatActivity {
 
 
 
+    }
+
+    public void download(){
+        progress=new ProgressDialog(this);
+        progress.setMessage("Loading List");
+        progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progress.setIndeterminate(true);
+        progress.setProgress(0);
+        progress.show();
     }
 
     public void updateProfile(final int eventID,final String username)
@@ -317,7 +331,7 @@ public class EventDetailActivity extends AppCompatActivity {
                             vf = (ViewFlipper) findViewById(R.id.viewFlipper);
                             eventDetails.setText("List Of People");
                             vf.showNext();
-
+                            progress.hide();
                         }
                     });
                     Log.d(TAG,"Done reading events");
