@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/profile_gradient">
+
+        <TextView
+            android:id="@+id/other_user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textSize="20pt"
+            android:text="Username"
+            android:layout_centerHorizontal="true"
+            />
+
+        <TextView
+            android:id="@+id/other_user_username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textSize="16pt"
+            android:text="Username"
+            android:layout_centerHorizontal="true"
+            />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/other_user_profile_image"
+            android:layout_width="@dimen/dp_size_200"
+            android:layout_height="@dimen/dp_size_200"
+            android:layout_below="@+id/other_user_name"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/blue" />
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/other_user_profile_image"
+            app:layout_anchorGravity="center_vertical"
+            android:layout_centerHorizontal="true">
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/userLevel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/iceblue"
+                android:src="@android:color/transparent"
+                app:fabSize="mini" />
+
+            <TextView
+                android:id="@+id/other_user_level"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="42"
+                android:elevation="16dp"
+                android:textColor="@android:color/white"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/other_user_age"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/other_user_profile_image"
+            android:textColor="@color/black"
+            android:textSize="14pt"
+            android:text="25"
+            android:layout_centerHorizontal="true"
+            />
+
+        <TextView
+            android:id="@+id/other_user_gender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/other_user_age"
+            android:textColor="@color/black"
+            android:textSize="14pt"
+            android:text="Male"
+            android:layout_centerHorizontal="true"
+            />
+
+        <TextView
+            android:id="@+id/other_user_occupation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/other_user_gender"
+            android:textColor="@color/black"
+            android:textSize="13pt"
+            android:text="CEO at Somecompany"
+            android:layout_centerHorizontal="true"
+            android:maxLines="1"
+            android:maxLength="30"
+            android:ellipsize="end"
+            />
+
+        <TextView
+            android:id="@+id/other_user_phrase"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/other_user_occupation"
+            android:textColor="@color/black"
+            android:textSize="14pt"
+            android:text="catch phrase"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:id="@+id/other_user_bio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/other_user_phrase"
+            android:textColor="@color/black"
+            android:textSize="14pt"
+            android:text="Some bio"
+            android:layout_centerHorizontal="true" />
+
+        <Button
+            android:id="@+id/logOut"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/other_user_bio"
+            android:layout_gravity="center"
+            android:text="Icebreak"
+            android:fontFamily="monospace"
+            android:layout_centerHorizontal="true"/>
+    </RelativeLayout>
+</RelativeLayout>

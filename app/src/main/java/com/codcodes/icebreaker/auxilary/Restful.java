@@ -52,15 +52,28 @@ public class Restful
         //Check for storage permissions
         validateStoragePermissions(context);
         //Check for invalid filenames
+<<<<<<< HEAD
         if( image==null || ext == null)
+=======
+        if(image==null || ext == null)
+>>>>>>> Temp
         {
             Log.d(TAG, "The image filename or extension is null");
             return false;
         }
+<<<<<<< HEAD
         if (image.equals("null"))
         {
             return  false;
         }
+=======
+        if(image.equals("null"))
+        {
+            Log.d(TAG, "The image filename is null");
+            return false;
+        }
+
+>>>>>>> Temp
         if(image.isEmpty() || ext.isEmpty())
         {
             Log.d(TAG, "The image filename or extension is empty");

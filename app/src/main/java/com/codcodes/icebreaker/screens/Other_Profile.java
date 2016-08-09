@@ -25,7 +25,11 @@ public class Other_Profile extends AppCompatActivity
     private String Occupation;
     private String Bio;
     private String Gender;
+<<<<<<< HEAD
     private String ImageID;
+=======
+    
+>>>>>>> Temp
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
