@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -54,9 +55,10 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
     private EditText Password;
     private EditText Username;
     private String Gender;
+    private String profilePicture;
     private User user;
 
-    private Bitmap circularbitmap = null;
+    private Bitmap circularbitmap,bitmap;
 
     private static final boolean DEBUG = true;
     private final String TAG = "ICEBREAK";
@@ -116,7 +118,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
             Catchphrase.setText(extras.getString("Catchphrase"));
             Bio.setText(extras.getString("Bio"));
             Gender = extras.getString("Gender");
-            circularbitmap = (Bitmap)extras.get("Picture");
+            profilePicture = extras.getString("Picture");
             int gender = 0;
             switch(Gender)
             {
@@ -130,6 +132,9 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                     gender = 2;
                     break;
             }
+            bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
+                    + profilePicture, getApplicationContext());
+            circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
             circularImageView.setImageBitmap(circularbitmap);
             spinner.setSelection(gender);
         }
