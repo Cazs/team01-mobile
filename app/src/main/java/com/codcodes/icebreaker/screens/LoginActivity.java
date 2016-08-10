@@ -17,8 +17,6 @@ import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
-import com.facebook.CallbackManager;
-import com.facebook.FacebookSdk;
 
 import java.io.BufferedReader;
 import java.io.IOException;

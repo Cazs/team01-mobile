@@ -70,6 +70,10 @@
             android:parentActivityName="com.codcodes.icebreaker.screens.InitialActivity" android:theme="@style/AppTheme.NoActionBar">
             <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.InitialActivity" />
         </activity>
+        <activity android:name="com.codcodes.icebreaker.screens.ChatActivity" android:label="Chat"
+            android:parentActivityName="com.codcodes.icebreaker.screens.MainActivity" android:theme="@style/AppTheme.NoActionBar">
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.MainActivity" />
+        </activity>
         <activity android:name="com.codcodes.icebreaker.screens.LoginActivity" android:label="@string/title_activity_login"
             android:parentActivityName="com.codcodes.icebreaker.screens.InitialActivity" android:theme="@style/AppTheme.NoActionBar">
             <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.InitialActivity" />

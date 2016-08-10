@@ -10,7 +10,7 @@ import android.widget.ListView;
 
 import com.codcodes.icebreaker.R;
 
-public class messaging extends AppCompatActivity
+public class ChatActivity extends AppCompatActivity
 {
     private ImageButton send_btn;
     private EditText text;
@@ -21,7 +21,7 @@ public class messaging extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_messaging);
+        setContentView(R.layout.activity_chat);
 
         send_btn = (ImageButton)findViewById(R.id.sendMessageButton);
         text = (EditText)findViewById(R.id.sendText);

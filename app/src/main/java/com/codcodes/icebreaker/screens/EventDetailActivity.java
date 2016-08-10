@@ -1,11 +1,7 @@
 package com.codcodes.icebreaker.screens;
 
 import android.app.Activity;
-<<<<<<< HEAD
 import android.app.ProgressDialog;
-import android.content.Context;
-=======
->>>>>>> DBEventUsers
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -24,11 +20,9 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
-<<<<<<< HEAD
-import android.widget.ListView;
+
 import android.widget.ProgressBar;
-=======
->>>>>>> DBEventUsers
+
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
@@ -70,12 +64,9 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
     private RecyclerView usersAtEventList;
     private ViewFlipper vf;
     private TextView eventDetails;
-<<<<<<< HEAD
     private ProgressDialog progress;
     private static boolean CHUNKED = false;
-=======
 
->>>>>>> DBEventUsers
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -139,14 +130,9 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                 {
                     if(matchAccessCode(Integer.parseInt(accessCode.getText().toString())))
                     {
-<<<<<<< HEAD
                         download();
-                        updateProfile(Eventid,username);
-=======
                         //updateProfile(Eventid,username);
->>>>>>> DBEventUsers
                         listPeople(act);
-
                     }
                     else
                     {
@@ -158,7 +144,8 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
         });
     }
 
-    public void download(){
+    public void download()
+    {
         progress=new ProgressDialog(this);
         progress.setMessage("Loading List");
         progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -330,35 +317,26 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                             }
                         }
                         //Update UI
-                        runOnUiThread(new Runnable()
-                        {
-<<<<<<< HEAD
-                            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-                            lv.setAdapter(adapter);
-                            vf = (ViewFlipper) findViewById(R.id.viewFlipper);
-                            eventDetails.setText("List Of People");
-                            vf.showNext();
-                            progress.hide();
-                        }
-                    });
-                    Log.d(TAG,"Done reading events");
-=======
-                            @Override
-                            public void run()
-                            {
-                                if (usersAtEventList != null)
-                                {
-                                    usersAtEventList.setLayoutManager(new LinearLayoutManager(context));
-                                    usersAtEventList.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
-                                    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
-                                    vf = (ViewFlipper) findViewById(R.id.viewFlipper);
-                                    eventDetails.setText("List Of People");
-                                    vf.showNext();
-                                    Log.d(TAG, "Set users at event list");
-                                }
-                            }
-                        });
+                         runOnUiThread(new Runnable()
+                         {
+                             @Override
+                             public void run()
+                             {
+                                 if (usersAtEventList != null)
+                                 {
+                                     usersAtEventList.setLayoutManager(new LinearLayoutManager(context));
+                                     usersAtEventList.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
+                                     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+
+                                     vf = (ViewFlipper) findViewById(R.id.viewFlipper);
+                                     eventDetails.setText("List Of People");
+                                     vf.showNext();
+                                     Log.d(TAG, "Set users at event list");
+                                     progress.hide();
+                                 }
+                             }
+                         });
                     } catch (IOException e) {
                         //TODO: Error Logging
                         e.printStackTrace();
@@ -375,7 +353,6 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                 else
                 {
                     Toast.makeText(getBaseContext(),"Invalid Event ID",Toast.LENGTH_SHORT).show();
->>>>>>> DBEventUsers
                 }
             }
         });

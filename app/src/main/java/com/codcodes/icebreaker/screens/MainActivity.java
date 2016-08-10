@@ -1,10 +1,7 @@
 package com.codcodes.icebreaker.screens;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
@@ -20,21 +17,16 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ContactListSwitches;
-import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.tabs.EventsFragment;
 import com.codcodes.icebreaker.tabs.ProfileFragment;
 import com.codcodes.icebreaker.tabs.UserContactsFragment;
-
-import java.io.File;
 
 public class MainActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
 {
@@ -154,9 +146,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     @Override
     public void onListFragmentInteraction(User item)
     {
-        Toast.makeText(this,item.getFirstname(),Toast.LENGTH_LONG).show();
-<<<<<<< HEAD
-        Dialog userProfileScreen = new Dialog(this);
+        /*Dialog userProfileScreen = new Dialog(this);
         userProfileScreen.setContentView(R.layout.content_other_user_profile);
 
         TextView username = (TextView)userProfileScreen.findViewById(R.id.other_user_name);
@@ -170,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
         username.setText(item.getUsername());
         /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                                + "/Icebreak/profile/profile_default.png",getActivity());*/
+                                                + "/Icebreak/profile/profile_default.png",getActivity());*
         Bitmap bitmap = null;
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ALPHA_8;
@@ -207,10 +197,9 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         bio.setText(item.getBio());
 
         userProfileScreen.show();
-=======
-        Intent intent = new Intent(getApplicationContext(),messaging.class);
+        */
+        Intent intent = new Intent(getApplicationContext(),ChatActivity.class);
         startActivity(intent);
->>>>>>> 86c406e0a072b66b3a5b54a039911c22f6136f88
     }
 
     public class FragmentAdapter extends FragmentPagerAdapter
