@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -54,10 +55,10 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
     private EditText Password;
     private EditText Username;
     private String Gender;
-    private String pic;
+    private String profilePicture;
     private User user;
 
-    private Bitmap circularbitmap = null;
+    private Bitmap circularbitmap,bitmap;
 
     private static final boolean DEBUG = true;
     private final String TAG = "ICEBREAK";
@@ -117,7 +118,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
             Catchphrase.setText(extras.getString("Catchphrase"));
             Bio.setText(extras.getString("Bio"));
             Gender = extras.getString("Gender");
-           pic = extras.getString("Picture");
+            profilePicture = extras.getString("Picture");
             int gender = 0;
             switch(Gender)
             {
@@ -131,7 +132,9 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                     gender = 2;
                     break;
             }
-            circularbitmap = BitmapFactory.decodeFile(pic);
+            bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
+                    + profilePicture, getApplicationContext());
+            circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
             circularImageView.setImageBitmap(circularbitmap);
             spinner.setSelection(gender);
         }
@@ -146,6 +149,35 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                 String bio = Bio.getText().toString();
                 String catchphrase = Catchphrase.getText().toString();
                 String g = Gender;
+
+                if(isEmpty(fname))
+                {
+                    Firstname.setError("Cannot be empty");
+                    return;
+                }
+                if(isEmpty(lname))
+                {
+                    Lastname.setError("Cannot be empty");
+                    return;
+                }if(isEmpty(bio))
+                {
+                    Bio.setError("Cannot be empty");
+                    return;
+                }if(isEmpty(age))
+                {
+                    Age.setError("Cannot be empty");
+                    return;
+                }
+                if(isEmpty(catchphrase))
+                {
+                    Catchphrase.setError("Cannot be empty");
+                    return;
+                }
+                if(!isInt(age))
+                {
+                    Age.setError("Must be an integer");
+                    return;
+                }
                 updateProfile(username,fname, lname, age, occupation, bio, catchphrase,g);
             }
 
@@ -308,7 +340,21 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         soc.close();
         return false;
     }
+    private boolean isEmpty(String check)
+    {
+        if(check.isEmpty()) {
+            return true;
+        }
+        return false;
+    }
 
+    private boolean isInt(String check)
+    {
+        if(check.matches("^\\d+$")) {
+            return true;
+        }
+        return false;
+    }
     @Override
     public void onBackPressed()
     {
