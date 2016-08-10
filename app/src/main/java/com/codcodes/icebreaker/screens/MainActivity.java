@@ -155,6 +155,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     public void onListFragmentInteraction(User item)
     {
         Toast.makeText(this,item.getFirstname(),Toast.LENGTH_LONG).show();
+<<<<<<< HEAD
         Dialog userProfileScreen = new Dialog(this);
         userProfileScreen.setContentView(R.layout.content_other_user_profile);
 
@@ -206,6 +207,10 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         bio.setText(item.getBio());
 
         userProfileScreen.show();
+=======
+        Intent intent = new Intent(getApplicationContext(),messaging.class);
+        startActivity(intent);
+>>>>>>> 86c406e0a072b66b3a5b54a039911c22f6136f88
     }
 
     public class FragmentAdapter extends FragmentPagerAdapter
