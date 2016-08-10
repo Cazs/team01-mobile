@@ -77,6 +77,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
     private User user;
     private View v;
     private Bitmap circularbitmap = null;
+    private FloatingActionButton editButton;
     private static final boolean DEBUG = false;
     private static final String TAG = "IB/ProfileFragment";
 
@@ -226,6 +227,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                         occupation.setText(Occupation);
                         circularImageView = (ImageView) v.findViewById(R.id.circleview);
                         circularImageView.setImageBitmap(circularbitmap);
+                        editButton.setVisibility(View.VISIBLE);
                     }
                 });
             }
@@ -262,7 +264,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
         ImageView setting_icon = (ImageView) v.findViewById(R.id.setting_icon);
         setting_icon.setColorFilter(color);
 
-        FloatingActionButton editButton = (FloatingActionButton) v.findViewById(R.id.Edit);
+        editButton = (FloatingActionButton) v.findViewById(R.id.EditButton);
         editButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -277,7 +279,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                 intent.putExtra("Bio",Bio);
                 intent.putExtra("Catchphrase",Catchphrase);
                 intent.putExtra("Gender",Gender);
-                intent.putExtra("Picture",circularbitmap);
+                intent.putExtra("Picture",profilePicture);
                 startActivity(intent);
             }
         });

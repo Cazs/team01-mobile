@@ -90,7 +90,7 @@
                 android:layout_centerHorizontal="true"
                 android:fontFamily="monospace"
                 android:maxLines="1"
-                android:inputType="text"
+                android:inputType="number"
                 android:drawableLeft="@drawable/ic_local_library_black_24dp"
                 />
             <Spinner
