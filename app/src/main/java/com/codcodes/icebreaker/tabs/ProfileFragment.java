@@ -277,7 +277,6 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                 intent.putExtra("Bio",Bio);
                 intent.putExtra("Catchphrase",Catchphrase);
                 intent.putExtra("Gender",Gender);
-                intent.putExtra("Picture",circularbitmap);
                 startActivity(intent);
             }
         });

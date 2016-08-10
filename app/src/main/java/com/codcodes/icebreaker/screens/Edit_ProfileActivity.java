@@ -144,6 +144,35 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                 String bio = Bio.getText().toString();
                 String catchphrase = Catchphrase.getText().toString();
                 String g = Gender;
+
+                if(isEmpty(fname))
+                {
+                    Firstname.setError("Cannot be empty");
+                    return;
+                }
+                if(isEmpty(lname))
+                {
+                    Lastname.setError("Cannot be empty");
+                    return;
+                }if(isEmpty(bio))
+                {
+                    Bio.setError("Cannot be empty");
+                    return;
+                }if(isEmpty(age))
+                {
+                    Age.setError("Cannot be empty");
+                    return;
+                }
+                if(isEmpty(catchphrase))
+                {
+                    Catchphrase.setError("Cannot be empty");
+                    return;
+                }
+                if(!isInt(age))
+                {
+                    Age.setError("Must be an integer");
+                    return;
+                }
                 updateProfile(username,fname, lname, age, occupation, bio, catchphrase,g);
             }
 
@@ -306,7 +335,21 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         soc.close();
         return false;
     }
+    private boolean isEmpty(String check)
+    {
+        if(check.isEmpty()) {
+            return true;
+        }
+        return false;
+    }
 
+    private boolean isInt(String check)
+    {
+        if(check.matches("^\\d+$")) {
+            return true;
+        }
+        return false;
+    }
     @Override
     public void onBackPressed()
     {

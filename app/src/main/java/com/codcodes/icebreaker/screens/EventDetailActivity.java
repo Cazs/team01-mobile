@@ -278,14 +278,14 @@ public class EventDetailActivity extends AppCompatActivity {
                             Name.add(u.getFirstname()+" "+ u.getLastname());
                             Catchphrase.add(u.getCatchphrase());
                             //eventIcons.add(R.drawable.ultra_icon);//temporarily use this icon for all events
-                            String iconName = "profile_"+u.getUsername()+".png";
+                            String iconName = u.getUsername();
                             //String iconName = "event_icons-10.png";
-                            userIcon.add("/Icebreak/"+iconName);
+                            userIcon.add("/Icebreak/profile/"+iconName+".png");
                             //Download the file only if it has not been cached
-                            if(!new File(Environment.getExternalStorageDirectory().getPath()+"/Icebreak/users/" + iconName).exists())
+                            if(!new File(Environment.getExternalStorageDirectory().getPath()+"/Icebreak/profile/" + iconName + ".png").exists())
                             {
                                 Log.d(TAG,"No cached "+iconName+",Image download in progress..");
-                                if(Restful.imageDownloader(iconName,".png", "/users",act))
+                                if(Restful.imageDownloader(iconName,".png", "/profile", act))
                                     Log.d(TAG,"Image download successful");
                                 else
                                     Log.d(TAG,"Image download unsuccessful");
