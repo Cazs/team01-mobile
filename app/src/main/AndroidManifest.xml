@@ -90,7 +90,7 @@
             <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.MainActivity"
                 android:windowSoftInputMode="stateAlwaysHidden" />
         </activity>
-        <activity android:name="com.codcodes.icebreaker.screens.Other_Profile" android:label=" " android:parentActivityName="com.codcodes.icebreaker.screens.EventDetailActivity"
+        <activity android:name=".screens.OtherUserProfileActivity" android:label=" " android:parentActivityName="com.codcodes.icebreaker.screens.EventDetailActivity"
             android:theme="@style/AppTheme.NoActionBar" android:windowSoftInputMode="stateAlwaysHidden">
             <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.EventDetailActivity" />
         </activity>

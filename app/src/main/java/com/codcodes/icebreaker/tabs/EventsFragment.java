@@ -61,7 +61,6 @@ public class EventsFragment extends android.support.v4.app.Fragment
     private ArrayList<String> eventIcons;
     private static final boolean DEBUG = false;
     public static final String TAG = "IB/EventsFragment";
-    private static boolean CHUNKED = false;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {

@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
-import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
@@ -24,29 +23,14 @@ import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.auxilary.Restful;
-import com.codcodes.icebreaker.auxilary.WritersAndReaders;
+import com.codcodes.icebreaker.auxilary.UserListRecyclerViewAdapter;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
-import com.codcodes.icebreaker.auxilary.UserContactsRecyclerViewAdapter;
 import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.screens.MainActivity;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.google.android.gms.internal.zzir.runOnUiThread;
 /**
@@ -136,7 +120,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
         );
         if(view != null)
             rview = view.findViewById(R.id.userContactList);
-        // Set the adapter
+
         if (rview instanceof RecyclerView)
         {
             Context context = view.getContext();
@@ -149,7 +133,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
             {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-
+            // Set the adapter
             refresh();
         }
         return view;
@@ -245,7 +229,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                                 {
                                     if (recyclerView != null)
                                     {
-                                        recyclerView.setAdapter(new UserContactsRecyclerViewAdapter(contacts, bitmaps, mListener));
+                                        recyclerView.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
                                         Log.d(TAG, "Set contact list");
                                     }
                                 }
@@ -263,13 +247,14 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                     }
                 }
                 //TODO:load contacts from local SQLiteDB and check with remote DB
-                if(MainActivity.val_switch == ContactListSwitches.SHOW_USER_CONTACTS) {
+                if(MainActivity.val_switch == ContactListSwitches.SHOW_USER_CONTACTS)
+                {
                     /**Load contacts from local DB (and double check with server) and set adapter
                      *
                      * runOnUiThread(new Runnable() {
                     @Override public void run() {
                     if (recyclerView != null) {
-                    recyclerView.setAdapter(new UserContactsRecyclerViewAdapter(contacts, bitmaps, mListener));
+                    recyclerView.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
                     Log.d(TAG, "Set contact list");
                     }
                     }

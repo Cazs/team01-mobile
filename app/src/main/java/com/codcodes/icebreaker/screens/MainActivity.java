@@ -48,12 +48,12 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
 
-
     /**
      * The {@link ViewPager} that will host the section contents.
      */
     private LinearLayout actionBar;
     private ViewPager mViewPager;
+    public static String rootDir = Environment.getExternalStorageDirectory().getPath();
     public static ContactListSwitches val_switch = ContactListSwitches.SHOW_USERS_AT_EVENT;
 
     private int[] imageResId =

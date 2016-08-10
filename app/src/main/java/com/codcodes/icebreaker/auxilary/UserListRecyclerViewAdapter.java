@@ -18,14 +18,14 @@ import java.util.List;
  * {@link RecyclerView.Adapter} that can display a {@link User} and makes a call to the
  * specified {@link IOnListFragmentInteractionListener}.
  */
-public class UserContactsRecyclerViewAdapter extends RecyclerView.Adapter<UserContactsRecyclerViewAdapter.ContactViewHolder>
+public class UserListRecyclerViewAdapter extends RecyclerView.Adapter<UserListRecyclerViewAdapter.ContactViewHolder>
 {
     private final List<User> mValues;
     private final List<Bitmap> mProfileBitmaps;
 
     private final IOnListFragmentInteractionListener mListener;
 
-    public UserContactsRecyclerViewAdapter(List<User> items, List<Bitmap> mProfileBitmaps, IOnListFragmentInteractionListener listener)
+    public UserListRecyclerViewAdapter(List<User> items, List<Bitmap> mProfileBitmaps, IOnListFragmentInteractionListener listener)
     {
         mValues = items;
         mListener = listener;

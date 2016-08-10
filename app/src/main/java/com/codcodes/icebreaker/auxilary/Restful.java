@@ -3,10 +3,18 @@ package com.codcodes.icebreaker.auxilary;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.screens.MainActivity;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -36,8 +44,8 @@ public class Restful
         String response = "";
 
         while (s.hasNextLine())
-
             response += s.nextLine();
+
         System.out.println(response);
         if(httpConn.getResponseCode() == HttpURLConnection.HTTP_OK)
         {
@@ -48,32 +56,20 @@ public class Restful
 
     public static boolean imageDownloader(String image, String ext, String destPath, Activity context)
     {
-
         //Check for storage permissions
         validateStoragePermissions(context);
         //Check for invalid filenames
-<<<<<<< HEAD
-        if( image==null || ext == null)
-=======
         if(image==null || ext == null)
->>>>>>> Temp
         {
             Log.d(TAG, "The image filename or extension is null");
             return false;
         }
-<<<<<<< HEAD
-        if (image.equals("null"))
-        {
-            return  false;
-        }
-=======
         if(image.equals("null"))
         {
             Log.d(TAG, "The image filename is null");
             return false;
         }
 
->>>>>>> Temp
         if(image.isEmpty() || ext.isEmpty())
         {
             Log.d(TAG, "The image filename or extension is empty");
@@ -177,6 +173,45 @@ public class Restful
             dec = 16 * dec + x;
         }
         return dec;
+    }
+
+    public static Bitmap getImage(Activity context, String filename,String ext, String path, BitmapFactory.Options options)
+    {
+        path = MainActivity.rootDir + "/Icebreak" + path;
+        Bitmap bitmap = null;
+        if(!ext.contains("."))//add dot to image extension if it's not there
+            ext = '.' + ext;
+        //Look for image locally
+        if (!new File(path + '/' + filename + ext).exists())
+        {
+            if (Restful.imageDownloader(filename, ext, path, context))
+            {
+                bitmap = BitmapFactory.decodeFile(path + '/' + filename + ext, options);
+                //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
+            } else //user has no profile yet - attempt to load default profile image
+            {
+                if (!new File(path + "/default.png").exists())
+                {
+                    //Attempt to download default profile image
+                    if (Restful.imageDownloader("default", ".png", "/profile", context))
+                    {
+                        bitmap = BitmapFactory.decodeFile(path + "/default.png", options);
+                    } else //Couldn't download default profile image
+                    {
+                        Toast.makeText(context, "Could not download default image, please check your internet connection.",
+                                Toast.LENGTH_LONG).show();
+                    }
+                } else//default profile image exists
+                {
+                    bitmap = BitmapFactory.decodeFile(path + "/default.png", options);
+                }
+            }
+        }
+        else//User profile exists
+        {
+            bitmap = BitmapFactory.decodeFile(path + '/' + filename + ext, options);
+        }
+        return bitmap;
     }
 
     public static void validateStoragePermissions(Activity activity)
