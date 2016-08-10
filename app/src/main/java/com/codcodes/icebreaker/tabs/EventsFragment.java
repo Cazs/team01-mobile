@@ -61,7 +61,6 @@ public class EventsFragment extends android.support.v4.app.Fragment
     private ArrayList<String> eventIcons;
     private static final boolean DEBUG = false;
     public static final String TAG = "IB/EventsFragment";
-    private static boolean CHUNKED = false;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
@@ -187,7 +186,6 @@ public class EventsFragment extends android.support.v4.app.Fragment
             {
                 Log.d(TAG,"Clicked on item: " + position);
                 Event event = events.get(position);
-                Toast.makeText(getActivity(),"Event: " + event.getTitle(),Toast.LENGTH_LONG).show();
                 // TODO Auto-generated method stub
                 /*String Selcteditem = EventNames[+position];
                 String eventDescrip = EventDescrp[+position];

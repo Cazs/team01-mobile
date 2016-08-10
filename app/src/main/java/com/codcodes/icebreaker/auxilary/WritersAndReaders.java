@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
+import com.codcodes.icebreaker.screens.MainActivity;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,23 +23,25 @@ public class WritersAndReaders
 	public static void saveImage(byte[] data,String filename)
 	{
         File f=null;
+        String folders = "";
 		//make directory if it doesn't exist
         if(filename.contains("/"))
         {
-            String[] dirs = filename.split("/");
-            String directories = "";
+            //Remove first slash if it exists
+            folders = (filename.charAt(0)=='/'||filename.charAt(0)=='\\') ? filename.substring(1) : filename;
+            String[] dirs = folders.split("/");//get directories
+            String directories = "/";
             for(int i=0;i<dirs.length-1;i++)
                 directories = directories +"/" + dirs[i];
-            f = new File(path+"/Icebreak" + directories);
+            f = new File(MainActivity.rootDir + "/Icebreak" + directories);
 
             //System.err.println("Directory structure: " + f.getPath().toString());
 
             if(!f.isDirectory())
                 System.out.println(f.getPath() + " directory creation: " + f.mkdirs());
 
-            f = new File(path+"/Icebreak" + directories + "/"+ dirs[dirs.length-1]);
-
-            //System.err.println("File to write :" + f.getPath().toString());
+            //f = new File(path+"/Icebreak" + directories + "/"+ dirs[dirs.length-1]);
+            f = new File(MainActivity.rootDir + "/Icebreak" + filename);
         }
 
 		try

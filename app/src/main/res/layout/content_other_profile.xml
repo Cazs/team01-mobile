@@ -8,16 +8,13 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".screens.Other_Profile"
+    tools:context=".screens.OtherUserProfileActivity"
     tools:showIn="@layout/activity_other_profile">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-
-        >
+        android:layout_height="match_parent">
 
         <TextView
             android:id="@+id/other_profile_name"
@@ -26,8 +23,7 @@
             android:textColor="@color/black"
             android:textSize="20pt"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="@dimen/dp_size_10"
-            />
+            android:layout_marginTop="@dimen/dp_size_10" />
 
 
         <de.hdodenhof.circleimageview.CircleImageView
@@ -35,8 +31,7 @@
             android:layout_height="@dimen/dp_size_200"
             android:layout_marginTop="@dimen/dp_size_60"
             android:layout_centerHorizontal="true"
-            android:id="@+id/other_pic"
-            />
+            android:id="@+id/other_pic" />
 
         <TextView
             android:id="@+id/other_profile_age"
@@ -44,9 +39,9 @@
             android:layout_height="wrap_content"
             android:textColor="@color/black"
             android:textSize="12pt"
+            android:text="10"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="@dimen/dp_size_265"
-            />
+            android:layout_marginTop="@dimen/dp_size_265" />
 
         <TextView
             android:id="@+id/other_profile_occupation"
@@ -58,8 +53,8 @@
             android:layout_marginTop="@dimen/dp_size_290"
             android:maxLines="1"
             android:maxLength="30"
-            android:ellipsize="end"
-            />
+            android:ellipsize="end" />
+
         <TextView
             android:id="@+id/other_profile_gender"
             android:layout_width="wrap_content"
@@ -102,10 +97,6 @@
             android:fontFamily="monospace"
             android:textSize="12pt"
             android:text="ICEBREAK"
-            android:background="@drawable/icebreak_button"
-
-            />
-
+            android:background="@drawable/icebreak_button" />
     </RelativeLayout>
-
 </RelativeLayout>
