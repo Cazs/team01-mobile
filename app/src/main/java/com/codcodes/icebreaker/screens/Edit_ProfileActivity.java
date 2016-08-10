@@ -54,6 +54,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
     private EditText Password;
     private EditText Username;
     private String Gender;
+    private String pic;
     private User user;
 
     private Bitmap circularbitmap = null;
@@ -116,7 +117,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
             Catchphrase.setText(extras.getString("Catchphrase"));
             Bio.setText(extras.getString("Bio"));
             Gender = extras.getString("Gender");
-            circularbitmap = (Bitmap)extras.get("Picture");
+           pic = extras.getString("Picture");
             int gender = 0;
             switch(Gender)
             {
@@ -130,6 +131,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                     gender = 2;
                     break;
             }
+            circularbitmap = BitmapFactory.decodeFile(pic);
             circularImageView.setImageBitmap(circularbitmap);
             spinner.setSelection(gender);
         }
