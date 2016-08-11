@@ -126,7 +126,12 @@ public class EventDetailActivity extends AppCompatActivity {
                 {
                     if(matchAccessCode(Integer.parseInt(accessCode.getText().toString())))
                     {
+<<<<<<< HEAD
                         updateProfile(Eventid,username);
+=======
+                        showProgressBar();
+                        //updateProfile(Eventid,username);
+>>>>>>> Alhpa
                         listPeople(act);
                     }
                     else
@@ -138,6 +143,7 @@ public class EventDetailActivity extends AppCompatActivity {
             }
         });
 
+<<<<<<< HEAD
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
 
@@ -167,13 +173,29 @@ public class EventDetailActivity extends AppCompatActivity {
 
 
 
+=======
+    public void showProgressBar()
+    {
+        progress=new ProgressDialog(this);
+        progress.setMessage("Loading List");
+        progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progress.setIndeterminate(true);
+        progress.setProgress(0);
+        progress.show();
+>>>>>>> Alhpa
     }
 
     public void updateProfile(final int eventID,final String username)
     {
         Thread thread = new Thread(new Runnable() {
             @Override
+<<<<<<< HEAD
             public void run() {
+=======
+            public void run()
+            {
+                Looper.prepare();
+>>>>>>> Alhpa
 
                 try
                 {
@@ -261,6 +283,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
                 if(users==null)
                 {
+<<<<<<< HEAD
                     //TODO: Notify user
                     Log.d(TAG,"Something went wrong while we were trying to read the events.");
                 }
@@ -274,6 +297,22 @@ public class EventDetailActivity extends AppCompatActivity {
                    //Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
                         //Log.d(TAG,"Connection established");
                         for(User u:users)
+=======
+                    try
+                    {
+                        String contactsJson = Restful.sendGetRequest("getUsersAtEvent/" + Eventid);
+                        final ArrayList<User> contacts = new ArrayList<>();
+                        JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
+                        System.err.println("Contacts at event: " + Eventid+ " " + contacts.size() + " people");
+
+                        final ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
+                        Bitmap circularbitmap = null;
+                        Bitmap bitmap = null;
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+                        //Attempt to load images into memory and set the list adapter
+                        for (User u : contacts)
+>>>>>>> Alhpa
                         {
                             Name.add(u.getFirstname()+" "+ u.getLastname());
                             Catchphrase.add(u.getCatchphrase());

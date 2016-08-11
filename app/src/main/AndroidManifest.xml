@@ -18,6 +18,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
@@ -43,9 +44,9 @@
             <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.MainActivity" />
         </activity>
 
-        <activity android:name="com.codcodes.icebreaker.screens.IceBreakActivity" android:label="@string/title_activity_settings"
-            android:parentActivityName="com.codcodes.icebreaker.screens.MainActivity">
-            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.MainActivity" />
+        <activity
+            android:name="com.codcodes.icebreaker.screens.IceBreakActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
         </activity>
         <!--<activity
                 android:name=".EventsFragment"
@@ -65,6 +66,17 @@
             -->
         <meta-data android:name="com.google.android.geo.API_KEY" android:value="@string/google_maps_key" />
 
+        <receiver
+            android:name=".auxilary.OnMessageReceive"
+            android:enabled="true"
+            android:process=":remote" />
+
+        <service
+            android:name=".services.MessagePollService"
+            android:exported="false"
+            >
+
+        </service>
         <activity android:name="com.codcodes.icebreaker.screens.EventMapActivity" android:label="@string/title_activity_event_map" />
         <activity android:name="com.codcodes.icebreaker.screens.SignUpActivity" android:label="@string/title_activity_sign_up"
             android:parentActivityName="com.codcodes.icebreaker.screens.InitialActivity" android:theme="@style/AppTheme.NoActionBar">

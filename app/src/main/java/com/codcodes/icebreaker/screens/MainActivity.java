@@ -1,9 +1,13 @@
 package com.codcodes.icebreaker.screens;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.os.Environment;
+import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -17,16 +21,26 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ContactListSwitches;
+import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
+import com.codcodes.icebreaker.auxilary.Restful;
+import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
+import com.codcodes.icebreaker.model.Message;
+import com.codcodes.icebreaker.model.MessagePollContract;
+import com.codcodes.icebreaker.model.MessagePollHelper;
 import com.codcodes.icebreaker.model.User;
+import com.codcodes.icebreaker.services.MessagePollService;
 import com.codcodes.icebreaker.tabs.EventsFragment;
 import com.codcodes.icebreaker.tabs.ProfileFragment;
 import com.codcodes.icebreaker.tabs.UserContactsFragment;
+
+import java.util.Timer;
 
 public class MainActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
 {
@@ -43,9 +57,12 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     /**
      * The {@link ViewPager} that will host the section contents.
      */
+    private Button accept, reject;
+    private TextView txtPopupbio, txtPopupbioTitle, txtPopupgender, txtPopupage, txtPopupname;
     private LinearLayout actionBar;
     private ViewPager mViewPager;
     public static String rootDir = Environment.getExternalStorageDirectory().getPath();
+    public static boolean IB_DIALOG = false;
     public static ContactListSwitches val_switch = ContactListSwitches.SHOW_USERS_AT_EVENT;
 
     private int[] imageResId =
@@ -60,13 +77,47 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Restful.validateStoragePermissions(this);
+        //Check for Icebreaks
+        //checkForIcebreaks(this);
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.pop_up_one);
+        Typeface h = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
+        Typeface heading = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
 
+        TextView txtPopupname = (TextView) dialog.findViewById(R.id.popup1_profile_name);
+        txtPopupname.setTypeface(h);
+
+        TextView txtPopupage = (TextView) dialog.findViewById((R.id.popup1_profile_age));
+        txtPopupage.setTypeface(h);
+
+        TextView txtPopupgender = (TextView) dialog.findViewById((R.id.popup1_profile_gender));
+        txtPopupgender.setTypeface(h);
+
+        TextView txtPopupbioTitle = (TextView) dialog.findViewById((R.id.popup1_profile_bio_title));
+        txtPopupbioTitle.setText("Bio:");
+        txtPopupbioTitle.setTypeface(h);
+
+        TextView txtPopupbio = (TextView) dialog.findViewById((R.id.popup1_profile_bio));
+        txtPopupbio.setTypeface(h);
+
+        Button accept = (Button) dialog.findViewById(R.id.popup1_Accept);
+        Button reject = (Button) dialog.findViewById(R.id.popup1_Reject);
+
+        reject.setTypeface(heading);
+        accept.setTypeface(heading);
+
+        checkForIcebreaks(dialog);
+        //Start message polling service
+        Intent inMsg = new Intent(this, MessagePollService.class);
+        inMsg.putExtra("Username", SharedPreference.getUsername(this));
+        this.startService(inMsg);
         //Load components
         actionBar = (LinearLayout)findViewById(R.id.actionBar);
         mViewPager = (ViewPager) findViewById(R.id.container);
         TabLayout tablayout = (TabLayout) findViewById(R.id.tab_layout);
         TextView headingTextView = (TextView) findViewById(R.id.main_heading);
-        Typeface h = Typeface.createFromAsset(this.getAssets(),"Ailerons-Typeface.otf");
+        h = Typeface.createFromAsset(this.getAssets(),"Ailerons-Typeface.otf");
         final FloatingActionButton fabSwitch = (FloatingActionButton)findViewById(R.id.fabSwitch);
 
         //Setup components
@@ -95,6 +146,8 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
             {
+                checkForIcebreaks(dialog);
+
                 if(position == 1)
                 {
                     fabSwitch.show();
@@ -112,6 +165,15 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
             @Override
             public void onPageScrollStateChanged(int state)
+            {
+
+            }
+        });
+
+        accept.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
             {
 
             }
@@ -143,9 +205,60 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         return super.onOptionsItemSelected(item);
     }
 
+    public void checkForIcebreaks(Dialog dialog)
+    {
+        SQLiteDatabase db = new MessagePollHelper(this).getReadableDatabase();
+        String[] projection =
+                {
+                        MessagePollContract.MessageEntry.COL_MESSAGE_SENDER,
+                        MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER,
+                        MessagePollContract.MessageEntry.COL_MESSAGE_STATUS,
+                        MessagePollContract.MessageEntry.COL_MESSAGE_TIME,
+                        MessagePollContract.MessageEntry.COL_MESSAGE
+                };
+
+        String localUser = SharedPreference.getUsername(this);
+        String query ="SELECT * FROM Message WHERE "
+                        + MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER +" = ? AND "
+                        + MessagePollContract.MessageEntry.COL_MESSAGE_STATUS + " = ?";
+
+        Cursor c =  db.rawQuery(query, new String[] {localUser, String.valueOf(MESSAGE_STATUSES.ICEBREAK.getStatus())});
+        if(c.getCount()>0) {//If there are icebreak requests
+            c.moveToFirst();
+            Message m = new Message();
+            int id = c.getInt(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_ID));
+            String sen = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER));
+            String rec = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER));
+            int status = c.getInt(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS));
+            String time = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_TIME));
+            String msg = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE));
+            //System.err.println(">>>>>>>>" +id);
+            m.setMessage(msg);
+            m.setStatus(status);
+            m.setTime(time);
+            m.setSender(sen);
+            m.setReceiver(rec);
+
+            if (txtPopupbio != null)
+                txtPopupbio.setText("Bio");
+            if (txtPopupgender != null)
+                txtPopupgender.setText("Gender");
+            if (txtPopupage != null)
+                txtPopupage.setText("Age:0");
+            if (txtPopupname != null)
+                txtPopupname.setText(sen);
+
+            //System.err.println("Showing dialog");
+            dialog.show();
+            IB_DIALOG = true;
+        }
+        db.close();
+    }
+
     @Override
     public void onListFragmentInteraction(User item)
     {
+
         /*Dialog userProfileScreen = new Dialog(this);
         userProfileScreen.setContentView(R.layout.content_other_user_profile);
 
@@ -199,6 +312,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         userProfileScreen.show();
         */
         Intent intent = new Intent(getApplicationContext(),ChatActivity.class);
+        intent.putExtra("Username",item.getUsername());
         startActivity(intent);
     }
 
