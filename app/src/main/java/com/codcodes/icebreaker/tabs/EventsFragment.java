@@ -9,6 +9,7 @@ import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -75,10 +76,11 @@ public class EventsFragment extends android.support.v4.app.Fragment
            @Override
            public void run()
            {
+               Looper.prepare();
                events = new ArrayList<>();
                try
                {
-                   String eventsJson = Restful.getJsonFromURL("readEvents");
+                   String eventsJson = Restful.sendGetRequest("readEvents");
                    JSON.<Event>getJsonableObjectsFromJson(eventsJson,events,Event.class);
                } catch (IOException e)
                {

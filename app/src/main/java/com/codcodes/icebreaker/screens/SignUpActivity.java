@@ -198,7 +198,6 @@ public class SignUpActivity extends AppCompatActivity {
                         }
                     }
                     if(found) {
-
                         SharedPreference.setUsername(getApplicationContext(),username);
                         //Toast.makeText(getBaseContext(), "Successful sign up", Toast.LENGTH_LONG).show();
                         //findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
@@ -208,6 +207,8 @@ public class SignUpActivity extends AppCompatActivity {
                     }
                     else {
                         //Toast.makeText(getApplicationContext(), "Unsuccessful sign up", Toast.LENGTH_LONG).show();
+                        Message messaage = toastHandler("Connection Error").obtainMessage();
+                        messaage.sendToTarget();
                         finish();
                         startActivity(getIntent());
                     }

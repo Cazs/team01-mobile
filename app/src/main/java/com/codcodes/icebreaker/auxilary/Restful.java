@@ -14,17 +14,25 @@ import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.screens.MainActivity;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Created by Casper on 2016/08/08.
@@ -34,24 +42,56 @@ public class Restful
     private static final String TAG = "IB/Restful";
     private static boolean CHUNKED = false;
 
-    public static String getJsonFromURL(String url) throws IOException
+    public static String sendGetRequest(String url) throws IOException
     {
+        url = url.charAt(0)=='/'||url.charAt(0)=='\\'?url.substring(1):url;//Remove first slash if it exists
         Log.d(TAG,"Opening connection to IceBreak_domain/Service/" + url);
         URL urlConn = urlConn = new URL("http://icebreak.azurewebsites.net/IBUserRequestService.svc/" + url);
         HttpURLConnection httpConn =  (HttpURLConnection)urlConn.openConnection();
-        //httpConn.setRequestProperty("Transfer-Encoding","chunked");
         Scanner s = new Scanner(httpConn.getInputStream());
         String response = "";
 
         while (s.hasNextLine())
             response += s.nextLine();
 
-        System.out.println(response);
         if(httpConn.getResponseCode() == HttpURLConnection.HTTP_OK)
         {
             return response;
         }else
             return  "";
+    }
+
+    public static int postData(String url, ArrayList<AbstractMap.SimpleEntry<String,String>> params) throws IOException
+    {
+        url = url.charAt(0)=='/'||url.charAt(0)=='\\'?url.substring(1):url;//Remove first slash if it exists
+        URL urlConn = new URL("http://icebreak.azurewebsites.net/IBUserRequestService.svc/" + url);
+        HttpURLConnection httpConn = (HttpURLConnection)urlConn.openConnection();
+        httpConn.setReadTimeout(10000);
+        httpConn.setConnectTimeout(15000);
+        httpConn.setRequestMethod("POST");
+        httpConn.setDoInput(true);
+        httpConn.setDoOutput(true);
+
+        //Encode URL parameters in UTF-8 charset
+        StringBuilder result = new StringBuilder();
+        for(int i=0;i<params.size();i++)
+        {
+            AbstractMap.SimpleEntry<String,String> entry = params.get(i);
+            result.append(URLEncoder.encode(entry.getKey(),"UTF-8") + "=");
+            result.append(URLEncoder.encode(entry.getValue(),"UTF-8") + (i!=params.size()-1?"&":""));
+        }
+        //System.out.println(result);
+        //Write to server
+        OutputStream os = httpConn.getOutputStream();
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"UTF-8"));
+        writer.write(result.toString());
+        writer.flush();
+        writer.close();
+        os.close();
+
+        httpConn.connect();
+
+        return httpConn.getResponseCode();
     }
 
     public static boolean imageDownloader(String image, String ext, String destPath, Activity context)

@@ -130,7 +130,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                 {
                     if(matchAccessCode(Integer.parseInt(accessCode.getText().toString())))
                     {
-                        download();
+                        showProgressBar();
                         //updateProfile(Eventid,username);
                         listPeople(act);
                     }
@@ -144,7 +144,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
         });
     }
 
-    public void download()
+    public void showProgressBar()
     {
         progress=new ProgressDialog(this);
         progress.setMessage("Loading List");
@@ -161,6 +161,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
             @Override
             public void run()
             {
+                Looper.prepare();
 
                 try
                 {
@@ -249,7 +250,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                 {
                     try
                     {
-                        String contactsJson = Restful.getJsonFromURL("getUsersAtEvent/" + Eventid);
+                        String contactsJson = Restful.sendGetRequest("getUsersAtEvent/" + Eventid);
                         final ArrayList<User> contacts = new ArrayList<>();
                         JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
                         System.err.println("Contacts at event: " + Eventid+ " " + contacts.size() + " people");
