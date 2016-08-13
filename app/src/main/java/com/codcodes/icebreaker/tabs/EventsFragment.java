@@ -78,7 +78,7 @@ public class EventsFragment extends android.support.v4.app.Fragment
                events = new ArrayList<>();
                try
                {
-                   String eventsJson = Restful.getJsonFromURL("readEvents");
+                   String eventsJson = Restful.sendGetRequest("readEvents");
                    JSON.<Event>getJsonableObjectsFromJson(eventsJson,events,Event.class);
                } catch (IOException e)
                {

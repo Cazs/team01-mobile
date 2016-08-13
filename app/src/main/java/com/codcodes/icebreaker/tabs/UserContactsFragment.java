@@ -112,8 +112,8 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 @Override
                 public void run()
                 {
-                    swipeRefreshLayout.setRefreshing(true);
-                    Toast.makeText(getActivity(),"Refreshing",Toast.LENGTH_SHORT).show();
+                    //swipeRefreshLayout.setRefreshing(true);
+                    //Toast.makeText(getActivity(),"Refreshing",Toast.LENGTH_SHORT).show();
                     //refresh();
                 }
             }
@@ -157,7 +157,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 {
                     try
                     {
-                        String contactsJson = Restful.getJsonFromURL("getUsersAtEvent/" + curr_event_id);
+                        String contactsJson = Restful.sendGetRequest("getUsersAtEvent/" + curr_event_id);
                         final ArrayList<User> contacts = new ArrayList<>();
                         JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
                         System.err.println("Contacts at event: " + curr_event_id+ " " + contacts.size() + " people");

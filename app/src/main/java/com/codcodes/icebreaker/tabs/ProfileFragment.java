@@ -120,7 +120,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                 String usrJson = null;
                 try
                 {
-                    usrJson = Restful.getJsonFromURL("getUser/" + username);
+                    usrJson = Restful.sendGetRequest("getUser/" + username);
                     userList = new ArrayList<>();
                     JSON.<User>getJsonableObjectsFromJson(usrJson,userList,User.class);
                 } catch (IOException e)
@@ -241,6 +241,9 @@ public class ProfileFragment extends android.support.v4.app.Fragment
             public void onClick(View view) {
                 int link_color = Color.parseColor("#4665f0");
                 Intent intent = new Intent(view.getContext(), RewardsActivity.class);
+                intent.putExtra("Picture",profilePicture);
+                intent.putExtra("Name",user.getFirstname() + " "+user.getLastname());
+
                 // rewards.startAnimation();
                 startActivity(intent);
             }
@@ -252,6 +255,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
             public void onClick(View view)
             {
                 Intent intent = new Intent(view.getContext(), InitialActivity.class);
+
                 startActivity(intent);
             }
         });
