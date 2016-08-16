@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Random;
 
 
 public class WritersAndReaders 
@@ -57,6 +58,19 @@ public class WritersAndReaders
 			System.err.println("Could not write file: " + e.getMessage());
 		}
 	}
+
+    public static String getRandomIdStr(int length)
+    {
+        String id = "";
+        String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        for(int i=0;i<length;i++)
+        {
+            Random r = new Random();
+            id += chars.charAt(r.nextInt(chars.length()));
+        }
+
+        return id;
+    }
 
 	//Clients will use this - only have one Item instance to keep track of - theirs
 	/*public static void saveItem(Item item,String filename)

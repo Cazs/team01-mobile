@@ -31,7 +31,7 @@ import java.util.Calendar;
 public class MessagePollService extends IntentService
 {
     private final String TAG="IB/MsgPollService";
-    private final int INTERVAL = 5000;//5 sec
+    private final int INTERVAL = 1000;//1 sec
 
     public MessagePollService()
     {
@@ -61,7 +61,6 @@ public class MessagePollService extends IntentService
         Intent intnt = new Intent(this,OnMessageReceive.class);
         intnt.putExtra("Username",username);
         PendingIntent pi = PendingIntent.getBroadcast(this,0,intnt,PendingIntent.FLAG_UPDATE_CURRENT);
-
         Log.d(TAG, "Set up alarm");
 
         //Calendar cal = Calendar.getInstance();

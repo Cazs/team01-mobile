@@ -123,11 +123,13 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
             options.inPreferredConfig = Bitmap.Config.ALPHA_8;
             Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
             //Bitmap bitmap = BitmapFactory.decodeResource(getResources(), imagePath);
-            Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
-            ImageView eventImage = (ImageView) findViewById((R.id.event_image));
-
-            eventImage.setImageBitmap(circularbitmap);
-            bitmap.recycle();
+            if(bitmap!=null)
+            {
+                Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
+                ImageView eventImage = (ImageView) findViewById((R.id.event_image));
+                eventImage.setImageBitmap(circularbitmap);
+                bitmap.recycle();
+            }
         }
 
         eventDetails = (TextView)findViewById(R.id.Event_Heading);
@@ -146,17 +148,8 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
                 {
                     if(matchAccessCode(Integer.parseInt(accessCode.getText().toString())))
                     {
-<<<<<<< HEAD
-<<<<<<< HEAD
-                        updateProfile(Eventid,username);
-=======
                         showProgressBar();
                         //updateProfile(Eventid,username);
->>>>>>> Alhpa
-=======
-                        showProgressBar();
-                        //updateProfile(Eventid,username);
->>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
                         listPeople(act);
                     }
                     else
@@ -169,52 +162,18 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
         });
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener()
-        {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-            {
-                Log.d(TAG,"Clicked on item: " + position);
-                User user = users.get(position);
-                // TODO Auto-generated method stub
-                /*String Selcteditem = EventNames[+position];
-                String eventDescrip = EventDescrp[+position];
-                int imageID = imgid[+position];
-                */
-
-                Intent intent = new Intent(view.getContext(),Other_Profile.class);
-                intent.putExtra("First Name",user.getFirstname());
-                intent.putExtra("Last Name",user.getLastname());
-                intent.putExtra("Age",user.getAge());
-                intent.putExtra("Gender",user.getGender());
-                intent.putExtra("Occupation",user.getOccupation());
-                intent.putExtra("Bio",user.getBio());
-                intent.putExtra("ImageID",userIcon.get(position));
-
-                startActivity(intent);
-            }
-        });
-
-
-
-=======
-=======
->>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
     public void showProgressBar()
     {
-        progress=new ProgressDialog(this);
-        progress.setMessage("Loading List");
-        progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progress.setIndeterminate(true);
-        progress.setProgress(0);
-        progress.show();
-<<<<<<< HEAD
->>>>>>> Alhpa
-=======
->>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
+        if(progress==null)
+            return;
+        if(!progress.isShowing()) {
+            progress = new ProgressDialog(this);
+            progress.setMessage("Loading List");
+            progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progress.setIndeterminate(true);
+            progress.setProgress(0);
+            progress.show();
+        }
     }
 
     public void updateProfile(final int eventID,final String username)
@@ -222,19 +181,9 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
         Thread thread = new Thread(new Runnable()
         {
             @Override
-<<<<<<< HEAD
-<<<<<<< HEAD
-            public void run() {
-=======
             public void run()
             {
                 Looper.prepare();
->>>>>>> Alhpa
-=======
-            public void run()
-            {
-                Looper.prepare();
->>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
 
                 try
                 {
@@ -317,34 +266,11 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
         Thread tContactsLoader = new Thread(new Runnable()
         {
             @Override
-<<<<<<< HEAD
-            public void run() {
-                users = readUsersAtEvents(Integer.toString(Eventid));
-
-                if(users==null)
-                {
-<<<<<<< HEAD
-                    //TODO: Notify user
-                    Log.d(TAG,"Something went wrong while we were trying to read the events.");
-                }
-                else if(users.isEmpty())
-                {
-                    //TODO: Notify user
-                    Log.d(TAG,"No users were found");
-                }
-                else//All is well
-                {
-                   //Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-                        //Log.d(TAG,"Connection established");
-                        for(User u:users)
-=======
-=======
             public void run()
             {
                 Looper.prepare();
                 if(Eventid > 0)
                 {
->>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
                     try
                     {
                         String contactsJson = Restful.sendGetRequest("getUsersAtEvent/" + Eventid);
@@ -359,10 +285,6 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
                         options.inPreferredConfig = Bitmap.Config.ALPHA_8;
                         //Attempt to load images into memory and set the list adapter
                         for (User u : contacts)
-<<<<<<< HEAD
->>>>>>> Alhpa
-=======
->>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
                         {
                             //Look for user profile image
                             /*if (!new File(Environment.getExternalStorageDirectory().getPath()
@@ -433,7 +355,9 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
                                      usersAtEventList.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
                                      getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
-                                     progress.hide();
+                                     if(progress!=null)
+                                         if(progress.isShowing())
+                                            progress.hide();
                                      vf = (ViewFlipper) findViewById(R.id.viewFlipper);
                                      eventDetails.setText("List Of People");
                                      vf.showNext();

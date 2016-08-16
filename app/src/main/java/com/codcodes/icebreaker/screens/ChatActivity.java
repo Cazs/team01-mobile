@@ -1,5 +1,6 @@
 package com.codcodes.icebreaker.screens;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Looper;
@@ -14,16 +15,21 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
 import com.codcodes.icebreaker.auxilary.Restful;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.Message;
 import com.codcodes.icebreaker.model.MessagePollContract;
 import com.codcodes.icebreaker.model.MessagePollHelper;
+import com.codcodes.icebreaker.model.UserContract;
+import com.codcodes.icebreaker.model.UserHelper;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class ChatActivity extends AppCompatActivity
 {
@@ -50,49 +56,18 @@ public class ChatActivity extends AppCompatActivity
         messageAdapter = new ArrayAdapter<String>(this,R.layout.activity_send_bubble,R.id.send_text);
         messageList.setAdapter(messageAdapter);
 
-
         //Retrieve messages from local db
         final ArrayList<Message> messages = new ArrayList<Message>();
-        SQLiteDatabase db = new MessagePollHelper(this).getReadableDatabase();
-        String[] projection =
-                {
-                        MessagePollContract.MessageEntry.COL_MESSAGE_SENDER,
-                        MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER,
-                        MessagePollContract.MessageEntry.COL_MESSAGE_STATUS,
-                        MessagePollContract.MessageEntry.COL_MESSAGE_TIME,
-                        MessagePollContract.MessageEntry.COL_MESSAGE
-                };
-        String selection =
-                /*MessagePollContract.MessageEntry.COL_MESSAGE_SENDER+"=?"
-                        + " AND " +
-                        MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER + "=?"
-                        + " OR " +/*/
-                        MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER + " = ?"
-                        + " AND " +
-                        MessagePollContract.MessageEntry.COL_MESSAGE_SENDER+" = ?";
+        MessagePollHelper dbHelper = new MessagePollHelper(this);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        dbHelper.onCreate(db);//Create table if it doesn't exist
 
-        /*String[] selection_args = {SharedPreference.getUsername(this),otherUsername};//,SharedPreference.getUsername(getBaseContext()),otherUsername};
-        Cursor c = db.query(
-                MessagePollContract.MessageEntry.TABLE_NAME,
-                projection,
-                selection,
-              selection_args,
-                null,
-                null,
-                null
-        );*/
-        String localUser = SharedPreference.getUsername(this);
-        /*String query ="SELECT * FROM Message WHERE "+ MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER + " = ?"
-                        + " AND " + MessagePollContract.MessageEntry.COL_MESSAGE_SENDER +" = ?";// OR*/
-        String query ="SELECT * FROM Message";/* WHERE "
-                        + MessagePollContract.MessageEntry.COL_MESSAGE_SENDER +" = ? AND "
-                        + MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER + " = ? OR "
-                        + MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER + " = ? AND "
-                        + MessagePollContract.MessageEntry.COL_MESSAGE_SENDER +" = ?";// OR*/;
+        final String localUser = SharedPreference.getUsername(this);
+        String query ="SELECT * FROM " + MessagePollContract.MessageEntry.TABLE_NAME + " WHERE "
+                + MessagePollContract.MessageEntry.COL_MESSAGE_SENDER +" = ? OR " +
+                MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER + " = ?";
 
-        Cursor c =  db.rawQuery(query, new String[] {/*otherUsername, localUser, otherUsername, localUser*/});
-        //System.err.println("Message Count between["+SharedPreference.getUsername(getBaseContext())+" "+otherUsername+"]:" + String.valueOf(c.getCount()));
-        //c.moveToFirst();
+        Cursor c =  db.rawQuery(query, new String[] {otherUsername, otherUsername});
         while(c.moveToNext())
         {
             Message m = new Message();
@@ -102,13 +77,14 @@ public class ChatActivity extends AppCompatActivity
             int status = c.getInt(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS));
             String time = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_TIME));
             String msg = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE));
-            System.err.println(">>>>>>>>" +id);
+
             m.setMessage(msg);
             m.setStatus(status);
             m.setTime(time);
             m.setSender(sen);
             m.setReceiver(rec);
             messages.add(m);
+
             messageAdapter.add(m.getMessage());
         }
         db.close();
@@ -133,16 +109,37 @@ public class ChatActivity extends AppCompatActivity
                         ArrayList<AbstractMap.SimpleEntry<String,String>> msg_details = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
                         msg_details.add(new AbstractMap.SimpleEntry<String, String>("message",txtMessage.getText().toString()));
                         msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_status","0"));
-                        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_sender","Ghost"));//TODO
-                        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_receiver","Aaron"));//TODO
+                        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_sender",localUser));//TODO
+                        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_receiver",otherUsername));//TODO
 
                         //Send to server
                         try
                         {
                             int response_code = Restful.postData("addMessage",msg_details);
-                            //Update UI
+
                             if(response_code == HttpURLConnection.HTTP_OK)
                             {
+                                //Save message to disk
+                                MessagePollHelper dbHelper = new MessagePollHelper(getBaseContext());
+                                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                                dbHelper.onCreate(db);
+
+                                ContentValues kv_pairs = new ContentValues();
+
+                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd H:m:s");
+                                String date = sdf.format(new Date());
+                                System.err.println(date);
+                                kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER, localUser);
+                                kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER, otherUsername);
+                                kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE, txtMessage.getText().toString());
+                                kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS, MESSAGE_STATUSES.SENT.getStatus());
+                                kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_TIME, date);
+                                //kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_ID, otherUser.getAge());
+
+                                long newRowId = newRowId = db.insert(MessagePollContract.MessageEntry.TABLE_NAME, null, kv_pairs);
+                                System.err.println("New message ==> "+ newRowId);
+
+                                //Update UI
                                 runOnUiThread(new Runnable()
                                 {
                                     @Override

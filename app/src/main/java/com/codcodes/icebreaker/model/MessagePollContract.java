@@ -9,9 +9,9 @@ public final class MessagePollContract
 {
     public static final String TYPE_TEXT = "TEXT";
     public static final String TYPE_INT = "INTEGER";
-    public static final String SQL_CREATE_tblMSG = "CREATE TABLE " +
+    public static final String SQL_CREATE_tblMSG = "CREATE TABLE IF NOT EXISTS " +
             MessageEntry.TABLE_NAME + " (" +
-            MessageEntry.COL_MESSAGE_ID + " " + TYPE_INT + " PRIMARY KEY," +
+            MessageEntry.COL_MESSAGE_ID + " " + TYPE_TEXT + " PRIMARY KEY," +
             MessageEntry.COL_MESSAGE_SENDER + " " + TYPE_TEXT + " NOT NULL," +
             MessageEntry.COL_MESSAGE_RECEIVER + " " + TYPE_TEXT + " NOT NULL," +
             MessageEntry.COL_MESSAGE_STATUS + " " + TYPE_INT + "," +

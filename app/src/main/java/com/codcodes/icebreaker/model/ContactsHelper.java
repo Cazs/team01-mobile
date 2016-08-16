@@ -9,12 +9,12 @@ import com.codcodes.icebreaker.services.MessagePollService;
 /**
  * Created by Casper on 2016/08/10.
  */
-public class MessagePollHelper extends SQLiteOpenHelper
+public class ContactsHelper extends SQLiteOpenHelper
 {
     public static final String DB_NAME = "IcebreakDB";
     public static final int DB_VERSION = 1;
 
-    public MessagePollHelper(Context ctxt)
+    public ContactsHelper(Context ctxt)
     {
         super(ctxt,DB_NAME,null,DB_VERSION);
     }
@@ -22,7 +22,7 @@ public class MessagePollHelper extends SQLiteOpenHelper
     @Override
     public void onCreate(SQLiteDatabase db)
     {
-        db.execSQL(MessagePollContract.SQL_CREATE_tblMSG);
+        db.execSQL(ContactsContract.SQL_CREATE_tblContacts);
     }
 
     @Override

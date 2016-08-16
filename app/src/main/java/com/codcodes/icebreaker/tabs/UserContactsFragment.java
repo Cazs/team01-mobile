@@ -112,12 +112,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 @Override
                 public void run()
                 {
-<<<<<<< HEAD
                     swipeRefreshLayout.setRefreshing(false);
-=======
-                    //swipeRefreshLayout.setRefreshing(true);
-                    //Toast.makeText(getActivity(),"Refreshing",Toast.LENGTH_SHORT).show();
->>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
                     //refresh();
                 }
             }

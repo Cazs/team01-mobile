@@ -78,13 +78,14 @@
             android:textColor="@color/black"
             android:gravity="center"
             android:textSize="10pt"
+            android:layout_centerHorizontal="true"
             android:layout_marginTop="@dimen/dp_size_360"
             android:maxLength="150"
             />
 
         <Button
             android:id="@+id/popup1_Accept"
-            android:layout_marginTop="@dimen/dp_size_440"
+            android:layout_marginTop="@dimen/dp_size_420"
             android:layout_marginLeft="@dimen/dp_size_70"
             android:layout_width="170dp"
             android:layout_height="40dp"
@@ -97,7 +98,7 @@
 
         <Button
             android:id="@+id/popup1_Reject"
-            android:layout_marginTop="@dimen/dp_size_510"
+            android:layout_marginTop="@dimen/dp_size_490"
             android:layout_marginLeft="@dimen/dp_size_70"
             android:layout_width="170dp"
             android:layout_height="40dp"

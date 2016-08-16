@@ -31,7 +31,7 @@ public class User implements IJsonable {
     }
 
     public String getFirstname() {
-        return firstname;
+        return this.firstname;
     }
 
     public void setFirstname(String firstname) {
