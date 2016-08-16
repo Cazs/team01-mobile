@@ -1,83 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_content"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context=".screens.InitialActivity">
-
-    <android.support.design.widget.AppBarLayout
-        android:id="@+id/appbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="@dimen/appbar_padding_top"
-        android:theme="@style/AppTheme.AppBarOverlay">
-
-        <android.support.design.internal.ForegroundLinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <ImageView
-                android:layout_width="@dimen/dp_size_50"
-                android:layout_marginTop="@dimen/dp_size_2"
-                android:layout_marginLeft="@dimen/dp_size_20"
-                android:layout_height="wrap_content"
-                android:src="@mipmap/ic_launcher"
-                />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/app_name"
-                android:id="@+id/heading"
-                android:textSize="29pt"
-                android:textColor="@color/white"
-                />
-
-        </android.support.design.internal.ForegroundLinearLayout>
-
-    </android.support.design.widget.AppBarLayout>
-
-    <android.support.v4.view.ViewPager
-        android:id="@+id/container"
+    <android.support.design.widget.CoordinatorLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/main_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        android:fitsSystemWindows="true"
+        tools:context=".screens.InitialActivity">
 
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="@dimen/dp_size_100"
-    android:background="@color/iceblue"
-    android:layout_marginTop="@dimen/dp_size_530">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:weightSum="100">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#000"
-        android:textSize="@dimen/dp_size_15"
-        android:layout_marginLeft="@dimen/dp_size_75"
-        android:layout_marginTop="@dimen/dp_size_23"
-        android:background="@drawable/buttonshape"
-        android:text="Login"
-        android:onClick="showLogin"
-        android:fontFamily="monospace"
-        />
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#000"
-        android:textSize="@dimen/dp_size_15"
-        android:shadowRadius="5"
-        android:layout_marginTop="@dimen/dp_size_23"
-        android:layout_marginLeft="@dimen/dp_size_50"
-        android:background="@drawable/buttonshape"
-        android:text="Sign Up"
-        android:fontFamily="monospace"
-        android:onClick="ShowSignUp"
-    />
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/appbar"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:paddingTop="@dimen/appbar_padding_top"
+            android:theme="@style/AppTheme.AppBarOverlay">
 
-</LinearLayout>
+            <android.support.design.internal.ForegroundLinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:layout_width="@dimen/dp_size_50"
+                    android:layout_marginTop="@dimen/dp_size_2"
+                    android:layout_marginLeft="@dimen/dp_size_20"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/ic_launcher"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name"
+                    android:id="@+id/heading"
+                    android:textSize="29pt"
+                    android:textColor="@color/white"
+                    />
+
+            </android.support.design.internal.ForegroundLinearLayout>
+
+        </android.support.design.widget.AppBarLayout>
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/container"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_below="@+id/appbar"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@color/iceblue"
+            android:orientation="horizontal"
+            android:layout_below="@+id/container">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#000"
+                android:textSize="@dimen/dp_size_15"
+                android:layout_marginLeft="@dimen/dp_size_75"
+                android:layout_marginTop="@dimen/dp_size_23"
+                android:background="@drawable/buttonshape"
+                android:text="Login"
+                android:onClick="showLogin"
+                android:fontFamily="monospace"
+                />
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#000"
+                android:textSize="@dimen/dp_size_15"
+                android:shadowRadius="5"
+                android:layout_marginTop="@dimen/dp_size_23"
+                android:layout_marginLeft="@dimen/dp_size_50"
+                android:background="@drawable/buttonshape"
+                android:text="Sign Up"
+                android:fontFamily="monospace"
+                android:onClick="ShowSignUp"
+                />
+        </LinearLayout>
+
+    </RelativeLayout>
+
 
 </android.support.design.widget.CoordinatorLayout>

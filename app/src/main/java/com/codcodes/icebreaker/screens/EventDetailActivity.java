@@ -48,12 +48,13 @@ import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-public class EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
+public class
+EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
 {
     private static final boolean DEBUG = true;
     private final String TAG = "ICEBREAK";
 
-    private int Eventid;
+    private long Eventid;
     private ArrayList<User> users;
     private ArrayList<String> Name;
     private ArrayList<String> Catchphrase;
@@ -87,6 +88,22 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
         Bundle extras = getIntent().getExtras();
         final Activity act =this;
 
+        /*
+        //If there's a cached eventID use that
+        String strEvId = SharedPreference.getEventId(this);
+        if(strEvId!=null)
+        {
+            if(!strEvId.isEmpty())
+            {
+                if(Long.valueOf(strEvId)>0)
+                {
+                    Eventid = Long.valueOf(SharedPreference.getEventId(this));
+                    showProgressBar();
+                    //updateProfile(Eventid,username);
+                    listPeople(act);
+                }
+            }
+        }*/
         if(extras != null)
         {
             String evtName = extras.getString("Event Name");
@@ -95,7 +112,6 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
 
             Eventid = extras.getInt("Event ID");
             AccessCode = extras.getInt("Access ID");
-            System.out.println(AccessCode);
 
             TextView eventDescription = (TextView)findViewById(R.id.event_description);
             eventDescription.setText(extras.getString("Event Description"));
@@ -107,11 +123,13 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
             options.inPreferredConfig = Bitmap.Config.ALPHA_8;
             Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
             //Bitmap bitmap = BitmapFactory.decodeResource(getResources(), imagePath);
-            Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
-            ImageView eventImage = (ImageView) findViewById((R.id.event_image));
-
-            eventImage.setImageBitmap(circularbitmap);
-            bitmap.recycle();
+            if(bitmap!=null)
+            {
+                Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
+                ImageView eventImage = (ImageView) findViewById((R.id.event_image));
+                eventImage.setImageBitmap(circularbitmap);
+                bitmap.recycle();
+            }
         }
 
         eventDetails = (TextView)findViewById(R.id.Event_Heading);
@@ -146,12 +164,16 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
 
     public void showProgressBar()
     {
-        progress=new ProgressDialog(this);
-        progress.setMessage("Loading List");
-        progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progress.setIndeterminate(true);
-        progress.setProgress(0);
-        progress.show();
+        if(progress==null)
+            return;
+        if(!progress.isShowing()) {
+            progress = new ProgressDialog(this);
+            progress.setMessage("Loading List");
+            progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progress.setIndeterminate(true);
+            progress.setProgress(0);
+            progress.show();
+        }
     }
 
     public void updateProfile(final int eventID,final String username)
@@ -233,6 +255,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
     {
         if(code == AccessCode)
         {
+            SharedPreference.setEventId(this,Eventid);
             return true;
         }
         return false;
@@ -264,7 +287,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                         for (User u : contacts)
                         {
                             //Look for user profile image
-                            if (!new File(Environment.getExternalStorageDirectory().getPath()
+                            /*if (!new File(Environment.getExternalStorageDirectory().getPath()
                                     + "/Icebreak/profile/" + u.getUsername() + ".png").exists()) {
                                 //if (imageDownload(u.getUsername() + ".png", "/profile")) {
                                 if (Restful.imageDownloader(u.getUsername(), ".png", "/profile", context))
@@ -282,7 +305,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                                         if (Restful.imageDownloader("default", ".png", "/profile", context))
                                         {
                                             /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                                    + "/Icebreak/profile/profile_default.png", getActivity());*/
+                                                    + "/Icebreak/profile/profile_default.png", getActivity());*
                                             options = new BitmapFactory.Options();
                                             options.inPreferredConfig = Bitmap.Config.ALPHA_8;
                                             bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
@@ -296,7 +319,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                                     } else//default profile image exists
                                     {
                                         /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                                + "/Icebreak/profile/profile_default.png",getActivity());*/
+                                                + "/Icebreak/profile/profile_default.png",getActivity());*
                                         options = new BitmapFactory.Options();
                                         options.inPreferredConfig = Bitmap.Config.ALPHA_8;
                                         bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
@@ -309,7 +332,9 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                                 bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
                                         + "/Icebreak/profile/" + u.getUsername() + ".png", context);
                                 circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                            }
+                            }*/
+                            bitmap = Restful.getImage(context,u.getUsername(),".png","/profile",options);
+                            circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                             if (bitmap == null || circularbitmap == null) {
                                 System.err.println("Bitmap is null");
                             } else {
@@ -330,11 +355,13 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                                      usersAtEventList.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
                                      getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
+                                     if(progress!=null)
+                                         if(progress.isShowing())
+                                            progress.hide();
                                      vf = (ViewFlipper) findViewById(R.id.viewFlipper);
                                      eventDetails.setText("List Of People");
                                      vf.showNext();
                                      Log.d(TAG, "Set users at event list");
-                                     progress.hide();
                                  }
                              }
                          });

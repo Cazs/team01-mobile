@@ -1,10 +1,14 @@
 package com.codcodes.icebreaker.screens;
 
+import android.app.Activity;
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Environment;
 import android.os.Looper;
@@ -18,29 +22,44 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ContactListSwitches;
+import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
 import com.codcodes.icebreaker.auxilary.Restful;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
+import com.codcodes.icebreaker.model.ContactsContract;
+import com.codcodes.icebreaker.model.ContactsHelper;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.Message;
 import com.codcodes.icebreaker.model.MessagePollContract;
 import com.codcodes.icebreaker.model.MessagePollHelper;
 import com.codcodes.icebreaker.model.User;
+import com.codcodes.icebreaker.model.UserContract;
+import com.codcodes.icebreaker.model.UserHelper;
 import com.codcodes.icebreaker.services.MessagePollService;
 import com.codcodes.icebreaker.tabs.EventsFragment;
 import com.codcodes.icebreaker.tabs.ProfileFragment;
 import com.codcodes.icebreaker.tabs.UserContactsFragment;
 
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.HttpURLConnection;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Timer;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
 {
@@ -61,9 +80,25 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     private TextView txtPopupbio, txtPopupbioTitle, txtPopupgender, txtPopupage, txtPopupname;
     private LinearLayout actionBar;
     private ViewPager mViewPager;
+    private Typeface ttfInfinity, ttfAilerons;
+    private Dialog dialog;
+
     public static String rootDir = Environment.getExternalStorageDirectory().getPath();
     public static boolean IB_DIALOG = false;
+    public static boolean appInFG = false;
+    public static final  int IB_CHECK_DELAY = 5000;//5 sec
     public static ContactListSwitches val_switch = ContactListSwitches.SHOW_USERS_AT_EVENT;
+
+    private static final Message icebreak_msg = new Message();
+    private static User requesting_user = new User();
+    private static final User receiving_user = new User();
+    private static final String TAG = "IB/MainActivity";
+    private static boolean cview_set = false;
+    private static boolean dlg_visible = false;
+
+    private Bitmap bitmapLocalUser,bitmapRemoteUser;
+    private Activity context;
+    private boolean remote_user_set = false;
 
     private int[] imageResId =
             {
@@ -77,56 +112,148 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        context = this;
+        appInFG = true;
+
+        ttfInfinity = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
+        ttfAilerons = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
+
+        dialog = new Dialog(this);
         Restful.validateStoragePermissions(this);
-        //Check for Icebreaks
-        //checkForIcebreaks(this);
-        final Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.pop_up_one);
-        Typeface h = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
-        Typeface heading = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
 
-        TextView txtPopupname = (TextView) dialog.findViewById(R.id.popup1_profile_name);
-        txtPopupname.setTypeface(h);
+        Thread tDataloader = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    //Get local/receiving user
+                    setLocalUser(SharedPreference.getUsername(context).toString());
+                    //checkForIcebreaks();
 
-        TextView txtPopupage = (TextView) dialog.findViewById((R.id.popup1_profile_age));
-        txtPopupage.setTypeface(h);
+                    /*
+                     * Keep updating the icebreak_msg so the checkForIcebreaks() method can
+                     * Update the UI based on that
+                     */
+                    while(appInFG)
+                    {
+                        MessagePollHelper dbHelper = new MessagePollHelper(getBaseContext());
+                        SQLiteDatabase db = dbHelper.getReadableDatabase();
+                        dbHelper.onCreate(db);
 
-        TextView txtPopupgender = (TextView) dialog.findViewById((R.id.popup1_profile_gender));
-        txtPopupgender.setTypeface(h);
+                        String localUser = SharedPreference.getUsername(getBaseContext());
+                        String query = "SELECT * FROM " + MessagePollContract.MessageEntry.TABLE_NAME + " WHERE "
+                                + MessagePollContract.MessageEntry.COL_MESSAGE + " = ? AND "
+                                + MessagePollContract.MessageEntry.COL_MESSAGE_STATUS + " = ? AND "
+                                + MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER + " = ?";
 
-        TextView txtPopupbioTitle = (TextView) dialog.findViewById((R.id.popup1_profile_bio_title));
-        txtPopupbioTitle.setText("Bio:");
-        txtPopupbioTitle.setTypeface(h);
+                        Cursor c = db.rawQuery(query, new String[]{"ICEBREAK",
+                                String.valueOf(MESSAGE_STATUSES.ICEBREAK_DELIVERED.getStatus()), localUser});
 
-        TextView txtPopupbio = (TextView) dialog.findViewById((R.id.popup1_profile_bio));
-        txtPopupbio.setTypeface(h);
+                        if (c.getCount() > 0)//If there are Icebreak requests
+                        {
+                            c.moveToFirst();
+                            String msg_id = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_ID));
+                            String send = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER));
+                            String msg = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE));
+                            String recv = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER));
+                            String time = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_TIME));
+                            int status = c.getInt(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS));
 
-        Button accept = (Button) dialog.findViewById(R.id.popup1_Accept);
-        Button reject = (Button) dialog.findViewById(R.id.popup1_Reject);
+                            icebreak_msg.setId(msg_id);
+                            icebreak_msg.setSender(send);
+                            icebreak_msg.setMessage(msg);
+                            icebreak_msg.setReceiver(recv);
+                            icebreak_msg.setTime(time);
+                            icebreak_msg.setStatus(status);
 
-        reject.setTypeface(heading);
-        accept.setTypeface(heading);
+                            db.close();//Close DB
 
-        checkForIcebreaks(dialog);
+                            //Get remote/requesting user
+                            if(requesting_user==null)
+                            {
+                                requesting_user = Restful.getUser(send);
+                                BitmapFactory.Options options = new BitmapFactory.Options();
+                                options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+                                bitmapRemoteUser = Restful.getImage(context, requesting_user.getUsername(), ".png", "/profile", options);
+                                Log.d(TAG,"Requesting user was null, I fixed this.");
+                            }
+                            else
+                            {
+                                boolean need_to_sync = false;
+                                if(requesting_user.getUsername()==null)
+                                    need_to_sync = true;
+                                else
+                                    if (!requesting_user.getUsername().equals(send))//Update Images and requesting_user only when necessary
+                                        need_to_sync = true;
+                                if(need_to_sync)
+                                {
+                                    requesting_user = Restful.getUser(send);
+                                    BitmapFactory.Options options = new BitmapFactory.Options();
+                                    options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+                                    bitmapRemoteUser = Restful.getImage(context, requesting_user.getUsername(), ".png", "/profile", options);
+                                    Log.d(TAG, "Requesting user's username did not match the one we had, I fixed this.");
+                                }
+                                else
+                                    Log.d(TAG, "Remote user is up to date.");
+                            }
+                        }
+                        Thread.sleep(IB_CHECK_DELAY);
+                    }
+                } catch (IOException e)
+                {
+                    e.printStackTrace();
+                }catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        });
+        tDataloader.start();
+
+        //Start Icebreak searching service
+        Thread tIBloader = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Looper.prepare();
+                while (appInFG) {
+                    try {
+                        checkForIcebreaks();
+                        Thread.sleep(IB_CHECK_DELAY);
+                    } catch (IOException e) {//TODO: Fix error handling.
+                        e.printStackTrace();
+                    }catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        tIBloader.start();
+
         //Start message polling service
         Intent inMsg = new Intent(this, MessagePollService.class);
         inMsg.putExtra("Username", SharedPreference.getUsername(this));
         this.startService(inMsg);
-        //Load components
+        //Load UI components
         actionBar = (LinearLayout)findViewById(R.id.actionBar);
         mViewPager = (ViewPager) findViewById(R.id.container);
         TabLayout tablayout = (TabLayout) findViewById(R.id.tab_layout);
         TextView headingTextView = (TextView) findViewById(R.id.main_heading);
-        h = Typeface.createFromAsset(this.getAssets(),"Ailerons-Typeface.otf");
+        ttfInfinity = Typeface.createFromAsset(this.getAssets(),"Ailerons-Typeface.otf");
         final FloatingActionButton fabSwitch = (FloatingActionButton)findViewById(R.id.fabSwitch);
 
-        //Setup components
+        //Setup UI components
         mViewPager.setAdapter(new FragmentAdapter(getSupportFragmentManager(),MainActivity.this));
         tablayout.setupWithViewPager(mViewPager);// Set up the ViewPager with the sections adapter.
         tablayout.getTabAt(0).setIcon(imageResId[0]);
         tablayout.getTabAt(1).setIcon(imageResId[1]);
         tablayout.getTabAt(2).setIcon(imageResId[2]);
-        headingTextView.setTypeface(h);
+        headingTextView.setTypeface(ttfInfinity);
         fabSwitch.hide();
 
         fabSwitch.setOnClickListener(new View.OnClickListener()
@@ -146,8 +273,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
             {
-                checkForIcebreaks(dialog);
-
                 if(position == 1)
                 {
                     fabSwitch.show();
@@ -169,16 +294,72 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
             }
         });
-
-        accept.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-
-            }
-        });
     }
+
+    private void setLocalUser(String username) throws IOException
+    {
+        UserHelper u_dbHelper = new UserHelper(getBaseContext());
+        SQLiteDatabase db;
+        String query;
+        String[] args;
+        if(!username.isEmpty()) {
+             db = u_dbHelper.getReadableDatabase();
+            u_dbHelper.onCreate(db);
+            query = "SELECT * FROM " + UserContract.UserEntry.TABLE_NAME +
+                    " WHERE " + UserContract.UserEntry.COL_USER_USERNAME + " = ?";
+            args = new String[]{username};//which will be local user
+            Cursor c = db.rawQuery(query, args);
+            if (c.getCount() > 0) {
+                c.moveToFirst();
+                String fname = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_FNAME));
+                String lname = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_LNAME));
+                int age = c.getInt(c.getColumnIndex(UserContract.UserEntry.COL_USER_AGE));
+                String bio = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_BIO));
+                String ctch = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_CATCHPHRASE));
+                String occp = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_OCCUPATION));
+                String gndr = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_GENDER));
+                String usr = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_USERNAME));
+                receiving_user.setFirstname(fname);
+                receiving_user.setLastname(lname);
+                receiving_user.setAge(age);
+                receiving_user.setBio(bio);
+                receiving_user.setCatchphrase(ctch);
+                receiving_user.setOccupation(occp);
+                receiving_user.setGender(gndr);
+                receiving_user.setUsername(usr);
+                Log.d(TAG,"Set global local user object.");
+                db.close();
+            } else
+            {
+                //Insert user data from server
+                db = u_dbHelper.getWritableDatabase();
+                u_dbHelper.onCreate(db);
+                User local = Restful.getUser(username);
+
+                ContentValues kv_pairs = new ContentValues();
+                kv_pairs.put(UserContract.UserEntry.COL_USER_USERNAME, local.getUsername());
+                kv_pairs.put(UserContract.UserEntry.COL_USER_AGE, local.getAge());
+                kv_pairs.put(UserContract.UserEntry.COL_USER_BIO, local.getBio());
+                kv_pairs.put(UserContract.UserEntry.COL_USER_CATCHPHRASE, local.getCatchphrase());
+                kv_pairs.put(UserContract.UserEntry.COL_USER_FNAME, local.getFirstname());
+                kv_pairs.put(UserContract.UserEntry.COL_USER_GENDER, local.getGender());
+                kv_pairs.put(UserContract.UserEntry.COL_USER_OCCUPATION, local.getOccupation());
+                kv_pairs.put(UserContract.UserEntry.COL_USER_LNAME, local.getLastname());
+
+                long newRowId = db.insert(MessagePollContract.MessageEntry.TABLE_NAME, null, kv_pairs);
+                Log.d(TAG, "Inserted into Users table: new row=" + newRowId);
+                db.close();
+            }
+            //Load local profile bitmap
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+            bitmapLocalUser = Restful.getImage(context, username, ".png", "/profile", options);
+
+        }
+        else Log.d(TAG,"Empty username");
+    }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -205,54 +386,286 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         return super.onOptionsItemSelected(item);
     }
 
-    public void checkForIcebreaks(Dialog dialog)
+    private void reject() throws IOException
     {
-        SQLiteDatabase db = new MessagePollHelper(this).getReadableDatabase();
-        String[] projection =
+        //Send signal to sender to update delivery status
+        Thread tReject = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Looper.prepare();
+                icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_REJECTED.getStatus());
+                if(Restful.sendMessage(getBaseContext(),icebreak_msg))
                 {
-                        MessagePollContract.MessageEntry.COL_MESSAGE_SENDER,
-                        MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER,
-                        MessagePollContract.MessageEntry.COL_MESSAGE_STATUS,
-                        MessagePollContract.MessageEntry.COL_MESSAGE_TIME,
-                        MessagePollContract.MessageEntry.COL_MESSAGE
-                };
+                    MessagePollHelper dbHelper = new MessagePollHelper(getBaseContext());//getBaseContext());
+                    SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        String localUser = SharedPreference.getUsername(this);
-        String query ="SELECT * FROM Message WHERE "
-                        + MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER +" = ? AND "
-                        + MessagePollContract.MessageEntry.COL_MESSAGE_STATUS + " = ?";
+                    ContentValues kv_pairs = new ContentValues();
+                    //kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_ID, icebreak_msg.getId());
+                    kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER, icebreak_msg.getSender());
+                    kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER, icebreak_msg.getReceiver());
+                    kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS, icebreak_msg.getStatus());
+                    //kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_TIME, icebreak_msg.getTime());
 
-        Cursor c =  db.rawQuery(query, new String[] {localUser, String.valueOf(MESSAGE_STATUSES.ICEBREAK.getStatus())});
-        if(c.getCount()>0) {//If there are icebreak requests
-            c.moveToFirst();
-            Message m = new Message();
-            int id = c.getInt(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_ID));
-            String sen = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER));
-            String rec = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER));
-            int status = c.getInt(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS));
-            String time = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_TIME));
-            String msg = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE));
-            //System.err.println(">>>>>>>>" +id);
-            m.setMessage(msg);
-            m.setStatus(status);
-            m.setTime(time);
-            m.setSender(sen);
-            m.setReceiver(rec);
+                    String where = MessagePollContract.MessageEntry.COL_MESSAGE_ID +
+                            " = ?";
+                    String[] where_args = {icebreak_msg.getId()};
+                    db.update(MessagePollContract.MessageEntry.TABLE_NAME, kv_pairs,where,where_args);
+                    db.close();
+                    Log.d(TAG, "Successfully updated message status on remote and local DB");
+                }
+                else
+                    Log.d(TAG, "Could NOT Successfully updated message status on server.");
 
-            if (txtPopupbio != null)
-                txtPopupbio.setText("Bio");
-            if (txtPopupgender != null)
-                txtPopupgender.setText("Gender");
-            if (txtPopupage != null)
-                txtPopupage.setText("Age:0");
-            if (txtPopupname != null)
-                txtPopupname.setText(sen);
+                hideDialog();
+            }
+        });
+        tReject.start();
+    }
 
-            //System.err.println("Showing dialog");
-            dialog.show();
-            IB_DIALOG = true;
-        }
+    private void drawPostAcceptanceUI()
+    {
+        dialog.setContentView(R.layout.pop_up_two);
+
+        TextView txtSuccessfulMatch = (TextView)dialog.findViewById(R.id.SuccessfulMatch);
+        ImageView imgLocalUser = (ImageView)dialog.findViewById(R.id.other_pic1);
+        ImageView imgRemoteUser = (ImageView)dialog.findViewById(R.id.other_pic2);
+        TextView phrase = (TextView)dialog.findViewById(R.id.phrase);
+        Button btnChat = (Button)dialog.findViewById(R.id.popup1_Start_Chatting);
+        TextView or = (TextView)dialog.findViewById(R.id.or);
+        Button btnPlay = (Button)dialog.findViewById(R.id.popup1_Keep_playing);
+
+        imgLocalUser.setImageBitmap(bitmapLocalUser);
+        imgRemoteUser.setImageBitmap(bitmapRemoteUser);
+
+        txtSuccessfulMatch.setTypeface(ttfInfinity);
+        phrase.setTypeface(ttfInfinity);
+        or.setTypeface(ttfInfinity);
+
+        btnChat.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                //Add user to local contacts table
+                /*UserHelper dbHelper = new UserHelper(getBaseContext());//getBaseContext());
+                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                dbHelper.onCreate(db);
+
+                ContentValues kv_pairs = new ContentValues();
+
+                kv_pairs.put(UserContract.UserEntry.COL_USER_USERNAME, requesting_user.getUsername());
+                kv_pairs.put(UserContract.UserEntry.COL_USER_FNAME, otherUser.getFirstname());
+                kv_pairs.put(UserContract.UserEntry.COL_USER_LNAME, otherUser.getLastname());
+                kv_pairs.put(UserContract.UserEntry.COL_USER_AGE, otherUser.getAge());
+                kv_pairs.put(UserContract.UserEntry.COL_USER_BIO, otherUser.getBio());
+                kv_pairs.put(UserContract.UserEntry.COL_USER_CATCHPHRASE, otherUser.getCatchphrase());
+                kv_pairs.put(UserContract.UserEntry.COL_USER_OCCUPATION, otherUser.getOccupation());
+                kv_pairs.put(UserContract.UserEntry.COL_USER_GENDER, otherUser.getGender());
+
+                long newRowId = -1;
+                if(!userExistsInDB(getBaseContext(),strUserRemote))
+                    newRowId = db.insert(UserContract.UserEntry.TABLE_NAME, null, kv_pairs);
+                else
+                    Log.d(TAG,"User exists in local DB");
+                System.err.println("New contact ==> "+ newRowId);
+                /*Toast.makeText(getBaseContext(),"Could not add user to contacts list: " + e.getMessage(),Toast.LENGTH_LONG).show();
+                e.printStackTrace();
+                Log.d(TAG,e.getMessage());*/
+                //Start ChatActivity
+                hideDialog();
+                /*Intent chatIntent = new Intent(getBaseContext(),ChatActivity.class);
+                chatIntent.putExtra("Username",strUserRemote);
+                startActivity(chatIntent);*/
+            }
+        });
+
+        btnPlay.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                hideDialog();
+            }
+        });
+    }
+
+    public void hideDialog()
+    {
+        if(dialog!=null)
+            //if(dialog.isShowing()) {
+                //dialog.dismiss();
+                //dialog.cancel();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dialog.hide();
+            }
+        });
+            //}
+        //dialog = new Dialog(this);
+        cview_set = false;
+        dlg_visible = false;
+    }
+
+    private void accept() throws IOException
+    {
+        //Do UI things
+        hideDialog();
+        dlg_visible = false;
+        drawPostAcceptanceUI();
+
+        dialog.show();
+        dlg_visible =true;
+
+        Thread t = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_ACCEPTED.getStatus());
+                if (Restful.sendMessage(context, icebreak_msg))
+                {
+
+                    Log.d(TAG, "Updated remote status");
+                }
+                else
+                    Log.d(TAG, "Could not send delivery status to server.");
+            }
+        });
+        t.start();
+    }
+
+    private boolean userExistsInDB(Context ctxt, String username)
+    {
+        String query ="SELECT * FROM " + UserContract.UserEntry.TABLE_NAME + " WHERE "
+                + UserContract.UserEntry.COL_USER_USERNAME +" = ?";
+
+        UserHelper dbHelper = new UserHelper(ctxt);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        dbHelper.onCreate(db);
+
+        Cursor c =  db.rawQuery(query, new String[] {username});
+        int rowCount=c.getCount();
         db.close();
+        if(rowCount>0)
+            return true;
+        else
+            return  false;
+    }
+
+    public void checkForIcebreaks() throws IOException
+    {
+        //cview_set = false;
+        if(dialog==null)
+        {
+            System.err.println("Dialog is currently NULL.");
+            return;
+        }
+        if(dlg_visible)
+        {
+            Log.d(TAG,"Dialog is currently displayed.");
+            return;
+        }
+
+        //TODO: Take a closer look at the SERV_RECEIVED part
+        if(icebreak_msg.getStatus()==MESSAGE_STATUSES.ICEBREAK_DELIVERED.getStatus() || icebreak_msg.getStatus()==MESSAGE_STATUSES.ICEBREAK_SERV_RECEIVED.getStatus())
+        {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    dialog.setContentView(R.layout.pop_up_one);
+                    cview_set = true;
+                }
+            });
+
+            //Wait for content view to be set
+            while (!cview_set) {}//Uuurgh
+
+            //TODO: make vars global
+            final TextView txtPopupname = (TextView) dialog.findViewById(R.id.popup1_profile_name);
+
+            final TextView txtPopupage = (TextView) dialog.findViewById((R.id.popup1_profile_age));
+
+            final TextView txtPopupgender = (TextView) dialog.findViewById((R.id.popup1_profile_gender));
+
+            final TextView txtPopupbioTitle = (TextView) dialog.findViewById((R.id.popup1_profile_bio_title));
+
+            final TextView txtPopupbio = (TextView) dialog.findViewById((R.id.popup1_profile_bio));
+
+            final ImageView imgOtherUser = (ImageView) dialog.findViewById(R.id.other_pic);
+
+            final Button accept = (Button) dialog.findViewById(R.id.popup1_Accept);
+            final Button reject = (Button) dialog.findViewById(R.id.popup1_Reject);
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    txtPopupname.setTypeface(ttfInfinity);
+                    txtPopupage.setTypeface(ttfInfinity);
+                    txtPopupgender.setTypeface(ttfInfinity);
+                    txtPopupbioTitle.setText("Bio:");
+                    txtPopupbioTitle.setTypeface(ttfInfinity);
+                    txtPopupbio.setTypeface(ttfInfinity);
+                    imgOtherUser.setImageBitmap(BitmapFactory.decodeFile(Environment.getExternalStorageDirectory() + "/Icebreak/profile/default.png"));
+                    reject.setTypeface(ttfAilerons);
+                    accept.setTypeface(ttfAilerons);
+
+                    if (icebreak_msg != null && requesting_user != null)
+                    {
+                        if (txtPopupbio != null)
+                            txtPopupbio.setText(requesting_user.getBio());
+                        if (txtPopupgender != null)
+                            txtPopupgender.setText(requesting_user.getGender());
+                        if (txtPopupage != null)
+                            txtPopupage.setText(String.valueOf(requesting_user.getAge()));
+                        if (txtPopupname != null) {
+                            if (requesting_user.getFirstname() != null && requesting_user.getLastname() != null) {
+                                if (requesting_user.getFirstname().toLowerCase().equals('x') || requesting_user.getLastname().toLowerCase().equals('x'))
+                                    txtPopupname.setText("Anonymous");
+                                else
+                                    txtPopupname.setText(requesting_user.getFirstname() + " " + requesting_user.getLastname());
+                            } else txtPopupname.setText("Anonymous");
+                        }
+                        if (imgOtherUser != null && bitmapRemoteUser != null)
+                            imgOtherUser.setImageBitmap(bitmapRemoteUser);
+
+                        dialog.show();//Show dialog
+                        dlg_visible = true;
+                    } else Log.d(TAG, "NULL remote user or icebreak_msg");
+                }
+            });
+
+            while(accept==null){}//Aarg
+            accept.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    try {
+                        accept();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            while(reject==null){}//Aarg
+            reject.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    try {
+                        reject();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+        else
+            Log.d(TAG,"Message status: " + icebreak_msg.getStatus());
     }
 
     @Override
@@ -354,6 +767,26 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         {
             return null;
         }
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        hideDialog();
+        this.appInFG = false;
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        this.appInFG = true;
+    }
+
+    public boolean isInForeground()
+    {
+        return this.appInFG;
     }
 
     @Override

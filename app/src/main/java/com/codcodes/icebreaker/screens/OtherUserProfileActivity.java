@@ -3,12 +3,13 @@ package com.codcodes.icebreaker.screens;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -23,11 +24,16 @@ import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
 import com.codcodes.icebreaker.auxilary.Restful;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
+import com.codcodes.icebreaker.auxilary.WritersAndReaders;
+import com.codcodes.icebreaker.model.MessagePollContract;
+import com.codcodes.icebreaker.model.MessagePollHelper;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class OtherUserProfileActivity extends AppCompatActivity {
     private TextView profile;
@@ -40,6 +46,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private String gender;
     private ProgressDialog progress;
     private boolean prog_bar = false;
+    private final int MSG_ID_LEN = 20;
     private static final String TAG = "IB/OtherUserActivity";
 
     @Override
@@ -62,6 +69,12 @@ public class OtherUserProfileActivity extends AppCompatActivity {
             occupation = extras.getString("Occupation");
             bio = extras.getString("Bio");
             gender = extras.getString("Gender");
+        }
+        else
+        {
+            //Go back to the EventsFragment
+            Intent intentMainAct = new Intent(this,MainActivity.class);
+            startActivity(intentMainAct);
         }
 
         profile = (TextView) findViewById(R.id.Profile);
@@ -87,7 +100,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         });
         tUserProfileLoader.start();
 
-        Button icebreak = (Button) findViewById(R.id.btnIcebreak);
+        Button icebreak = (Button) findViewById(R.id.icebreak);
         icebreak.setTypeface(heading);
 
         Typeface h = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
@@ -109,7 +122,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
         TextView txtBioTitle = (TextView) findViewById(R.id.other_profile_bio_title);
         txtBioTitle.setTypeface(h);
-        txtBioTitle.setText("bio:");
+        txtBioTitle.setText("Bio:");
 
         TextView txtBio = (TextView) findViewById(R.id.other_profile_bio);
         txtBio.setTypeface(h);
@@ -128,28 +141,52 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                     {
                         Looper.prepare();
 
+                        //Store on local DB
+                        MessagePollHelper dbHelper = new MessagePollHelper(ctxt);
+                        SQLiteDatabase db = dbHelper.getWritableDatabase();
+                        dbHelper.onCreate(db);//Create Message table if it doesn't exist
+
+                        String msgId = WritersAndReaders.getRandomIdStr(MSG_ID_LEN);
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd H:m:s");
+                        /*String query = "INSERT INTO " + MessagePollContract.MessageEntry.TABLE_NAME
+                                + " VALUES(?,?,?,?,?)";
+                        String[] values = {msgId,};*/
+                        ContentValues msg_data = new ContentValues();
+                        msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE_ID,msgId);
+                        msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE,"ICEBREAK");
+                        msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS,String.valueOf(MESSAGE_STATUSES.ICEBREAK.getStatus()));
+                        msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER,SharedPreference.getUsername(getBaseContext()).toString());
+                        msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER,username);
+                        msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE_TIME,sdf.format(new Date()));
+
+                        long newRowId = db.insert(MessagePollContract.MessageEntry.TABLE_NAME,null,msg_data);
+                        db.close();
+                        Log.d(TAG, "Inserted into Message table: new row=" + newRowId);
+
                         //showProgressBar();
                         ArrayList<AbstractMap.SimpleEntry<String, String>> msg_details = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
+                        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_id", msgId));
                         msg_details.add(new AbstractMap.SimpleEntry<String, String>("message", "ICEBREAK"));
                         msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_status", String.valueOf(MESSAGE_STATUSES.ICEBREAK.getStatus())));
                         msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_sender", SharedPreference.getUsername(getBaseContext()).toString()));//TODO
-                        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_receiver", username.toString()));//TODO
+                        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_receiver", username));//TODO
 
                         //Send to server
-                        try {
+                        try
+                        {
                             final int response_code = Restful.postData("addMessage", msg_details);
                             //Update UI
-                            prog_bar = false;
+                            //prog_bar = false;
                             //progress.hide();
                             if(response_code != HttpURLConnection.HTTP_OK)
                             {
-                                Toast.makeText(getBaseContext(),"Could not send request: " + response_code, Toast.LENGTH_LONG).show();
-                                Log.d(TAG,"Could not send request: " + response_code);
+                                Toast.makeText(getBaseContext(),"Could not send Icebreak request: " + response_code, Toast.LENGTH_LONG).show();
+                                Log.d(TAG,"Could not send Icebreak request: " + response_code);
                             }
                             else
                             {
                                 Log.d(TAG,"Icebreak Sent");
-                                Toast.makeText(getBaseContext(), "Message Sent", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getBaseContext(), "Icebreak Sent", Toast.LENGTH_LONG).show();
                             }
                             /*runOnUiThread(new Runnable() {
                                 @Override
@@ -157,7 +194,9 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
                                 }
                             });*/
-                        } catch (IOException e) {
+                        }
+                        catch (IOException e)
+                        {
                             //e.printStackTrace();
                             Log.d(TAG, e.getMessage());
                             Toast.makeText(getBaseContext(), "Unable to send message: " + e.getMessage(), Toast.LENGTH_LONG).show();

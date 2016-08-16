@@ -1,5 +1,6 @@
 package com.codcodes.icebreaker.auxilary;
 
+import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -14,6 +15,7 @@ import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.model.Message;
@@ -44,112 +46,309 @@ public class OnMessageReceive extends BroadcastReceiver
             public void run()
             {
                 Looper.prepare();
-                poll(b.getString("Username"), context);
+                //poll(b.getString("Username"), context);
+
+                //Sync the local db with remote server db
+                Log.d(TAG,">checkForInboundIcebreaks()");
+                checkForInboundIcebreaks(b.getString("Username"), context);
+
+                Log.d(TAG,">updateOutboundIcebreaks()");
+                updateOutboundIcebreaks(b.getString("Username"),context);
+
+                //Check for messages that still have to be sent
+                Log.d(TAG,">checkForOutboundIcebreaks()");
+                checkForOutboundIcebreaks(context);
             }
         });
         t.start();
         //System.err.println("Message received!!!!!");
     }
 
-    public void poll(String username, Context ctxt)
+    public void checkForOutboundIcebreaks(Context context)
     {
-        IceBreakActivity ib;
+        final String localUser = SharedPreference.getUsername(context);
 
-        if(!username.isEmpty())
+        //First sync the local db with remote server db
+        //updateOutboundIcebreaks(localUser, context);
+
+        MessagePollHelper dbHelper = new MessagePollHelper(context);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        dbHelper.onCreate(db);//Create table if it doesn't exist
+
+        //Check messages that haven't been ICEBREAK_DONE and haven't been READ
+        String query ="SELECT * FROM " + MessagePollContract.MessageEntry.TABLE_NAME + " WHERE " +
+                MessagePollContract.MessageEntry.COL_MESSAGE_SENDER +" = ? AND NOT " +
+                MessagePollContract.MessageEntry.COL_MESSAGE_STATUS + " = ? AND NOT " +
+                MessagePollContract.MessageEntry.COL_MESSAGE_STATUS + " = ?";
+
+        Cursor c =  db.rawQuery(query, new String[]
+                {
+                        localUser,
+                        String.valueOf(MESSAGE_STATUSES.ICEBREAK_DONE.getStatus()),
+                        String.valueOf(MESSAGE_STATUSES.READ.getStatus())
+                });
+        while(c.moveToNext())
+        {
+            Message m = new Message();
+            String id = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_ID));
+            String send = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER));
+            String recv = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER));
+            int stat = c.getInt(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS));
+            String time = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_TIME));
+            String msg = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE));
+
+            m.setId(id);
+            m.setMessage(msg);
+            m.setStatus(stat);
+            m.setTime(time);
+            m.setSender(send);
+            m.setReceiver(recv);
+
+            //messages.add(m);
+
+            if(stat==MESSAGE_STATUSES.ICEBREAK.getStatus())//Icebreak sent but not received by server
+            {
+                //Check if the icebreak exists on the server
+                //String response = Restful.sendGetRequest("getMessage/"+id);
+                //Send Icebreak again
+                if(Restful.sendMessage(context,m))
+                    Log.d(TAG,"Message sent with status: " + MESSAGE_STATUSES.ICEBREAK);
+                else
+                    Log.d(TAG,"Message NOT sent with status: " + MESSAGE_STATUSES.ICEBREAK);
+                //Get server messages where sender is local user and receiver is remote user
+                //updateOutboundIcebreaks(localUser, rec,  context);
+            }
+
+            if(stat==MESSAGE_STATUSES.SENT.getStatus())//Message sent but not received by server
+            {
+                //Send message again
+                if(Restful.sendMessage(context,m))
+                    Log.d(TAG,"Message sent with status: " + MESSAGE_STATUSES.SENT);
+                else
+                    Log.d(TAG,"Message NOT sent with status: " + MESSAGE_STATUSES.SENT);
+                //Get server messages where sender is local user and receiver is remote user
+                //updateOutboundIcebreaks(localUser, rec,  context);
+            }
+
+            if(stat==MESSAGE_STATUSES.ICEBREAK_ACCEPTED.getStatus())//Icebreak sent but not received by server
+            {
+                //Notify user
+                showNotification(context,"Accepted by: " + recv, NOTIFICATION_ID.NOTIF_ACCEPTED.getId());
+                Log.d(TAG,"Accepted by: " + recv);
+            }
+
+            if(stat==MESSAGE_STATUSES.ICEBREAK_REJECTED.getStatus())//Icebreak sent but not received by server
+            {
+                //Notify user
+                showNotification(context,"Rejected by: " + recv, NOTIFICATION_ID.NOTIF_REJECTED.getId());
+                Log.d(TAG,"Rejected by: " + recv);
+            }
+        }
+        db.close();
+    }
+
+    public void checkForInboundIcebreaks(String receiver, Context context)
+    {
+        if (!receiver.isEmpty())
         {
             try
             {
-                String response = Restful.sendGetRequest("checkUserInbox/" + username);
+                String response = Restful.sendGetRequest("checkUserInbox/" + receiver);
 
                 if (response.length() > 0)
                 {
                     String jsonMessages = response;
-                    /*if (response.contains(":["))
-                        jsonMessages = response.split(":")[1];*/
-                    //jsonMessages.replace("{\"checkUserInboxResult\":","");
                     jsonMessages = jsonMessages.substring(jsonMessages.indexOf('['), jsonMessages.length() - 1);
                     ArrayList<Message> messages = new ArrayList<>();
                     JSON.getJsonableObjectsFromJson(jsonMessages, messages, Message.class);
-                    //Write to local DB
-                    MessagePollHelper dbHelper = new MessagePollHelper(ctxt);//getBaseContext());
-                    SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-                    //db.execSQL(MessagePollContract.SQL_DELETE_tblMSG);
-                    //db.execSQL(MessagePollContract.SQL_CREATE_tblMSG);
-                    for (Message m : messages)
+                    if(messages.size()>0)
                     {
-                        if(m.getStatus()==MESSAGE_STATUSES.ICEBREAK.getStatus()) {
-                            //System.err.println("+++++++++Icebreaking+++++++");
-                            showNotification(ctxt);
-                        }
-                        if(idExistsInDB(ctxt,m.getId()))
-                        {
-                            Log.d(TAG,m.getId()+" exists in DB.");
-                            continue;
-                        }
+                        MessagePollHelper dbHelper = new MessagePollHelper(context);//getBaseContext());
+                        SQLiteDatabase db = dbHelper.getWritableDatabase();
+                        dbHelper.onCreate(db);
 
-                        ContentValues kv_pairs = new ContentValues();
-                        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_ID, m.getId());
-                        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER, m.getSender());
-                        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER, m.getReceiver());
-                        if(m.getStatus()<100)
-                            kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS,
-                                (m.getStatus() == MESSAGE_STATUSES.SERV_RECEIVED.getStatus() ? MESSAGE_STATUSES.DELIVERED.getStatus() : m.getStatus()));
-                        else//i.e. Icebreaking - send a special status
-                            kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS,
-                                    (m.getStatus() == MESSAGE_STATUSES.ICEBREAK.getStatus() ? MESSAGE_STATUSES.ICEBREAK_DELIVERED.getStatus() : m.getStatus())
-                            );
-                        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_TIME, m.getTime());
-                        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE, m.getMessage());
-                        //System.err.println("Msg=" + m.getMessage() + ", Sen=" + m.getSender() + ",Rec=" + m.getReceiver());
-
-                        if (kv_pairs.size() > 0)
+                        //Update local and remote DB
+                        for (Message m : messages)
                         {
-                            long newRowId = db.insert(MessagePollContract.MessageEntry.TABLE_NAME, null, kv_pairs);
-                            Log.d(TAG, "Updated Message table: new row=" + newRowId);
-                            //Send signal to sender to update delivery status
-                            ArrayList<AbstractMap.SimpleEntry<String, String>> msg_pair = new ArrayList<>();
-                            msg_pair.add(new AbstractMap.SimpleEntry<String, String>("Message_receiver", m.getReceiver()));
-                            msg_pair.add(new AbstractMap.SimpleEntry<String, String>("Message_status",
-                                    String.valueOf(MESSAGE_STATUSES.DELIVERED)));
-                            int code = Restful.postData("updateUserMailbox", msg_pair);
-                            if (code != HttpURLConnection.HTTP_OK)
-                                Log.d(TAG, "Could not successfully update message status on server:" + code);
-                        } else
-                            Log.d(TAG, "Empty ContentValue map.");
+                            //Check for Icebreaks
+                            if (m.getStatus() == MESSAGE_STATUSES.ICEBREAK_SERV_RECEIVED.getStatus() || m.getStatus() == MESSAGE_STATUSES.ICEBREAK_DELIVERED.getStatus())
+                            {
+                                showNotification(context, "New IceBreak request from " + m.getSender(), NOTIFICATION_ID.NOTIF_REQUEST.getId());
+                                Log.d(TAG, "New IceBreak request from " + m.getSender());
+                                //m.setStatus(MESSAGE_STATUSES.ICEBREAK_DELIVERED.getStatus());//set message to delivered in temp memory
+                            }
+                            if (m.getStatus() == MESSAGE_STATUSES.ICEBREAK_SERV_RECEIVED.getStatus())
+                            {
+                                showNotification(context, "New IceBreak request from " + m.getSender(), NOTIFICATION_ID.NOTIF_REQUEST.getId());
+                                Log.d(TAG, "New IceBreak request from " + m.getSender());
+                                m.setStatus(MESSAGE_STATUSES.ICEBREAK_DELIVERED.getStatus());//set message to delivered in temp memory
+                                //Change Message status to DELIVERED remotely
+                                if(Restful.sendMessage(context,m))
+                                {
+                                    //Change Message status to DELIVERED locally
+                                    updateLocalMessage(context,db,m);
+                                    Log.d(TAG, "Updated local DB");
+                                }
+                                else
+                                {
+                                    Log.d(TAG, "Could not update remote message status to DELIVERED, therefore couldn't update local message either.");
+                                }
+                            }
+                            else
+                            {
+                                Log.d(TAG, "IceBreak status: " + m.getStatus());
+                            }
+                            if (!messageIdExistsInDB(context, m.getId()))//new Message
+                            {
+                                ContentValues kv_pairs = new ContentValues();
+                                kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_ID, m.getId());
+                                kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE, m.getMessage());
+                                kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER, m.getSender());
+                                kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER, m.getReceiver());
+                                kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS, m.getStatus());
+                                kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_TIME, m.getTime());
+
+                                long newRowId = db.insert(MessagePollContract.MessageEntry.TABLE_NAME, null, kv_pairs);
+                                Log.d(TAG, "Inserted into Message table: new row=" + newRowId);
+                            }
+                            else //Existing Message
+                            {
+                                /*String query = "UPDATE " + MessagePollContract.MessageEntry.TABLE_NAME +
+                                        " SET " + MessagePollContract.MessageEntry.COL_MESSAGE_STATUS +
+                                        " = ? WHERE " + MessagePollContract.MessageEntry.COL_MESSAGE_ID +
+                                        " = ?";
+                                db.rawQuery(query, new String[]{String.valueOf(m.getStatus()),
+                                        String.valueOf(m.getId())});*/
+                                updateLocalMessage(context,db,m);
+                                Log.d(TAG, "Message already exists table, updated status");
+                            }
+                        }
+                        db.close();
                     }
-                    db.close();
+                    else
+                        Log.d(TAG,"Remote mailbox is empty");
                 }
-                //TODO: Error handling
-            }
-            catch (InstantiationException e)
+            } catch (IllegalAccessException e)
             {
                 e.printStackTrace();
-            }
-            catch (IllegalAccessException e)
+            } catch (InstantiationException e)
             {
                 e.printStackTrace();
-            }
-            catch (SQLiteConstraintException e)
-            {
-                System.err.println(TAG + ":" + e.getMessage());
-            }
-            catch (IOException e)
+            } catch (IOException e)
             {
                 e.printStackTrace();
             }
         }
-        else Log.d(TAG,"Invalid username");//TODO: proper logging
     }
 
-    private boolean idExistsInDB(Context ctxt, long id)
+    public void updateOutboundIcebreaks(String sender, Context c)
     {
-        String query ="SELECT * FROM Message WHERE "
+        if (!sender.isEmpty())
+        {
+            try
+            {
+                String response = Restful.sendGetRequest("checkUserOutbox/" + sender);
+
+                if (response.length() > 0)
+                {
+                    String jsonMessages = response;
+                    jsonMessages = jsonMessages.substring(jsonMessages.indexOf('['), jsonMessages.length() - 1);
+                    ArrayList<Message> messages = new ArrayList<>();
+                    JSON.getJsonableObjectsFromJson(jsonMessages, messages, Message.class);
+
+                    MessagePollHelper dbHelper = new MessagePollHelper(c);//getBaseContext());
+                    SQLiteDatabase db = dbHelper.getWritableDatabase();
+                    // -- don't make sense - would be empty dbHelper.onCreate(db);//Create table if it doesn't exist
+                    //Write to local DB
+                    for(Message m: messages)
+                    {
+                        updateLocalMessage(c,db,m);
+                        /*ContentValues kv_pairs = new ContentValues();
+                        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_ID, m.getId());
+                        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER, m.getSender());
+                        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER, m.getReceiver());
+                        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS, m.getStatus());
+                        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_TIME, m.getTime());
+
+                        if(!messageIdExistsInDB(c,m.getId()))//Shouldn't technically ever happen
+                        {
+
+                            if (kv_pairs.size() > 0)
+                            {
+                                long newRowId = db.insert(MessagePollContract.MessageEntry.TABLE_NAME, null, kv_pairs);
+                                Log.d(TAG, "Inserted into Message table: new row=" + newRowId);
+                            }
+                        }
+                        else
+                        {
+                            /*String update = "UPDATE " + MessagePollContract.MessageEntry.TABLE_NAME +
+                                    " SET " + MessagePollContract.MessageEntry.COL_MESSAGE_STATUS +
+                                    " = ? WHERE "+ MessagePollContract.MessageEntry.COL_MESSAGE_ID +
+                                    " = ?";*
+                            String where = MessagePollContract.MessageEntry.COL_MESSAGE_ID +
+                                    " = ?";
+                            String[] where_args = {m.getId()};
+
+                            db.update(MessagePollContract.MessageEntry.TABLE_NAME, kv_pairs,where,where_args);
+                            //db.execSQL(update);
+                            /*db.rawQuery(query,new String[]{String.valueOf(m.getStatus()),
+                                    m.getId()});*
+                            Log.d(TAG, "Outbound Message exists (locally and remotely), updated status to " + m.getStatus());
+                        }*/
+                    }
+                    db.close();
+                }
+            } catch (IllegalAccessException e)
+            {
+                e.printStackTrace();
+            } catch (InstantiationException e)
+            {
+                e.printStackTrace();
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void updateLocalMessage(Context context, SQLiteDatabase db, Message m)
+    {
+        ContentValues kv_pairs = new ContentValues();
+        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_ID, m.getId());
+        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE, m.getMessage());
+        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER, m.getSender());
+        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER, m.getReceiver());
+        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS, m.getStatus());
+        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_TIME, m.getTime());
+
+        if(!messageIdExistsInDB(context,m.getId()))//Shouldn't technically ever happen
+        {
+
+            if (kv_pairs.size() > 0)
+            {
+                long newRowId = db.insert(MessagePollContract.MessageEntry.TABLE_NAME, null, kv_pairs);
+                Log.d(TAG, "Inserted into Message table: new row=" + newRowId);
+            }
+        }
+        else
+        {
+            String where = MessagePollContract.MessageEntry.COL_MESSAGE_ID + " = ?";
+            String[] where_args = {m.getId()};
+
+            db.update(MessagePollContract.MessageEntry.TABLE_NAME, kv_pairs,where,where_args);
+            Log.d(TAG, "Outbound Message exists (locally and remotely), updated status to " + m.getStatus());
+        }
+    }
+
+    private boolean messageIdExistsInDB(Context ctxt, String id)
+    {
+        String query ="SELECT * FROM "+MessagePollContract.MessageEntry.TABLE_NAME+" WHERE "
                 + MessagePollContract.MessageEntry.COL_MESSAGE_ID +" = ?";
 
         MessagePollHelper dbHelper = new MessagePollHelper(ctxt);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor c =  db.rawQuery(query, new String[] {String.valueOf(id)});
+        Cursor c =  db.rawQuery(query, new String[] {id});
         int rowCount=c.getCount();
         db.close();
         if(rowCount>0)
@@ -158,13 +357,14 @@ public class OnMessageReceive extends BroadcastReceiver
             return  false;
     }
 
-    public void showNotification(Context context)
+    public void showNotification(Context context, String msg, int notifId)
     {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.drawable.ic_notification_icon)
-                        .setContentTitle("Icebreak")
-                        .setContentText("You have a new Icebreak request!");
+                        .setContentTitle("IceBreak")
+                        .setContentText(msg);
+                        //.setContentText("New IceBreak request from "+sender+"!");
 
         Intent resultIntent = new Intent(context, MainActivity.class);
 
@@ -177,12 +377,12 @@ public class OnMessageReceive extends BroadcastReceiver
         stackBuilder.addParentStack(MainActivity.class);
         // Adds the Intent that starts the Activity to the top of the stack
         stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,
+                                            PendingIntent.FLAG_UPDATE_CURRENT);
         mBuilder.setContentIntent(resultPendingIntent);
-        NotificationManager mNotificationManager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager mNotificationManager = (NotificationManager)
+                                            context.getSystemService(Context.NOTIFICATION_SERVICE);
         // mId allows you to update the notification later on.
-        mNotificationManager.notify(42, mBuilder.build());
+        mNotificationManager.notify(notifId, mBuilder.build());
     }
 }

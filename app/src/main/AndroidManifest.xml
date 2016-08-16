@@ -73,10 +73,14 @@
 
         <service
             android:name=".services.MessagePollService"
-            android:exported="false"
-            >
-
+            android:process=":remote"
+            android:exported="false">
+            <intent-filter>
+                <action
+                    android:name="com.codcodes.icebreaker.services.MessagePollService" />
+            </intent-filter>
         </service>
+
         <activity android:name="com.codcodes.icebreaker.screens.EventMapActivity" android:label="@string/title_activity_event_map" />
         <activity android:name="com.codcodes.icebreaker.screens.SignUpActivity" android:label="@string/title_activity_sign_up"
             android:parentActivityName="com.codcodes.icebreaker.screens.InitialActivity" android:theme="@style/AppTheme.NoActionBar">

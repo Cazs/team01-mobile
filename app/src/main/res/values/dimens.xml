@@ -123,4 +123,6 @@
     <dimen name="dp_size_490">490dp</dimen>
     <dimen name="dp_size_440">440dp</dimen>
     <dimen name="dp_size_510">510dp</dimen>
+    <dimen name="dp_size_130">130dp</dimen>
+    <dimen name="dp_size_420">420dp</dimen>
 </resources>

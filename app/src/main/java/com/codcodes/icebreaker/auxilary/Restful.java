@@ -2,6 +2,7 @@ package com.codcodes.icebreaker.auxilary;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,12 +12,15 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.model.Message;
+import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.screens.MainActivity;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -61,6 +65,16 @@ public class Restful
             return  "";
     }
 
+    public static User getUser(String username) throws IOException
+    {
+        String userJson = Restful.sendGetRequest("getUser/"+username);
+        User u = new User();
+        if(userJson!=null)
+            JSON.getJsonable(userJson, u);
+        else return null;
+        return u;
+    }
+
     public static int postData(String url, ArrayList<AbstractMap.SimpleEntry<String,String>> params) throws IOException
     {
         url = url.charAt(0)=='/'||url.charAt(0)=='\\'?url.substring(1):url;//Remove first slash if it exists
@@ -90,6 +104,12 @@ public class Restful
         os.close();
 
         httpConn.connect();
+
+        /*Scanner scn = new Scanner(new InputStreamReader(httpConn.getErrorStream()));
+        String resp = "";
+        while(scn.hasNext())
+            resp+=scn.nextLine();
+        System.err.println(resp);*/
 
         return httpConn.getResponseCode();
     }
@@ -217,7 +237,8 @@ public class Restful
 
     public static Bitmap getImage(Activity context, String filename,String ext, String path, BitmapFactory.Options options)
     {
-        path = MainActivity.rootDir + "/Icebreak" + path;
+        //path = MainActivity.rootDir + "/Icebreak" + path;
+        path = path.charAt(0) != '/' && path.charAt(0) != '\\' ? '/' + path : path;
         Bitmap bitmap = null;
         if(!ext.contains("."))//add dot to image extension if it's not there
             ext = '.' + ext;
@@ -226,7 +247,7 @@ public class Restful
         {
             if (Restful.imageDownloader(filename, ext, path, context))
             {
-                bitmap = BitmapFactory.decodeFile(path + '/' + filename + ext, options);
+                bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
                 //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
             } else //user has no profile yet - attempt to load default profile image
             {
@@ -235,7 +256,7 @@ public class Restful
                     //Attempt to download default profile image
                     if (Restful.imageDownloader("default", ".png", "/profile", context))
                     {
-                        bitmap = BitmapFactory.decodeFile(path + "/default.png", options);
+                        bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + "/default.png", options);
                     } else //Couldn't download default profile image
                     {
                         Toast.makeText(context, "Could not download default image, please check your internet connection.",
@@ -243,15 +264,52 @@ public class Restful
                     }
                 } else//default profile image exists
                 {
-                    bitmap = BitmapFactory.decodeFile(path + "/default.png", options);
+                    bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + "/default.png", options);
                 }
             }
         }
         else//User profile exists
         {
-            bitmap = BitmapFactory.decodeFile(path + '/' + filename + ext, options);
+            bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
         }
         return bitmap;
+    }
+
+    public static boolean sendMessage(Context context, Message m)
+    {
+        /*System.err.println(String.format("id=%s, msg=%s, stat=%s, send=%s, recv=%s",m.getId(),m.getMessage(),
+                m.getStatus(),m.getSender(),m.getReceiver()));*/
+
+        ArrayList<AbstractMap.SimpleEntry<String, String>> msg_details = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
+        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_id", m.getId()));
+        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message", m.getMessage()));
+        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_status", String.valueOf(m.getStatus())));
+        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_sender", m.getSender()));//TODO
+        //msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_time", m.getTime()));//TODO
+        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_receiver", m.getReceiver()));//TODO
+
+        //Send to server
+        try
+        {
+            final int response_code = Restful.postData("addMessage", msg_details);
+            if(response_code != HttpURLConnection.HTTP_OK)
+            {
+                Log.d(TAG,"Could not send request: " + response_code);
+                //TODO: Better logging
+                return false;
+            }
+            else
+            {
+                Log.d(TAG,"Message Sent");
+                return true;
+            }
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+            Log.d(TAG, e.getMessage());
+            //TODO: Better logging
+        }
+        return false;
     }
 
     public static void validateStoragePermissions(Activity activity)

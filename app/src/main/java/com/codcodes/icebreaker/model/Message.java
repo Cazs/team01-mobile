@@ -7,7 +7,7 @@ import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
  */
 public class Message implements IJsonable
 {
-    private  long id;
+    private  String id;
     private  String message;
     private String sender;
     private String receiver;
@@ -49,7 +49,7 @@ public class Message implements IJsonable
         this.message = message;
     }
 
-    public long getId()
+    public String getId()
     {
         return  this.id;
     }
@@ -74,7 +74,7 @@ public class Message implements IJsonable
         this.time = time;
     }
 
-    public void setId(long id)
+    public void setId(String id)
     {
         this.id=id;
     }
@@ -97,7 +97,7 @@ public class Message implements IJsonable
                 setStatus(Integer.valueOf(value));
                 break;
             case "Message_id":
-                setId(Long.valueOf(value));
+                setId(value);
                 break;
             case "Msg":
                 setMessage(value);
