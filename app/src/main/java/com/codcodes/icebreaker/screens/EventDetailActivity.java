@@ -1,37 +1,40 @@
 package com.codcodes.icebreaker.screens;
 
 import android.app.Activity;
-import android.content.Context;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
+
+import android.widget.ProgressBar;
+
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.codcodes.icebreaker.R;
-import com.codcodes.icebreaker.auxilary.CustomListAdapter;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
+import com.codcodes.icebreaker.auxilary.ImageUtils;
+import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.auxilary.Restful;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
-import com.codcodes.icebreaker.auxilary.WritersAndReaders;
-import com.codcodes.icebreaker.model.Event;
+import com.codcodes.icebreaker.auxilary.UserListRecyclerViewAdapter;
+import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.User;
 
 import java.io.BufferedReader;
@@ -44,29 +47,30 @@ import java.net.Socket;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import static com.google.android.gms.internal.zzir.runOnUiThread;
-
-public class EventDetailActivity extends AppCompatActivity {
-
-
+public class
+EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
+{
     private static final boolean DEBUG = true;
     private final String TAG = "ICEBREAK";
 
-    private int Eventid;
+    private long Eventid;
     private ArrayList<User> users;
     private ArrayList<String> Name;
     private ArrayList<String> Catchphrase;
     private ArrayList<String> userIcon;
     private int AccessCode;
-    private ListView lv;
+    private IOnListFragmentInteractionListener mListener;
+    //private ListView lv;
+    private RecyclerView usersAtEventList;
     private ViewFlipper vf;
     private TextView eventDetails;
+    private ProgressDialog progress;
     private static boolean CHUNKED = false;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -77,21 +81,37 @@ public class EventDetailActivity extends AppCompatActivity {
         Name = new ArrayList<String>();
         Catchphrase= new ArrayList<String>();
         userIcon = new ArrayList<String>();
+        mListener = (IOnListFragmentInteractionListener) this;
+
         final String username = SharedPreference.getUsername(getApplicationContext());
 
         Bundle extras = getIntent().getExtras();
         final Activity act =this;
 
+        /*
+        //If there's a cached eventID use that
+        String strEvId = SharedPreference.getEventId(this);
+        if(strEvId!=null)
+        {
+            if(!strEvId.isEmpty())
+            {
+                if(Long.valueOf(strEvId)>0)
+                {
+                    Eventid = Long.valueOf(SharedPreference.getEventId(this));
+                    showProgressBar();
+                    //updateProfile(Eventid,username);
+                    listPeople(act);
+                }
+            }
+        }*/
         if(extras != null)
         {
             String evtName = extras.getString("Event Name");
             TextView eventName = (TextView)findViewById(R.id.event_name);
             eventName.setText(evtName);
 
-
             Eventid = extras.getInt("Event ID");
             AccessCode = extras.getInt("Access ID");
-            System.out.println(AccessCode);
 
             TextView eventDescription = (TextView)findViewById(R.id.event_description);
             eventDescription.setText(extras.getString("Event Description"));
@@ -110,13 +130,13 @@ public class EventDetailActivity extends AppCompatActivity {
             bitmap.recycle();
         }
 
-
-
         eventDetails = (TextView)findViewById(R.id.Event_Heading);
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         eventDetails.setTypeface(heading);
-        lv= (ListView) findViewById(R.id.contactList);
+        //lv= (ListView) findViewById(R.id.contactList);
+        usersAtEventList = (RecyclerView) findViewById(R.id.users_at_event_list);
         final EditText accessCode = (EditText) findViewById(R.id.AccessCode);
+
         accessCode.setOnEditorActionListener(new TextView.OnEditorActionListener()
         {
             @Override
@@ -127,11 +147,16 @@ public class EventDetailActivity extends AppCompatActivity {
                     if(matchAccessCode(Integer.parseInt(accessCode.getText().toString())))
                     {
 <<<<<<< HEAD
+<<<<<<< HEAD
                         updateProfile(Eventid,username);
 =======
                         showProgressBar();
                         //updateProfile(Eventid,username);
 >>>>>>> Alhpa
+=======
+                        showProgressBar();
+                        //updateProfile(Eventid,username);
+>>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
                         listPeople(act);
                     }
                     else
@@ -142,7 +167,9 @@ public class EventDetailActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
@@ -174,6 +201,8 @@ public class EventDetailActivity extends AppCompatActivity {
 
 
 =======
+=======
+>>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
     public void showProgressBar()
     {
         progress=new ProgressDialog(this);
@@ -182,13 +211,18 @@ public class EventDetailActivity extends AppCompatActivity {
         progress.setIndeterminate(true);
         progress.setProgress(0);
         progress.show();
+<<<<<<< HEAD
 >>>>>>> Alhpa
+=======
+>>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
     }
 
     public void updateProfile(final int eventID,final String username)
     {
-        Thread thread = new Thread(new Runnable() {
+        Thread thread = new Thread(new Runnable()
+        {
             @Override
+<<<<<<< HEAD
 <<<<<<< HEAD
             public void run() {
 =======
@@ -196,6 +230,11 @@ public class EventDetailActivity extends AppCompatActivity {
             {
                 Looper.prepare();
 >>>>>>> Alhpa
+=======
+            public void run()
+            {
+                Looper.prepare();
+>>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
 
                 try
                 {
@@ -247,7 +286,8 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item){
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
         switch (item.getItemId())
         {
             case android.R.id.home:
@@ -266,18 +306,18 @@ public class EventDetailActivity extends AppCompatActivity {
     {
         if(code == AccessCode)
         {
+            SharedPreference.setEventId(this,Eventid);
             return true;
         }
         return false;
     }
 
-
-
-    private void listPeople(final Activity act)
+    public void listPeople(final Activity context)
     {
-
-        Thread t = new Thread(new Runnable() {
+        Thread tContactsLoader = new Thread(new Runnable()
+        {
             @Override
+<<<<<<< HEAD
             public void run() {
                 users = readUsersAtEvents(Integer.toString(Eventid));
 
@@ -298,6 +338,13 @@ public class EventDetailActivity extends AppCompatActivity {
                         //Log.d(TAG,"Connection established");
                         for(User u:users)
 =======
+=======
+            public void run()
+            {
+                Looper.prepare();
+                if(Eventid > 0)
+                {
+>>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
                     try
                     {
                         String contactsJson = Restful.sendGetRequest("getUsersAtEvent/" + Eventid);
@@ -312,63 +359,109 @@ public class EventDetailActivity extends AppCompatActivity {
                         options.inPreferredConfig = Bitmap.Config.ALPHA_8;
                         //Attempt to load images into memory and set the list adapter
                         for (User u : contacts)
+<<<<<<< HEAD
 >>>>>>> Alhpa
+=======
+>>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
                         {
-                            Name.add(u.getFirstname()+" "+ u.getLastname());
-                            Catchphrase.add(u.getCatchphrase());
-                            //eventIcons.add(R.drawable.ultra_icon);//temporarily use this icon for all events
-                            String iconName = u.getUsername();
-                            //String iconName = "event_icons-10.png";
-                            userIcon.add("/Icebreak/profile/"+iconName+".png");
-                            //Download the file only if it has not been cached
-                            if(!new File(Environment.getExternalStorageDirectory().getPath()+"/Icebreak/profile/" + iconName + ".png").exists())
+                            //Look for user profile image
+                            /*if (!new File(Environment.getExternalStorageDirectory().getPath()
+                                    + "/Icebreak/profile/" + u.getUsername() + ".png").exists()) {
+                                //if (imageDownload(u.getUsername() + ".png", "/profile")) {
+                                if (Restful.imageDownloader(u.getUsername(), ".png", "/profile", context))
+                                {
+                                    bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
+                                            + "/Icebreak/profile/" + u.getUsername() + ".png", options);
+                                    //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
+                                    circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
+                                } else //user has no profile yet - attempt to load default profile image
+                                {
+                                    if (!new File(Environment.getExternalStorageDirectory().getPath().toString()
+                                            + "/Icebreak/profile/default.png").exists())
+                                    {
+                                        //Attempt to download default profile image
+                                        if (Restful.imageDownloader("default", ".png", "/profile", context))
+                                        {
+                                            /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
+                                                    + "/Icebreak/profile/profile_default.png", getActivity());*
+                                            options = new BitmapFactory.Options();
+                                            options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+                                            bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
+                                                    + "/Icebreak/profile/default.png", options);
+                                            circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
+                                        } else //Couldn't download default profile image
+                                        {
+                                            Toast.makeText(getApplicationContext(), "Could not download default profile images, please check your internet connection.",
+                                                    Toast.LENGTH_LONG).show();
+                                        }
+                                    } else//default profile image exists
+                                    {
+                                        /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
+                                                + "/Icebreak/profile/profile_default.png",getActivity());*
+                                        options = new BitmapFactory.Options();
+                                        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+                                        bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
+                                                + "/Icebreak/profile/default.png", options);
+                                        circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
+                                    }
+                                }
+                            } else//user profile image exists
                             {
-                                Log.d(TAG,"No cached "+iconName+",Image download in progress..");
-                                if(Restful.imageDownloader(iconName,".png", "/profile", act))
-                                    Log.d(TAG,"Image download successful");
-                                else
-                                    Log.d(TAG,"Image download unsuccessful");
+                                bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
+                                        + "/Icebreak/profile/" + u.getUsername() + ".png", context);
+                                circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
+                            }*/
+                            bitmap = Restful.getImage(context,u.getUsername(),".png","/profile",options);
+                            circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
+                            if (bitmap == null || circularbitmap == null) {
+                                System.err.println("Bitmap is null");
+                            } else {
+                                bitmaps.add(circularbitmap);
+                                bitmap.recycle();
                             }
                         }
+                        //Update UI
 
-                   /*String[] eventNamesArr = (String[])eventNames.toArray();
-                   Integer[] eventIconsArr = (Integer[])eventIcons.toArray();
-                   String[] eventDescriptionsArr = (String[])eventDescriptions.toArray();*/
-                    String[] userNamesArr = new String[users.size()];
-                    String[] userIconsArr = new String[users.size()];
-                    String[] catchphrase = new String[users.size()];
-                    userNamesArr = Name.toArray(userNamesArr);
-                    catchphrase = Catchphrase.toArray(catchphrase);
-                    userIconsArr = userIcon.toArray(userIconsArr);
+                         runOnUiThread(new Runnable()
+                         {
+                             @Override
+                             public void run()
+                             {
+                                 if (usersAtEventList != null)
+                                 {
+                                     usersAtEventList.setLayoutManager(new LinearLayoutManager(context));
+                                     usersAtEventList.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
+                                     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
-                   /*Object[] eventNamesArr = eventNames.toArray();
-                   Object[] eventIconsArr = eventIcons.toArray();
-                   Object[] eventDescriptionsArr = eventDescriptions.toArray();*/
-                    Log.d(TAG,"Preparing to read events..");
-                    final CustomListAdapter adapter = new CustomListAdapter(act,userNamesArr,userIconsArr,catchphrase);
-                    runOnUiThread(new Runnable()
+                                     progress.hide();
+                                     vf = (ViewFlipper) findViewById(R.id.viewFlipper);
+                                     eventDetails.setText("List Of People");
+                                     vf.showNext();
+                                     Log.d(TAG, "Set users at event list");
+                                 }
+                             }
+                         });
+                    } catch (IOException e) {
+                        //TODO: Error Logging
+                        e.printStackTrace();
+                    } catch (java.lang.InstantiationException e)
                     {
-                        @Override
-                        public void run()
-                        {
-                            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-                            lv.setAdapter(adapter);
-                            vf = (ViewFlipper) findViewById(R.id.viewFlipper);
-                            eventDetails.setText("List Of People");
-                            vf.showNext();
-
-                        }
-                    });
-                    Log.d(TAG,"Done reading events");
+                        //TODO: Error Logging
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e)
+                    {
+                        //TODO: Error Logging
+                        e.printStackTrace();
+                    }
                 }
-
+                else
+                {
+                    Toast.makeText(getBaseContext(),"Invalid Event ID",Toast.LENGTH_SHORT).show();
+                }
             }
         });
-        t.start();
-
-        //read from database
+        tContactsLoader.start();
     }
-
 
     @Override
     public void onBackPressed()
@@ -382,236 +475,18 @@ public class EventDetailActivity extends AppCompatActivity {
         finish();
     }
 
-    public ArrayList<User> readUsersAtEvents(final String eventID)
+    @Override
+    public void onListFragmentInteraction(User user)
     {
-        try
-        {
-            Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-            Log.d(TAG,"Connection established");
-            PrintWriter out = new PrintWriter(soc.getOutputStream());
-            Log.d(TAG,"Sending request");
+        Intent intent = new Intent(this,OtherUserProfileActivity.class);
+        intent.putExtra("Firstname",user.getFirstname());
+        intent.putExtra("Lastname",user.getLastname());
+        intent.putExtra("Username",user.getUsername());
+        intent.putExtra("Age",user.getAge());
+        intent.putExtra("Gender",user.getGender());
+        intent.putExtra("Occupation",user.getOccupation());
+        intent.putExtra("Bio",user.getBio());
 
-            out.print("GET /IBUserRequestService.svc/getUsersAtEvent/"+eventID+" HTTP/1.1\r\n"
-                    + "Host: icebreak.azurewebsites.net\r\n"
-                    + "Content-Type: text/plain;\r\n"// charset=utf-8
-                    + "Content-Length: 0\r\n\r\n");
-            out.flush();
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-            String resp;
-            //Wait for response indefinitely TODO: Time-Out
-            while(!in.ready()){}
-
-            String usersJson = "";
-            boolean openEventRead = false;
-            while((resp = in.readLine())!=null)
-            {
-                if(DEBUG)System.out.println(resp);
-
-                if(resp.equals("0"))
-                {
-                    out.close();
-                    //in.close();
-                    soc.close();
-                    if(DEBUG)System.out.println(">>Done<<");
-                    break;//EOF
-                }
-
-                if(resp.isEmpty())
-                    if(DEBUG)System.out.println("\n\nEmpty Line\n\n");
-
-                if(resp.contains("["))
-                {
-                    if(DEBUG)System.out.println("Opening at>>" + resp.indexOf("["));
-                    openEventRead = true;
-                }
-
-                if(openEventRead)
-                    usersJson += resp;//.substring(resp.indexOf('['));
-
-                if(resp.contains("]"))
-                {
-                    if(DEBUG)System.out.println("Closing at>>" + resp.indexOf("]"));
-                    openEventRead = false;
-                }
-            }
-
-            if(DEBUG)System.out.println("Reading users.");
-            //System.out.println(eventsJson);
-            ArrayList<User> users = getUsers(usersJson);
-            return users;
-        }
-        catch (UnknownHostException e)
-        {
-            System.err.println(e.getMessage());
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        return null;
+        startActivity(intent);
     }
-
-    private ArrayList<User> getUsers(String json)
-    {
-        ArrayList<User> users = new ArrayList<User>();
-        //remove square brackets
-        json = json.replaceAll("\\[", "");
-        json = json.replaceAll("\\]", "");
-        //System.out.println("Processing: " + json);
-        while(json.contains("{") && json.contains("}"))
-        {
-            int endPos = json.indexOf("}");
-            int startPos = json.indexOf("{");
-            String user = json.substring(startPos,endPos+1);//remove braces
-            if(DEBUG)System.out.println("User>>"+user);
-            User u = getUser(user);
-            users.add(u);
-            /*if(!(json.contains("{") && json.contains("}")))
-                break;*/
-            if(json.length()>endPos+2)
-                json = json.substring(endPos+2, json.length());
-            else
-                break;
-            if(DEBUG)System.out.println("new JSON: " + json);
-        }
-        return users;
-    }
-
-    private static User getUser(String json)
-    {
-        System.out.println("Reading User: " + json);
-        //TODO: Regex fo user string
-
-        int endPos = json.indexOf("}");
-        int startPos = json.indexOf("{");
-        System.out.println(startPos + " to " + endPos);
-        String userJson = json.substring(startPos, endPos + 1);
-
-        String p2 = "\"([a-zA-Z0-9\\s~`!@#$%^&*)(_+-={}\\[\\];',./\\|<>?]*)\"\\:(\"[a-zA-Z0-9\\s~`!@#$%^&*()_+-={}\\[\\];',./\\|<>?]*\"|\"[0-9,]\"|\\d+)";
-        Pattern p = Pattern.compile(p2);
-        Matcher m = p.matcher(userJson);
-        User user = new User();
-        while (m.find()) {
-            String pair = m.group(0);
-            //process key value pair
-            pair = pair.replaceAll("\"", "");
-            if (pair.contains(":")) {
-                //if(DEBUG)System.out.println("Found good pair");
-                String[] kv_pair = pair.split(":");
-                String var = kv_pair[0];
-                String val = kv_pair[1];
-                switch (var) {
-                    case "Fname":
-                        user.setFirstname(val);
-                        break;
-                    case "Lname":
-                        user.setLastname(val);
-                        break;
-                    case "Age":
-                        user.setAge(Integer.valueOf(val));
-                        break;
-                    case "Occupation":
-                        user.setOccupation(val);
-                        break;
-                    case "Bio":
-                        user.setBio(val);
-                        break;
-                    case "Catchphrase":
-                        user.setCatchphrase(val);
-                        break;
-                    case "Gender":
-                        user.setGender(val);
-                        break;
-
-                }
-            }
-            //look for next pair
-            json = json.substring(m.end());
-            m = p.matcher(json);
-        }
-        return user;
-    }
-
-    public static boolean imageDownload(String iconName) throws IOException
-    {
-        Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-        System.out.println("Sending image download request");
-        PrintWriter out = new PrintWriter(soc.getOutputStream());
-        //Android: final String base64 = ;
-        String headers = "GET /IBUserRequestService.svc/imageDownload/"+iconName+" HTTP/1.1\r\n"
-                + "Host: icebreak.azurewebsites.net\r\n"
-                //+ "Content-Type: application/x-www-form-urlencoded\r\n"
-                + "Content-Type: text/plain;\r\n"// charset=utf-8
-                + "Content-Length: 0\r\n\r\n";
-        out.print(headers);
-        out.flush();
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-        String resp,base64;
-        while(!in.ready()){}
-        Pattern pattern = Pattern.compile("^[A-F0-9]+$");//"((\\d*[A-Fa-f]\\d*){2,}|\\d{1})");//"([0-9A-Fa-f]{2,}|[0-9]{1})");//"[0-9A-Fa-f]");
-        String payload = "";
-        while((resp = in.readLine())!=null)
-        {
-            //System.out.println(resp);
-            if(resp.toLowerCase().contains("transfer-encoding"))
-            {
-                String encoding = resp.split(":")[1];
-                if(encoding.toLowerCase().contains("chunked"))
-                {
-                    CHUNKED = true;
-                    System.out.println("Preparing for chunked data.");
-                }
-            }
-
-            if(CHUNKED)
-            {
-                Matcher m = pattern.matcher(resp.toUpperCase());
-                if(m.find())
-                {
-                    int dec = hexToDecimal(m.group(0));
-                    String chunk = in.readLine();
-                    //char[] chunk = new char[dec];
-                    //int readCount = in.read(chunk,0,chunk.length);//sjv3
-                    //System.out.println(chunk);
-                    //System.out.println("Chunk size: "+ readCount);
-                    if(dec==0)
-                        break;//End of chunks
-                    if(chunk.length()>0)
-                        payload += chunk;//String.copyValueOf(chunk);
-                }
-            }
-        }
-        out.close();
-        //in.close();
-        soc.close();
-        if(payload.length()>0)
-        {
-            //payload = payload.split(":")[1];
-            payload = payload.replaceAll("\"", "");
-            //System.out.println(payload)
-            byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);
-            WritersAndReaders.saveImage(binFileArr,iconName);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public static int hexToDecimal(String hex)
-    {
-        String possibleDigits = "0123456789ABCDEF";
-        int dec = 0;
-        for(int i=0;i<hex.length();i++)
-        {
-            char currChar = hex.charAt(i);
-            int x = possibleDigits.indexOf(currChar);
-            dec = 16*dec + x;
-        }
-        return dec;
-    }
-
 }

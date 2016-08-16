@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.os.Environment;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 
@@ -25,6 +26,7 @@ import android.widget.TextView;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
+import com.codcodes.icebreaker.auxilary.ImageUtils;
 
 public class RewardsActivity extends AppCompatActivity
 {
@@ -47,6 +49,8 @@ public class RewardsActivity extends AppCompatActivity
                 R.drawable.ic_grade_white_24dp,
                 R.drawable.ic_school_white_24dp
             };
+    private Bitmap circularbitmap,bitmap;
+    private String Name,profilepic;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -61,6 +65,13 @@ public class RewardsActivity extends AppCompatActivity
         // primary sections of the activity.
 
         // Set up the ViewPager with the sections adapter.
+        Bundle extras = getIntent().getExtras();
+
+        if (extras != null)
+        {
+           Name = extras.getString("Name");
+            profilepic =extras.getString("Picture");
+        }
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(new FragmentAdapter(getSupportFragmentManager(),RewardsActivity.this));
 
@@ -68,16 +79,18 @@ public class RewardsActivity extends AppCompatActivity
         TextView headingTextView = (TextView) findViewById(R.id.reward_title);
         headingTextView.setTypeface(heading);
 
+        TextView name = (TextView) findViewById(R.id.RewardName);
+        name.setText(Name);
         TabLayout tablayout = (TabLayout) findViewById(R.id.tabs);
         tablayout.setupWithViewPager(mViewPager);
         tablayout.getTabAt(0).setIcon(imageResId[0]);
         tablayout.getTabAt(1).setIcon(imageResId[1]);
-
-
-        Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(),R.drawable.seleena);
-        Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap,100);
-
         ImageView circularImageView = (ImageView) findViewById(R.id.circleviewrewards);
+
+
+        bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
+                + profilepic, getApplicationContext());
+        circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
         circularImageView.setImageBitmap(circularbitmap);
     }
 

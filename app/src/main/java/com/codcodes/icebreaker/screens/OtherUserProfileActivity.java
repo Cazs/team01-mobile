@@ -20,14 +20,25 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
+<<<<<<< HEAD
 import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
+=======
+import com.codcodes.icebreaker.auxilary.ImageConverter;
+>>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
 import com.codcodes.icebreaker.auxilary.Restful;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 
+<<<<<<< HEAD
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+=======
+import org.w3c.dom.Text;
+
+public class OtherUserProfileActivity extends AppCompatActivity
+{
+>>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
 
 public class OtherUserProfileActivity extends AppCompatActivity {
     private TextView profile;
@@ -38,10 +49,19 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private String occupation;
     private String bio;
     private String gender;
+<<<<<<< HEAD
     private ProgressDialog progress;
     private boolean prog_bar = false;
     private static final String TAG = "IB/OtherUserActivity";
 
+=======
+    Button reject;
+    Button accept;
+    private Bitmap circularbitmap1;
+    private Bitmap circularbitmap2;
+    private Bitmap circularbitmap3;
+    private Bitmap circularbitmap4;
+>>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,7 +70,11 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         final Dialog dialog = new Dialog(this);
+        final Dialog acceptDialog = new Dialog(this);
+        final Dialog rejectDialog = new Dialog(this);
         dialog.setContentView(R.layout.pop_up_one);
+        acceptDialog.setContentView(R.layout.pop_up_two);
+        rejectDialog.setContentView(R.layout.pop_up_three);
 
         Bundle extras = this.getIntent().getExtras();
         if (extras != null) {
@@ -117,6 +141,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
 
 
 
+<<<<<<< HEAD
         icebreak.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -228,5 +253,90 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         //while (prog_bar)
             progress.show();
         //progress.hide();
+=======
+        TextView txtPopupbioTitle = (TextView) dialog.findViewById((R.id.popup1_profile_bio_title)) ;
+        txtPopupbioTitle.setText("Bio:");
+        txtPopupbioTitle.setTypeface(h);
+
+        TextView txtPopupbio = (TextView) dialog.findViewById((R.id.popup1_profile_bio)) ;
+        txtPopupbio.setText(bio);
+        txtPopupbio.setTypeface(h);
+
+        accept = (Button) dialog.findViewById(R.id.popup1_Accept);
+        accept.setTypeface(heading);
+
+        reject = (Button) dialog.findViewById(R.id.popup1_Reject);
+        reject.setTypeface(heading);
+
+       icebreak.setOnClickListener(new View.OnClickListener()
+       {
+           @Override
+           public void onClick(View view)
+           {
+                dialog.show();
+           }
+       });
+        ImageView circularImageView1;
+        ImageView circularImageView2;
+
+
+        Bitmap bitmap1 = BitmapFactory.decodeResource(this.getResources(),R.drawable.liam);
+        circularbitmap1 = ImageConverter.getRoundedCornerBitMap(bitmap1, R.dimen.dp_size_300);
+
+        Bitmap bitmap2 = BitmapFactory.decodeResource(this.getResources(),R.drawable.seleena);
+        circularbitmap2 = ImageConverter.getRoundedCornerBitMap(bitmap2, R.dimen.dp_size_300);
+
+        circularImageView1 = (ImageView) acceptDialog.findViewById(R.id.other_pic1);
+        circularImageView1.setImageBitmap(circularbitmap1);
+
+
+        circularImageView2 = (ImageView) acceptDialog.findViewById(R.id.other_pic2);
+        circularImageView2.setImageBitmap(circularbitmap2);
+
+        TextView sucess = (TextView) acceptDialog.findViewById(R.id.SuccessfulMatch);
+        sucess.setTypeface(heading);
+        TextView phrase = (TextView) acceptDialog.findViewById(R.id.phrase);
+        phrase.setTypeface(heading);
+        TextView or = (TextView) acceptDialog.findViewById(R.id.or);
+        or.setTypeface(heading);
+
+        accept.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                acceptDialog.show();
+            }
+        });
+
+
+        ImageView circularImageView3;
+        ImageView circularImageView4;
+
+        TextView unsucess = (TextView) rejectDialog.findViewById(R.id.UnsuccessfulMatch);
+        unsucess.setTypeface(heading);
+        TextView phrase2 = (TextView) rejectDialog.findViewById(R.id.phrase2);
+        phrase2.setTypeface(heading);
+
+        Bitmap bitmap3 = BitmapFactory.decodeResource(this.getResources(),R.drawable.liam);
+        circularbitmap3 = ImageConverter.getRoundedCornerBitMap(bitmap3, R.dimen.dp_size_300);
+
+        Bitmap bitmap4 = BitmapFactory.decodeResource(this.getResources(),R.drawable.seleena);
+        circularbitmap4 = ImageConverter.getRoundedCornerBitMap(bitmap4, R.dimen.dp_size_300);
+
+        circularImageView3 = (ImageView) rejectDialog.findViewById(R.id.other_pic3);
+        circularImageView3.setImageBitmap(circularbitmap3);
+
+
+        circularImageView4 = (ImageView) rejectDialog.findViewById(R.id.other_pic4);
+        circularImageView4.setImageBitmap(circularbitmap4);
+
+        reject.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                rejectDialog.show();
+            }
+        });
+
+
+>>>>>>> 11913b0910bfe2ead083b83a128da876a4a90394
     }
 }
