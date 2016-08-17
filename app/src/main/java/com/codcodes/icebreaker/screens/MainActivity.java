@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 
 import android.support.v4.app.Fragment;
@@ -14,6 +15,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -45,6 +47,12 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
      */
     private LinearLayout actionBar;
     private ViewPager mViewPager;
+
+    private int tracker_current = 0;
+    private int tracker_past = 0;
+
+    private static int fragment_pos = -1;
+
     public static String rootDir = Environment.getExternalStorageDirectory().getPath();
     public static ContactListSwitches val_switch = ContactListSwitches.SHOW_USERS_AT_EVENT;
 
@@ -58,9 +66,10 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Intent intent = getIntent();
         //Load components
         actionBar = (LinearLayout)findViewById(R.id.actionBar);
         mViewPager = (ViewPager) findViewById(R.id.container);
@@ -70,11 +79,13 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         final FloatingActionButton fabSwitch = (FloatingActionButton)findViewById(R.id.fabSwitch);
 
         //Setup components
+
         mViewPager.setAdapter(new FragmentAdapter(getSupportFragmentManager(),MainActivity.this));
         tablayout.setupWithViewPager(mViewPager);// Set up the ViewPager with the sections adapter.
         tablayout.getTabAt(0).setIcon(imageResId[0]);
         tablayout.getTabAt(1).setIcon(imageResId[1]);
         tablayout.getTabAt(2).setIcon(imageResId[2]);
+
         headingTextView.setTypeface(h);
         fabSwitch.hide();
 
@@ -116,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
             }
         });
+
     }
 
     @Override
@@ -216,18 +228,33 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         @Override
         public Fragment getItem(int position)
         {
+            tracker_past = tracker_current;
+            tracker_current = position;
+            Log.d("TRACKER",String.valueOf(tracker_past));
             switch (position)
             {
                 case 0:
                     //actionBar.setVisibility(View.VISIBLE);
+
+
+                    //tracker_current = 0;
                     return EventsFragment.newInstance(context,getIntent().getExtras());
                 case 1:
                     //actionBar.setVisibility(View.INVISIBLE);
+                    //tracker_past = tracker_current;
+                    //Log.d("TRACKER",String.valueOf(tracker_past));
+                    //tracker_current = 1;
                     return UserContactsFragment.newInstance(context, getIntent().getExtras());
                 case 2:
+                    //tracker_past = tracker_current;
+                   // Log.d("TRACKER",String.valueOf(tracker_past));
+                    //tracker_current = 2;
                     //actionBar.setVisibility(View.INVISIBLE);
                     return ProfileFragment.newInstance(context);
-                default: return null;
+                default:
+                    //tracker_past = tracker_current;
+                    //tracker_current = 0;
+                    return null;
             }
         }
 
@@ -245,9 +272,26 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     @Override
     public void onBackPressed()
     {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_HOME);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
+        Log.d("TRACKER",String.valueOf(tracker_past));
+       switch (tracker_past)
+       {
+           case 0:
+               tracker_past = tracker_current;
+               tracker_current = 0;
+               mViewPager.setCurrentItem(0);
+               break;
+           case 1:
+               tracker_past = tracker_current;
+               tracker_current = 1;
+               mViewPager.setCurrentItem(1);
+               break;
+           case 2:
+               tracker_past = tracker_current;
+               tracker_current = 2;
+               mViewPager.setCurrentItem(2);
+               break;
+           default:
+               break;
+       }
     }
 }

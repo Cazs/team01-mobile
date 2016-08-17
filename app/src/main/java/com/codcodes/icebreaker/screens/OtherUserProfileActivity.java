@@ -50,8 +50,8 @@ public class OtherUserProfileActivity extends AppCompatActivity
         final Dialog acceptDialog = new Dialog(this);
         final Dialog rejectDialog = new Dialog(this);
         dialog.setContentView(R.layout.pop_up_one);
-        acceptDialog.setContentView(R.layout.pop_up_two);
-        rejectDialog.setContentView(R.layout.pop_up_three);
+        //acceptDialog.setContentView(R.layout.pop_up_two);
+        //rejectDialog.setContentView(R.layout.pop_up_three);
 
         Bundle extras = this.getIntent().getExtras();
         if(extras!=null)
@@ -165,11 +165,11 @@ public class OtherUserProfileActivity extends AppCompatActivity
         Bitmap bitmap2 = BitmapFactory.decodeResource(this.getResources(),R.drawable.seleena);
         circularbitmap2 = ImageConverter.getRoundedCornerBitMap(bitmap2, R.dimen.dp_size_300);
 
-        circularImageView1 = (ImageView) acceptDialog.findViewById(R.id.other_pic1);
-        circularImageView1.setImageBitmap(circularbitmap1);
+       //circularImageView1 = (ImageView) acceptDialog.findViewById(R.id.other_pic1);
+        //circularImageView1.setImageBitmap(circularbitmap1);
 
 
-        circularImageView2 = (ImageView) acceptDialog.findViewById(R.id.other_pic2);
+       /* circularImageView2 = (ImageView) acceptDialog.findViewById(R.id.other_pic2);
         circularImageView2.setImageBitmap(circularbitmap2);
 
         TextView sucess = (TextView) acceptDialog.findViewById(R.id.SuccessfulMatch);
@@ -177,7 +177,7 @@ public class OtherUserProfileActivity extends AppCompatActivity
         TextView phrase = (TextView) acceptDialog.findViewById(R.id.phrase);
         phrase.setTypeface(heading);
         TextView or = (TextView) acceptDialog.findViewById(R.id.or);
-        or.setTypeface(heading);
+        or.setTypeface(heading);*/
 
         accept.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -190,10 +190,10 @@ public class OtherUserProfileActivity extends AppCompatActivity
         ImageView circularImageView3;
         ImageView circularImageView4;
 
-        TextView unsucess = (TextView) rejectDialog.findViewById(R.id.UnsuccessfulMatch);
+      /*  TextView unsucess = (TextView) rejectDialog.findViewById(R.id.UnsuccessfulMatch);
         unsucess.setTypeface(heading);
         TextView phrase2 = (TextView) rejectDialog.findViewById(R.id.phrase2);
-        phrase2.setTypeface(heading);
+        phrase2.setTypeface(heading);*/
 
         Bitmap bitmap3 = BitmapFactory.decodeResource(this.getResources(),R.drawable.liam);
         circularbitmap3 = ImageConverter.getRoundedCornerBitMap(bitmap3, R.dimen.dp_size_300);
@@ -201,12 +201,12 @@ public class OtherUserProfileActivity extends AppCompatActivity
         Bitmap bitmap4 = BitmapFactory.decodeResource(this.getResources(),R.drawable.seleena);
         circularbitmap4 = ImageConverter.getRoundedCornerBitMap(bitmap4, R.dimen.dp_size_300);
 
-        circularImageView3 = (ImageView) rejectDialog.findViewById(R.id.other_pic3);
+      /*  circularImageView3 = (ImageView) rejectDialog.findViewById(R.id.other_pic3);
         circularImageView3.setImageBitmap(circularbitmap3);
 
 
         circularImageView4 = (ImageView) rejectDialog.findViewById(R.id.other_pic4);
-        circularImageView4.setImageBitmap(circularbitmap4);
+        circularImageView4.setImageBitmap(circularbitmap4);*/
 
         reject.setOnClickListener(new View.OnClickListener() {
             @Override

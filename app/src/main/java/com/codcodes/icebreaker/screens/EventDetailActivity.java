@@ -31,6 +31,7 @@ import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
+import com.codcodes.icebreaker.auxilary.LocationDetector;
 import com.codcodes.icebreaker.auxilary.Restful;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.UserListRecyclerViewAdapter;
@@ -55,11 +56,14 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
     private final String TAG = "ICEBREAK";
 
     private long Eventid;
+
     private ArrayList<User> users;
     private ArrayList<String> Name;
     private ArrayList<String> Catchphrase;
-    private ArrayList<String> userIcon;
+  //  private ArrayList<String> userIcon;
+    private String Location;
     private int AccessCode;
+
     private IOnListFragmentInteractionListener mListener;
     //private ListView lv;
     private RecyclerView usersAtEventList;
@@ -68,6 +72,8 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
     private ProgressDialog progress;
     private static boolean CHUNKED = false;
 
+    private LocationDetector locationDetector;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -75,12 +81,14 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
         setContentView(R.layout.activity_event_detail);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        locationDetector = new LocationDetector(this);
        // getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Name = new ArrayList<String>();
         Catchphrase= new ArrayList<String>();
-        userIcon = new ArrayList<String>();
+        //userIcon = new ArrayList<String>();
+
         mListener = (IOnListFragmentInteractionListener) this;
 
         final String username = SharedPreference.getUsername(getApplicationContext());
@@ -112,6 +120,7 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
 
             Eventid = extras.getInt("Event ID");
             AccessCode = extras.getInt("Access ID");
+            Location = extras.getString("Access Location");
 
             TextView eventDescription = (TextView)findViewById(R.id.event_description);
             eventDescription.setText(extras.getString("Event Description"));
@@ -247,6 +256,8 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
 
     public boolean matchAccessCode(int code)
     {
+
+        Log.d("Testing", String.valueOf(locationDetector.getLocation().getLongitude()) + " : " + String.valueOf(locationDetector.getLocation().getLatitude() ));
         if(code == AccessCode)
         {
             SharedPreference.setEventId(this,Eventid);
@@ -404,5 +415,10 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
         intent.putExtra("Bio",user.getBio());
 
         startActivity(intent);
+    }
+    public boolean locationValidation()
+    {
+
+        return true;
     }
 }

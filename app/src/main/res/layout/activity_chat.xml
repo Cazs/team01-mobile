@@ -39,7 +39,8 @@
             android:layout_toLeftOf="@+id/sendMessageButton"
             android:scrollbars="vertical"
             android:maxLines="6"
-            android:hint="Type a message"/>
+            android:hint="Type a message"
+            android:background="@drawable/chat_bubble"/>
 
         <ImageButton
             android:id="@+id/sendMessageButton"
