@@ -199,6 +199,10 @@ public class EventsFragment extends android.support.v4.app.Fragment
                 intent.putExtra("Event ID",event.getId());
                 intent.putExtra("Access ID",event.getAccessID());
 
+                intent.putExtra("Event Location", event.getGPS());
+                intent.putExtra("Event Radius",event.getRadius());
+
+
                 startActivity(intent);
             }
         });

@@ -57,6 +57,8 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
     private final String TAG = "ICEBREAK";
 
     private long Eventid;
+    private String eventLoc;
+    private int eventRadius;
 
     private ArrayList<User> users;
     private ArrayList<String> Name;
@@ -125,7 +127,16 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
             Eventid = extras.getInt("Event ID");
             AccessCode = extras.getInt("Access ID");
             event_Radius = extras.getInt("Event Radius");
+
+            eventLoc = extras.getString("Event Location");
+            eventRadius = extras.getInt("Event Radius");
+
             //location = (Location) extras.get("Access Location");
+            String[] part = eventLoc.split(":");
+
+            //location.setLatitude(Double.valueOf(part[0]));
+            //location.setLongitude(Double.valueOf(part[1]));
+
             location.setLatitude(-26.180908900266168);
             location.setLongitude(27.98675119404803);
             Log.d("Testing", String.valueOf(location.getLongitude()) + ":" + String.valueOf(location.getLatitude()));
@@ -286,7 +297,7 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
             double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             float dist = (float) (earthRadius * c);
             Log.d("Testing","Distance : " + String.valueOf(dist));
-            if(dist<=radius)
+            if(dist<=4)
             {
                 return true;
             }
@@ -472,9 +483,5 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
 
         startActivity(intent);
     }
-    public boolean locationValidation()
-    {
 
-        return true;
-    }
 }
