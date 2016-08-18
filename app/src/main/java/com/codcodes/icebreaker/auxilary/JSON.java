@@ -59,7 +59,7 @@ public class JSON
     {
         if(DEBUG)System.out.println("Reading JSON object: " + singleJsonObj);
         //Regular expression to match key-value pairs in JSON object
-        String json_regex = "\"([a-zA-Z0-9\\s~`!@#$%^&*)(_+-={}\\[\\];',./\\|<>?]*)\"\\:(\"[a-zA-Z0-9\\s~`!@#$%^&*()_+-={}\\[\\];',./\\|<>?]*\"|\"[0-9,]\"|\\d+)";
+        String json_regex = "\"([a-zA-Z0-9\\s~`!@#$%^&*)(_+-={}\\[\\];',./\\|<>?]*)\"\\:(\"[a-zA-Z0-9\\s*~`!@#$%^&*()_+-={}\\[\\];',./\\|<>?]*\"|\"[0-9,]\"|\\d+)";
         Pattern p = Pattern.compile(json_regex);
         Matcher m = p.matcher(singleJsonObj);
         while(m.find())//While there are still pairs in the JSON object

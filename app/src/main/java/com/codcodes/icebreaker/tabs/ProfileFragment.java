@@ -85,6 +85,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         v = inflater.inflate(R.layout.fragment_profile, container, false);
+        mgr = getActivity().getAssets();
         //TODO: Use this information to send to database to see whch user it is.
         final String username = SharedPreference.getUsername(v.getContext()).toLowerCase();
 
@@ -305,7 +306,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
     public static ProfileFragment newInstance(Context context)
     {
         ProfileFragment e = new ProfileFragment();
-        mgr = context.getAssets();
+        //mgr = context.getAssets();
         Bundle b = new Bundle();
         e.setArguments(b);
         return e;
