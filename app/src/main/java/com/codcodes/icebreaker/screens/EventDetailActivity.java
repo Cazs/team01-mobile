@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
@@ -61,8 +62,9 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
     private ArrayList<String> Name;
     private ArrayList<String> Catchphrase;
   //  private ArrayList<String> userIcon;
-    private String Location;
+    private Location location;
     private int AccessCode;
+    private int event_Radius;
 
     private IOnListFragmentInteractionListener mListener;
     //private ListView lv;
@@ -95,6 +97,7 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
 
         Bundle extras = getIntent().getExtras();
         final Activity act =this;
+        location = new Location("");
 
         /*
         //If there's a cached eventID use that
@@ -112,6 +115,7 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
                 }
             }
         }*/
+
         if(extras != null)
         {
             String evtName = extras.getString("Event Name");
@@ -120,8 +124,11 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
 
             Eventid = extras.getInt("Event ID");
             AccessCode = extras.getInt("Access ID");
-            Location = extras.getString("Access Location");
-
+            event_Radius = extras.getInt("Event Radius");
+            //location = (Location) extras.get("Access Location");
+            location.setLatitude(-26.180908900266168);
+            location.setLongitude(27.98675119404803);
+            Log.d("Testing", String.valueOf(location.getLongitude()) + ":" + String.valueOf(location.getLatitude()));
             TextView eventDescription = (TextView)findViewById(R.id.event_description);
             eventDescription.setText(extras.getString("Event Description"));
 
@@ -153,7 +160,7 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
             {
                 if (actionID== EditorInfo.IME_ACTION_DONE)
                 {
-                    if(matchAccessCode(Integer.parseInt(accessCode.getText().toString())))
+                    if(matchAccessCode(Integer.parseInt(accessCode.getText().toString()),location,locationDetector.getLocation(),event_Radius))
                     {
                         showProgressBar();
                         //updateProfile(Eventid,username);
@@ -167,6 +174,13 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
                 return false;
             }
         });
+        Location loc;
+       /* if((loc = locationDetector.getLocation()) != null)
+        {
+
+            Log.d("Testing", String.valueOf(loc.getLongitude()) + " : " + String.valueOf(loc.getLatitude() ));
+        }*/
+
     }
 
     public void showProgressBar()
@@ -253,15 +267,49 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
         return super.onOptionsItemSelected(item);
 
     }
-
-    public boolean matchAccessCode(int code)
+    public boolean inLocation(Location loc1, Location loc2 ,int radius)
     {
-
-        Log.d("Testing", String.valueOf(locationDetector.getLocation().getLongitude()) + " : " + String.valueOf(locationDetector.getLocation().getLatitude() ));
-        if(code == AccessCode)
+        if(loc1 != null || loc2 != null)
         {
-            SharedPreference.setEventId(this,Eventid);
-            return true;
+            double earthRadius = 6371;
+            double dLat = Math.toRadians(loc2.getLatitude() - loc1.getLatitude());
+            double dLng = Math.toRadians(loc2.getLongitude() - loc1.getLongitude());
+            double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(Math.toRadians(loc1.getLatitude())) * Math.cos(Math.toRadians(loc2.getLatitude())) *
+                            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            float dist = (float) (earthRadius * c);
+            Log.d("Testing","Distance : " + String.valueOf(dist));
+            if(dist<=radius)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean matchAccessCode(int code,Location loc1, Location loc2 ,int radius)
+    {
+        if(loc1 != null || loc2 != null)
+        {
+            Log.d("Testing", "not null");
+            if(code == AccessCode && inLocation(loc1,loc2,radius))
+            {
+                SharedPreference.setEventId(this,Eventid);
+                return true;
+            }
+        }
+        else
+        {
+            if(loc1 == null)
+            {
+                Log.d("Testing", "loc1");
+            }
+            else
+            {
+                Log.d("Testing", "loc2");
+            }
         }
         return false;
     }

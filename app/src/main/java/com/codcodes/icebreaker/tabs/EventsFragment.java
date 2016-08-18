@@ -3,6 +3,7 @@ package com.codcodes.icebreaker.tabs;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -40,7 +41,8 @@ public class EventsFragment extends android.support.v4.app.Fragment
     private ArrayList<String> eventNames;
     private ArrayList<String> eventDescriptions;
     private ArrayList<String> eventIcons;
-    private ArrayList<String> eventLocation ;
+    private ArrayList<Location> eventLocation ;
+    private ArrayList<Integer> eventDistance;
     private static final boolean DEBUG = false;
     public static final String TAG = "IB/EventsFragment";
 
@@ -52,9 +54,21 @@ public class EventsFragment extends android.support.v4.app.Fragment
         eventDescriptions = new ArrayList<>();
         eventIcons = new ArrayList<>();
         eventLocation = new ArrayList<>();
-        eventLocation.add("-26.1883323:27.996970");
-        eventLocation.add("-26.235854:28.013244");
-        eventLocation.add("-26.181927:28.002656");
+        eventDistance = new ArrayList<>();
+        Location loc = new Location("");
+
+        loc.setLatitude(-26.180908900266168);
+        loc.setLongitude(27.98675119404803);
+        eventLocation.add(loc);
+
+        loc.setLatitude(-26.235854);
+        loc.setLongitude(28.013244);
+        eventLocation.add(loc);
+
+        loc.setLatitude(-26.181927);
+        loc.setLongitude(28.002656);
+        eventLocation.add(loc);
+
         Thread eventsThread = new Thread(new Runnable()
         {
            @Override
@@ -103,6 +117,7 @@ public class EventsFragment extends android.support.v4.app.Fragment
                            eventDescriptions.add(e.getDescription());
                            String iconName = "event_icons-" + e.getId();
                            eventIcons.add("/Icebreak/events/" + iconName + ".png");
+                           eventDistance.add(e.getRadius());
                            String location = e.getGPS();
                            Log.d("EventLoc",location );
                            //Download the file only if it has not been cached
@@ -188,6 +203,7 @@ public class EventsFragment extends android.support.v4.app.Fragment
                 intent.putExtra("Event ID",event.getId());
                 intent.putExtra("Access ID",event.getAccessID());
                 intent.putExtra("Event Location",eventLocation.get(position));
+                intent.putExtra("Event Radius",eventDistance.get(position));
                 startActivity(intent);
             }
         });

@@ -13,6 +13,7 @@ import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 
 import com.google.android.gms.location.LocationServices;
 
@@ -25,7 +26,7 @@ public class LocationDetector implements LocationListener{
     private Location location;
 
     private static final int MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
-    private static final long MIN_TIME_UPDATES = 1000 * 60 * 1;
+    private static final long MIN_TIME_UPDATES = 1000 * 60 * 30;
 
     public LocationDetector(Context myContext) {
         this.myContext = myContext;
@@ -39,7 +40,11 @@ public class LocationDetector implements LocationListener{
         locationManager = (LocationManager) myContext.getSystemService(myContext.LOCATION_SERVICE);
         if(!isGPSEnabbled())
         {
-            showEnableDilog();
+           // showEnableDilog();
+          //  Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+          //  myContext.startActivity(intent);
+            Log.d("Testing","Disabled");
+            return null;
         }
         else
         {
@@ -47,7 +52,12 @@ public class LocationDetector implements LocationListener{
                 if(location == null)
                 {
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                    location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    if(locationManager != null)
+                    {
+                        location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    }
+                    return location;
+
                 }
             }catch (SecurityException e)
             {
@@ -55,8 +65,7 @@ public class LocationDetector implements LocationListener{
             }
 
         }
-        return location;
-
+        return null;
     }
 
     private void showEnableDilog() {
@@ -70,6 +79,14 @@ public class LocationDetector implements LocationListener{
                 myContext.startActivity(intent);
             }
         });
+        alertBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+        AlertDialog arlert = alertBuilder.create();
+        arlert.show();
     }
 
 
