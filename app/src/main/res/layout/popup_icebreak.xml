@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/ib_popup_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/ib_req_username"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="empty"
+                android:textColor="@color/black"
+                android:textSize="20pt"
+                android:gravity="center" />
+
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/ib_req_user_image"
+                android:layout_width="@dimen/ib_req_image_w"
+                android:layout_height="@dimen/ib_req_image_h"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/blue"/>
+
+            <TextView
+                android:id="@+id/ib_req_user_age"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:textSize="12pt"
+                android:text="empty"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/ib_req_user_occupation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="empty"
+                android:textColor="@color/black"
+                android:textSize="10pt"
+                android:maxLines="1"
+                android:maxLength="30"
+                android:ellipsize="end"
+                android:gravity="center"/>
+
+            <TextView
+                android:id="@+id/ib_req_user_gender"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:textSize="10pt"
+                android:gravity="center"
+                android:text="empty"
+                android:maxLines="1"
+                android:maxLength="20"
+                />
+
+            <TextView
+                android:id="@+id/ib_req_user_bio_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:text="empty"
+                android:textSize="12pt"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/ib_req_user_bio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:gravity="center"
+                android:textSize="10pt"
+                android:text="empty"
+                android:maxLength="150" />
+
+            <Button
+                android:id="@+id/ib_req_btn_accept"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/ib_popup_btn_h"
+                android:fontFamily="monospace"
+                android:layout_marginBottom="@dimen/ib_popup_btn_bpad"
+                android:gravity="center"
+                android:textSize="12pt"
+                android:text="Accept"
+                android:background="@drawable/icebreak_button" />
+
+            <Button
+                android:id="@+id/ib_req_btn_reject"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/ib_popup_btn_h"
+                android:fontFamily="monospace"
+                android:textSize="12pt"
+                android:text="Reject"
+                android:gravity="center"
+                android:background="@drawable/buttonshape" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

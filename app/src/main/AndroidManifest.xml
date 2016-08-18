@@ -48,6 +48,12 @@
             android:name="com.codcodes.icebreaker.screens.IceBreakActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar">
         </activity>
+
+        <activity
+            android:name="com.codcodes.icebreaker.screens.IBDialog"
+
+            android:parentActivityName="com.codcodes.icebreaker.screens.MainActivity">
+        </activity>
         <!--<activity
                 android:name=".EventsFragment"
                 android:label="@string/app_name"
@@ -67,9 +73,13 @@
         <meta-data android:name="com.google.android.geo.API_KEY" android:value="@string/google_maps_key" />
 
         <receiver
-            android:name=".auxilary.OnMessageReceive"
+            android:name=".services.OnMessageReceive"
             android:enabled="true"
             android:process=":remote" />
+
+        <receiver
+            android:name=".services.OnIcebreakCheck"
+            android:enabled="false" />
 
         <service
             android:name=".services.MessagePollService"
@@ -78,6 +88,15 @@
             <intent-filter>
                 <action
                     android:name="com.codcodes.icebreaker.services.MessagePollService" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".services.IcebreakListenerService"
+            android:exported="false">
+            <intent-filter>
+                <action
+                    android:name="com.codcodes.icebreaker.services.IcebreakListenerService" />
             </intent-filter>
         </service>
 

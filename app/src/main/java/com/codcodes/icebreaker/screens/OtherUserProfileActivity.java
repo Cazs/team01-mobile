@@ -22,7 +22,7 @@ import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
-import com.codcodes.icebreaker.auxilary.Restful;
+import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.MessagePollContract;
@@ -35,7 +35,8 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class OtherUserProfileActivity extends AppCompatActivity {
+public class OtherUserProfileActivity extends AppCompatActivity
+{
     private TextView profile;
     private String fname;
     private String lname;
@@ -55,9 +56,6 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_other_profile);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        final Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.pop_up_one);
 
         Bundle extras = this.getIntent().getExtras();
         if (extras != null) {
@@ -89,7 +87,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
             public void run() {
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                final Bitmap bitmap = Restful.getImage(ctxt, username, ".png", "/profile", options);
+                final Bitmap bitmap = RemoteComms.getImage(ctxt, username, ".png", "/profile", options);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -174,7 +172,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                         //Send to server
                         try
                         {
-                            final int response_code = Restful.postData("addMessage", msg_details);
+                            final int response_code = RemoteComms.postData("addMessage", msg_details);
                             //Update UI
                             //prog_bar = false;
                             //progress.hide();
@@ -223,7 +221,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
                            msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_receiver", username));//TODO
 
                            //Write to server
-                           int code = Restful.postData("addMessage", msg_details);
+                           int code = RemoteComms.postData("addMessage", msg_details);
                            if(code != HttpURLConnection.HTTP_OK)
                            {
                                Toast.makeText(getBaseContext(),"Could not send request: " + code, Toast.LENGTH_LONG).show();

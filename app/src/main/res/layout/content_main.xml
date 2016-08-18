@@ -21,7 +21,7 @@
         <ImageView
             android:layout_width="@dimen/logo_h"
             android:layout_height="@dimen/logo_w"
-            android:layout_marginTop="@dimen/dp_size_2"
+            android:layout_marginTop="@dimen/appbar_title_mtop"
             android:layout_marginLeft="@dimen/dp_size_20"
             android:src="@mipmap/ic_launcher"
             />
@@ -34,6 +34,7 @@
             android:textSize="29pt"
             android:textColor="@color/white"
             />
+
     </LinearLayout>
 
     <android.support.v4.view.ViewPager

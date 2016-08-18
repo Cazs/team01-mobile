@@ -1,9 +1,13 @@
 package com.codcodes.icebreaker.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by USER on 2016/08/02.
  */
-public class User implements IJsonable {
+public class User implements IJsonable, Parcelable
+{
     private String firstname;
     private String lastname;
     private int age;
@@ -153,4 +157,48 @@ public class User implements IJsonable {
                 break;
         }
     }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i)
+    {
+        parcel.writeString(getUsername());
+        parcel.writeString(getFirstname());
+        parcel.writeString(getLastname());
+        parcel.writeString(getBio());
+        parcel.writeString(getCatchphrase());
+        parcel.writeInt(getAge());
+        parcel.writeString(getEmail());
+        parcel.writeString(getGender());
+        parcel.writeString(getOccupation());
+    }
+
+    //Used to regenerate Message object.
+    public static final Parcelable.Creator<User> CREATOR = new Parcelable.Creator<User>()
+    {
+        public User createFromParcel(Parcel in)
+        {
+            User u = new User();
+            u.setUsername(in.readString());
+            u.setFirstname(in.readString());
+            u.setLastname(in.readString());
+            u.setBio(in.readString());
+            u.setCatchphrase(in.readString());
+            u.setAge(in.readInt());
+            u.setEmail(in.readString());
+            u.setGender(in.readString());
+            u.setOccupation(in.readString());
+            return u;
+        }
+
+        public User[] newArray(int size)
+        {
+            return new User[size];
+        }
+    };
 }

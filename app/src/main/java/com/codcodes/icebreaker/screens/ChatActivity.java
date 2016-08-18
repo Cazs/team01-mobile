@@ -16,13 +16,11 @@ import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
-import com.codcodes.icebreaker.auxilary.Restful;
+import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.Message;
 import com.codcodes.icebreaker.model.MessagePollContract;
 import com.codcodes.icebreaker.model.MessagePollHelper;
-import com.codcodes.icebreaker.model.UserContract;
-import com.codcodes.icebreaker.model.UserHelper;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -115,7 +113,7 @@ public class ChatActivity extends AppCompatActivity
                         //Send to server
                         try
                         {
-                            int response_code = Restful.postData("addMessage",msg_details);
+                            int response_code = RemoteComms.postData("addMessage",msg_details);
 
                             if(response_code == HttpURLConnection.HTTP_OK)
                             {

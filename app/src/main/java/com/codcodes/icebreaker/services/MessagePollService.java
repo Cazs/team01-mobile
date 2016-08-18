@@ -3,27 +3,11 @@ package com.codcodes.icebreaker.services;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
-import android.content.ContentValues;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.util.Log;
 
-import com.codcodes.icebreaker.auxilary.JSON;
-import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
-import com.codcodes.icebreaker.auxilary.OnMessageReceive;
-import com.codcodes.icebreaker.auxilary.Restful;
-import com.codcodes.icebreaker.model.Message;
-import com.codcodes.icebreaker.model.MessagePollContract;
-import com.codcodes.icebreaker.model.MessagePollHelper;
-import com.codcodes.icebreaker.screens.IceBreakActivity;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Calendar;
+import com.codcodes.icebreaker.auxilary.INTERVALS;
 
 /**
  * Created by Casper on 2016/08/10.
@@ -31,12 +15,12 @@ import java.util.Calendar;
 public class MessagePollService extends IntentService
 {
     private final String TAG="IB/MsgPollService";
-    private final int INTERVAL = 1000;//1 sec
 
     public MessagePollService()
     {
         super("Message Poll Service");
     }
+
     @Override
     protected void onHandleIntent(Intent intent)
     {
@@ -66,7 +50,7 @@ public class MessagePollService extends IntentService
         //Calendar cal = Calendar.getInstance();
         //cal.add(Calendar.SECOND, INTERVAL);
 
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(),INTERVAL, pi);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVALS.BG_SERVC_POLL_DELAY.getValue(), pi);
     }
 
 

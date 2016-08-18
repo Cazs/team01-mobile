@@ -1,6 +1,5 @@
-package com.codcodes.icebreaker.auxilary;
+package com.codcodes.icebreaker.services;
 
-import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -8,25 +7,25 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Looper;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.JSON;
+import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
+import com.codcodes.icebreaker.auxilary.NOTIFICATION_ID;
+import com.codcodes.icebreaker.auxilary.RemoteComms;
+import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.Message;
 import com.codcodes.icebreaker.model.MessagePollContract;
 import com.codcodes.icebreaker.model.MessagePollHelper;
-import com.codcodes.icebreaker.screens.IceBreakActivity;
 import com.codcodes.icebreaker.screens.MainActivity;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 
 /**
@@ -109,9 +108,9 @@ public class OnMessageReceive extends BroadcastReceiver
             if(stat==MESSAGE_STATUSES.ICEBREAK.getStatus())//Icebreak sent but not received by server
             {
                 //Check if the icebreak exists on the server
-                //String response = Restful.sendGetRequest("getMessage/"+id);
+                //String response = RemoteComms.sendGetRequest("getMessage/"+id);
                 //Send Icebreak again
-                if(Restful.sendMessage(context,m))
+                if(RemoteComms.sendMessage(context,m))
                     Log.d(TAG,"Message sent with status: " + MESSAGE_STATUSES.ICEBREAK);
                 else
                     Log.d(TAG,"Message NOT sent with status: " + MESSAGE_STATUSES.ICEBREAK);
@@ -122,7 +121,7 @@ public class OnMessageReceive extends BroadcastReceiver
             if(stat==MESSAGE_STATUSES.SENT.getStatus())//Message sent but not received by server
             {
                 //Send message again
-                if(Restful.sendMessage(context,m))
+                if(RemoteComms.sendMessage(context,m))
                     Log.d(TAG,"Message sent with status: " + MESSAGE_STATUSES.SENT);
                 else
                     Log.d(TAG,"Message NOT sent with status: " + MESSAGE_STATUSES.SENT);
@@ -153,7 +152,7 @@ public class OnMessageReceive extends BroadcastReceiver
         {
             try
             {
-                String response = Restful.sendGetRequest("checkUserInbox/" + receiver);
+                String response = RemoteComms.sendGetRequest("checkUserInbox/" + receiver);
 
                 if (response.length() > 0)
                 {
@@ -184,7 +183,7 @@ public class OnMessageReceive extends BroadcastReceiver
                                 Log.d(TAG, "New IceBreak request from " + m.getSender());
                                 m.setStatus(MESSAGE_STATUSES.ICEBREAK_DELIVERED.getStatus());//set message to delivered in temp memory
                                 //Change Message status to DELIVERED remotely
-                                if(Restful.sendMessage(context,m))
+                                if(RemoteComms.sendMessage(context,m))
                                 {
                                     //Change Message status to DELIVERED locally
                                     updateLocalMessage(context,db,m);
@@ -248,7 +247,7 @@ public class OnMessageReceive extends BroadcastReceiver
         {
             try
             {
-                String response = Restful.sendGetRequest("checkUserOutbox/" + sender);
+                String response = RemoteComms.sendGetRequest("checkUserOutbox/" + sender);
 
                 if (response.length() > 0)
                 {

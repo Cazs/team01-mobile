@@ -22,7 +22,7 @@ import com.codcodes.icebreaker.auxilary.ContactListSwitches;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
-import com.codcodes.icebreaker.auxilary.Restful;
+import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.UserListRecyclerViewAdapter;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.User;
@@ -157,7 +157,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 {
                     try
                     {
-                        String contactsJson = Restful.sendGetRequest("getUsersAtEvent/" + curr_event_id);
+                        String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + curr_event_id);
                         final ArrayList<User> contacts = new ArrayList<>();
                         JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
                         System.err.println("Contacts at event: " + curr_event_id+ " " + contacts.size() + " people");
@@ -173,7 +173,11 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                             if (!new File(Environment.getExternalStorageDirectory().getPath()
                                     + "/Icebreak/profile/" + u.getUsername() + ".png").exists()) {
                                 //if (imageDownload(u.getUsername() + ".png", "/profile")) {
-                                if (Restful.imageDownloader(u.getUsername(), ".png", "/profile", getActivity())) {
+                                options = new BitmapFactory.Options();
+                                options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+                                Bitmap b = RemoteComms.getImage(getActivity(),u.getUsername(), ".png", "/profile", options);
+                                if(b!=null)
+                                {
                                     bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
                                             + "/Icebreak/profile/" + u.getUsername() + ".png", options);
                                     //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
@@ -183,7 +187,11 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                                     if (!new File(Environment.getExternalStorageDirectory().getPath().toString()
                                             + "/Icebreak/profile/profile_default.png").exists()) {
                                         //Attempt to download default profile image
-                                        if (Restful.imageDownloader("profile_default", ".png", "/profile", getActivity())) {
+                                        options = new BitmapFactory.Options();
+                                        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+                                        b = RemoteComms.getImage(getActivity(),"profile_default", ".png", "/profile", options);
+                                        if(b!=null)
+                                        {
                                             /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
                                                     + "/Icebreak/profile/profile_default.png", getActivity());*/
                                             options = new BitmapFactory.Options();
@@ -287,7 +295,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 public void run() {
                     Looper.prepare();
                     try {
-                        String contactsJson = Restful.getJsonFromURL("getUsersAtEvent/" + curr_event_id);
+                        String contactsJson = RemoteComms.getJsonFromURL("getUsersAtEvent/" + curr_event_id);
                         final ArrayList<User> contacts = new ArrayList<>();
                         JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
                         //Attempt to load images into memory and set the list adapter

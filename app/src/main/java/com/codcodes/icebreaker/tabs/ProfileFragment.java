@@ -1,10 +1,7 @@
 package com.codcodes.icebreaker.tabs;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,21 +11,18 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
-import com.codcodes.icebreaker.auxilary.Restful;
+import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.screens.Edit_ProfileActivity;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.screens.InitialActivity;
@@ -36,23 +30,10 @@ import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.screens.RewardsActivity;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.User;
-import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.Socket;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.google.android.gms.internal.zzir.runOnUiThread;
 
@@ -121,7 +102,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                 String usrJson = null;
                 try
                 {
-                    usrJson = Restful.sendGetRequest("getUser/" + username);
+                    usrJson = RemoteComms.sendGetRequest("getUser/" + username);
                     userList = new ArrayList<>();
                     JSON.<User>getJsonableObjectsFromJson(usrJson,userList,User.class);
                 } catch (IOException e)
@@ -182,7 +163,10 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                             + profilePicture).exists())
                     {
                         //if (imageDownload(u.getUsername() + ".png", "/profile")) {
-                        if (Restful.imageDownloader(username,".png", "/profile", getActivity()))
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+                        Bitmap b = RemoteComms.getImage(getActivity(),username, ".png", "/profile", options);
+                        if (b!=null)
                         {
                             bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
                                     + profilePicture, getActivity());
@@ -193,7 +177,10 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                                     + "/Icebreak/profile/profile_default.png").exists())
                             {
                                 //Attempt to download default profile image
-                                if (Restful.imageDownloader("profile_default",".png", "/profile", getActivity()))
+                                options = new BitmapFactory.Options();
+                                options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+                                b = RemoteComms.getImage(getActivity(),"profile_default", ".png", "/profile", options);
+                                if(b!=null)
                                 {
                                     bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
                                             + "/Icebreak/profile/profile_default.png", getActivity());

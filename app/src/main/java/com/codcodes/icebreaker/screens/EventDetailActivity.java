@@ -21,24 +21,20 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import android.widget.ProgressBar;
-
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
-import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
-import com.codcodes.icebreaker.auxilary.Restful;
+import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.UserListRecyclerViewAdapter;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.User;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -165,9 +161,9 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
     public void showProgressBar()
     {
         if(progress==null)
-            return;
-        if(!progress.isShowing()) {
             progress = new ProgressDialog(this);
+        if(!progress.isShowing())
+        {
             progress.setMessage("Loading List");
             progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             progress.setIndeterminate(true);
@@ -273,7 +269,7 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
                 {
                     try
                     {
-                        String contactsJson = Restful.sendGetRequest("getUsersAtEvent/" + Eventid);
+                        String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + Eventid);
                         final ArrayList<User> contacts = new ArrayList<>();
                         JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
                         System.err.println("Contacts at event: " + Eventid+ " " + contacts.size() + " people");
@@ -290,7 +286,7 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
                             /*if (!new File(Environment.getExternalStorageDirectory().getPath()
                                     + "/Icebreak/profile/" + u.getUsername() + ".png").exists()) {
                                 //if (imageDownload(u.getUsername() + ".png", "/profile")) {
-                                if (Restful.imageDownloader(u.getUsername(), ".png", "/profile", context))
+                                if (RemoteComms.imageDownloader(u.getUsername(), ".png", "/profile", context))
                                 {
                                     bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
                                             + "/Icebreak/profile/" + u.getUsername() + ".png", options);
@@ -302,7 +298,7 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
                                             + "/Icebreak/profile/default.png").exists())
                                     {
                                         //Attempt to download default profile image
-                                        if (Restful.imageDownloader("default", ".png", "/profile", context))
+                                        if (RemoteComms.imageDownloader("default", ".png", "/profile", context))
                                         {
                                             /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
                                                     + "/Icebreak/profile/profile_default.png", getActivity());*
@@ -333,7 +329,7 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
                                         + "/Icebreak/profile/" + u.getUsername() + ".png", context);
                                 circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                             }*/
-                            bitmap = Restful.getImage(context,u.getUsername(),".png","/profile",options);
+                            bitmap = RemoteComms.getImage(context,u.getUsername(),".png","/profile",options);
                             circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                             if (bitmap == null || circularbitmap == null) {
                                 System.err.println("Bitmap is null");

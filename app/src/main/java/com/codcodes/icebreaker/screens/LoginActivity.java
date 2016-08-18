@@ -123,13 +123,27 @@ public class LoginActivity extends AppCompatActivity {
                             else {
                                 if (!isValidUsername(u))
                                 {
-                                    username.setError("Invalid Username");
+                                    runOnUiThread(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            username.setError("Invalid Username");
+                                        }
+                                    });
                                     return;
                                 }
 
                                 if (!isValidPassword(p))
                                 {
-                                    password.setError("Invalid Password");
+                                    runOnUiThread(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            password.setError("Invalid Password");
+                                        }
+                                    });
                                     return;
                                 }
                                 finish();
@@ -140,14 +154,35 @@ public class LoginActivity extends AppCompatActivity {
                         }
                         catch (UnknownHostException e)
                         {
-                            loginbar.setVisibility(View.GONE);
+                            runOnUiThread(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    loginbar.setVisibility(View.GONE);
+                                }
+                            });
                             Message messaage = toastHandler("No Internet Access").obtainMessage();
                             messaage.sendToTarget();
                             e.printStackTrace();
                         }
                         catch (IOException e)
                         {
-                            loginbar.setVisibility(View.GONE);
+                            runOnUiThread(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    runOnUiThread(new Runnable()
+                                    {
+                                        @Override
+                                        public void run()
+                                        {
+                                            loginbar.setVisibility(View.GONE);
+                                        }
+                                    });
+                                }
+                            });
                             Message messaage = toastHandler("Couldn't refreash feeds").obtainMessage();
                             messaage.sendToTarget();
                             e.printStackTrace();

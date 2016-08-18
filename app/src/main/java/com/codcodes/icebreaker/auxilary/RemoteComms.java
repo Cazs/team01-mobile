@@ -6,12 +6,10 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.model.Message;
 import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.screens.MainActivity;
@@ -20,7 +18,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -36,21 +33,19 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.net.ssl.HttpsURLConnection;
-
 /**
  * Created by Casper on 2016/08/08.
  */
-public class Restful
+public class RemoteComms
 {
-    private static final String TAG = "IB/Restful";
+    private static final String TAG = "IB/RemoteComms";
     private static boolean CHUNKED = false;
 
     public static String sendGetRequest(String url) throws IOException
     {
         url = url.charAt(0)=='/'||url.charAt(0)=='\\'?url.substring(1):url;//Remove first slash if it exists
         Log.d(TAG,"Opening connection to IceBreak_domain/Service/" + url);
-        URL urlConn = urlConn = new URL("http://icebreak.azurewebsites.net/IBUserRequestService.svc/" + url);
+        URL urlConn = new URL("http://icebreak.azurewebsites.net/IBUserRequestService.svc/" + url);
         HttpURLConnection httpConn =  (HttpURLConnection)urlConn.openConnection();
         Scanner s = new Scanner(httpConn.getInputStream());
         String response = "";
@@ -67,11 +62,12 @@ public class Restful
 
     public static User getUser(String username) throws IOException
     {
-        String userJson = Restful.sendGetRequest("getUser/"+username);
+        String userJson = RemoteComms.sendGetRequest("getUser/"+username);
         User u = new User();
         if(userJson!=null)
             JSON.getJsonable(userJson, u);
         else return null;
+        //TODO: Save to local DB
         return u;
     }
 
@@ -114,10 +110,8 @@ public class Restful
         return httpConn.getResponseCode();
     }
 
-    public static boolean imageDownloader(String image, String ext, String destPath, Activity context)
+    private boolean imageDownloader(String image, String ext, String destPath, Context context)
     {
-        //Check for storage permissions
-        validateStoragePermissions(context);
         //Check for invalid filenames
         if(image==null || ext == null)
         {
@@ -197,13 +191,13 @@ public class Restful
             //in.close();
             soc.close();
 
-            //System.out.println(payload);
-            payload = payload.split(":")[1];
-            payload = payload.replaceAll("\"", "");
-
             payload = payload.substring(0,payload.length()-1);
-            if(!payload.equals("FNE"))
+            if(!payload.equals("FNE") && payload.length()>0)
             {
+                //System.out.println(payload);
+                payload = payload.split(":")[1];
+                payload = payload.replaceAll("\"", "");
+
                 byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);//Base64.getDecoder().decode(payload.getBytes());
                 WritersAndReaders.saveImage(binFileArr, destPath + "/" + image + ext);
                 System.out.println("Succesfully wrote to disk");//"\n>>>>>"+base64bytes);
@@ -235,7 +229,7 @@ public class Restful
         return dec;
     }
 
-    public static Bitmap getImage(Activity context, String filename,String ext, String path, BitmapFactory.Options options)
+    /*public static Bitmap getImage(Context context, String filename,String ext, String path, BitmapFactory.Options options)
     {
         //path = MainActivity.rootDir + "/Icebreak" + path;
         path = path.charAt(0) != '/' && path.charAt(0) != '\\' ? '/' + path : path;
@@ -245,7 +239,7 @@ public class Restful
         //Look for image locally
         if (!new File(path + '/' + filename + ext).exists())
         {
-            if (Restful.imageDownloader(filename, ext, path, context))
+            if (RemoteComms.imageDownloader(filename, ext, path, context))
             {
                 bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
                 //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
@@ -254,7 +248,7 @@ public class Restful
                 if (!new File(path + "/default.png").exists())
                 {
                     //Attempt to download default profile image
-                    if (Restful.imageDownloader("default", ".png", "/profile", context))
+                    if (RemoteComms.imageDownloader("default", ".png", "/profile", context))
                     {
                         bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + "/default.png", options);
                     } else //Couldn't download default profile image
@@ -264,15 +258,39 @@ public class Restful
                     }
                 } else//default profile image exists
                 {
+                    System.err.println("default.png image exists");
                     bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + "/default.png", options);
                 }
             }
         }
         else//User profile exists
         {
+            System.err.println(filename+".png image exists");
             bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
         }
         return bitmap;
+    }*/
+
+    public static Bitmap getImage(Context context, String filename,String ext, String path, BitmapFactory.Options options)
+    {
+        path = path.charAt(0) != '/' && path.charAt(0) != '\\' ? '/' + path : path;
+        Bitmap bitmap = null;
+        if(!ext.contains("."))//add dot to image extension if it's not there
+            ext = '.' + ext;
+
+        System.err.println(path + '/' + filename + ext);
+
+        //Look for image locally
+        if (!new File(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext).exists())
+        {
+            Log.d(TAG,path+ "/" + filename + ext + " does not exist. returning default.");
+            bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak/profile/default.png", options);
+        }
+        else//exists
+        {
+            bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
+        }
+        return  bitmap;
     }
 
     public static boolean sendMessage(Context context, Message m)
@@ -291,7 +309,7 @@ public class Restful
         //Send to server
         try
         {
-            final int response_code = Restful.postData("addMessage", msg_details);
+            final int response_code = RemoteComms.postData("addMessage", msg_details);
             if(response_code != HttpURLConnection.HTTP_OK)
             {
                 Log.d(TAG,"Could not send request: " + response_code);
@@ -310,27 +328,5 @@ public class Restful
             //TODO: Better logging
         }
         return false;
-    }
-
-    public static void validateStoragePermissions(Activity activity)
-    {
-        int REQUEST_EXTERNAL_STORAGE = 1;
-        String[] PERMISSIONS_STORAGE =
-                {
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                };
-        //Check for write permissions
-        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permission != PackageManager.PERMISSION_GRANTED)
-        {
-            //No permission - prompt the user for permission
-            ActivityCompat.requestPermissions
-                    (
-                            activity,
-                            PERMISSIONS_STORAGE,
-                            REQUEST_EXTERNAL_STORAGE
-                    );
-        }
     }
 }

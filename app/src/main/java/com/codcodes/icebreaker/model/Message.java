@@ -1,11 +1,14 @@
 package com.codcodes.icebreaker.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
 
 /**
  * Created by Casper on 2016/08/04.
  */
-public class Message implements IJsonable
+public class Message implements IJsonable, Parcelable
 {
     private  String id;
     private  String message;
@@ -104,4 +107,43 @@ public class Message implements IJsonable
                 break;
         }
     }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i)
+    {
+        parcel.writeString(getId());
+        parcel.writeString(getMessage());
+        parcel.writeString(getSender());
+        parcel.writeString(getReceiver());
+        parcel.writeString(getTime());
+        parcel.writeInt(getStatus());
+    }
+
+    //Used to regenerate Message object.
+    public static final Parcelable.Creator<Message> CREATOR = new Parcelable.Creator<Message>()
+    {
+        public Message createFromParcel(Parcel in)
+        {
+            Message m = new Message();
+            m.setId(in.readString());
+            m.setMessage(in.readString());
+            m.setSender(in.readString());
+            m.setReceiver(in.readString());
+            m.setTime(in.readString());
+            m.setStatus(in.readInt());
+            return m;
+        }
+
+        public Message[] newArray(int size)
+        {
+            return new Message[size];
+        }
+    };
+
 }
