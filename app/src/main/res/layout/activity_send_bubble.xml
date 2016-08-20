@@ -24,7 +24,6 @@
             android:gravity="right"
             android:text="Hi! new message"
             android:textColor="@android:color/primary_text_light"
-            android:background="@drawable/send_bubble"
             />
     </RelativeLayout>
 </RelativeLayout>
