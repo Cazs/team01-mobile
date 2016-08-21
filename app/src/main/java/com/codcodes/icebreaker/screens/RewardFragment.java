@@ -23,7 +23,6 @@ public class RewardFragment extends android.support.v4.app.Fragment
     {
 
         View v = inflater.inflate(R.layout.fragment_reward,container,false);
-
         return v;
 
     }

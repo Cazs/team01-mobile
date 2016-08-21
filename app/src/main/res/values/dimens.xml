@@ -45,9 +45,9 @@
     <dimen name="icon_left">10dp</dimen>
 
 
-    <dimen name="text_top">100dp</dimen>
+    <dimen name="text_top">150dp</dimen>
 
-    <dimen name="secondlayout_top">200dp</dimen>
+    <dimen name="secondlayout_top">250dp</dimen>
 
     <dimen name="text_width">100dp</dimen>
 
@@ -134,4 +134,6 @@
     <dimen name="dp_size_510">510dp</dimen>
     <dimen name="dp_size_130">130dp</dimen>
     <dimen name="dp_size_420">420dp</dimen>
+    <dimen name="dp_size_190">190dp</dimen>
+    <dimen name="dp_size_152">152dp</dimen>
 </resources>

@@ -1,32 +1,48 @@
 package com.codcodes.icebreaker.tabs;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Looper;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.codcodes.icebreaker.auxilary.ContactListSwitches;
 import com.codcodes.icebreaker.auxilary.CustomListAdapter;
 import com.codcodes.icebreaker.auxilary.JSON;
-import com.codcodes.icebreaker.auxilary.RemoteComms;
+import com.codcodes.icebreaker.auxilary.Restful;
 import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.screens.EventDetailActivity;
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import pl.bclogic.pulsator4droid.library.PulsatorLayout;
 
@@ -59,11 +75,10 @@ public class EventsFragment extends android.support.v4.app.Fragment
            @Override
            public void run()
            {
-               Looper.prepare();
                events = new ArrayList<>();
                try
                {
-                   String eventsJson = RemoteComms.sendGetRequest("readEvents");
+                   String eventsJson = Restful.sendGetRequest("readEvents");
                    JSON.<Event>getJsonableObjectsFromJson(eventsJson,events,Event.class);
                } catch (IOException e)
                {
@@ -103,17 +118,12 @@ public class EventsFragment extends android.support.v4.app.Fragment
                            String iconName = "event_icons-" + e.getId();
                            eventIcons.add("/Icebreak/events/" + iconName + ".png");
                            //Download the file only if it has not been cached
-                           if (!new File(Environment.getExternalStorageDirectory().getPath() + "/Icebreak/events/" + iconName + ".png").exists())
-                           {
+                           if (!new File(Environment.getExternalStorageDirectory().getPath() + "/Icebreak/events/" + iconName + ".png").exists()) {
                                Log.d(TAG, "No cached " + iconName + ",Image download in progress..");
-                               BitmapFactory.Options options = new BitmapFactory.Options();
-                               options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                               Bitmap b = RemoteComms.getImage(getActivity(),iconName, ".png", "/events", options);
-                               if (b!=null)
+                               if (Restful.imageDownloader(iconName, ".png", "/events", getActivity()))
                                    Log.d(TAG, "Image download successful");
                                else
                                    Log.d(TAG, "Image download unsuccessful");
-                               b.recycle();
                            }
                        }
                        String[] eventNamesArr = new String[events.size()];
@@ -188,6 +198,10 @@ public class EventsFragment extends android.support.v4.app.Fragment
                 intent.putExtra("Image ID",eventIcons.get(position));
                 intent.putExtra("Event ID",event.getId());
                 intent.putExtra("Access ID",event.getAccessID());
+
+                intent.putExtra("Event Location", event.getGPS());
+                intent.putExtra("Event Radius",event.getRadius());
+
 
                 startActivity(intent);
             }
