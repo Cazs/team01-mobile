@@ -32,8 +32,9 @@ import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
+import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.LocationDetector;
-import com.codcodes.icebreaker.auxilary.Restful;
+import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.UserListRecyclerViewAdapter;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
@@ -341,7 +342,7 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
                 {
                     try
                     {
-                        String contactsJson = Restful.sendGetRequest("getUsersAtEvent/" + Eventid);
+                        String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + Eventid);
                         final ArrayList<User> contacts = new ArrayList<>();
                         JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
                         System.err.println("Contacts at event: " + Eventid+ " " + contacts.size() + " people");
@@ -401,7 +402,10 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
                                         + "/Icebreak/profile/" + u.getUsername() + ".png", context);
                                 circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                             }*/
-                            bitmap = Restful.getImage(context,u.getUsername(),".png","/profile",options);
+                            bitmap = LocalComms.getImage(context,u.getUsername(),".png","/profile",options);
+                            if(bitmap==null)
+                                bitmap= RemoteComms.getImage(context,u.getUsername(),".png","/profile",options);
+
                             circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                             if (bitmap == null || circularbitmap == null) {
                                 System.err.println("Bitmap is null");

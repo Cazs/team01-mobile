@@ -22,6 +22,7 @@ import com.codcodes.icebreaker.auxilary.ContactListSwitches;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
+import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.UserListRecyclerViewAdapter;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
@@ -168,62 +169,25 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                         BitmapFactory.Options options = new BitmapFactory.Options();
                         options.inPreferredConfig = Bitmap.Config.ALPHA_8;
 
-                        for (User u : contacts) {
+                        for (User u : contacts)
+                        {
                             //Look for user profile image
-                            if (!new File(Environment.getExternalStorageDirectory().getPath()
-                                    + "/Icebreak/profile/" + u.getUsername() + ".png").exists()) {
+                            /*if (!new File(Environment.getExternalStorageDirectory().getPath()
+                                    + "/Icebreak/profile/" + u.getUsername() + ".png").exists()) {*/
                                 //if (imageDownload(u.getUsername() + ".png", "/profile")) {
                                 options = new BitmapFactory.Options();
                                 options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                                Bitmap b = RemoteComms.getImage(getActivity(),u.getUsername(), ".png", "/profile", options);
-                                if(b!=null)
-                                {
-                                    bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                                            + "/Icebreak/profile/" + u.getUsername() + ".png", options);
-                                    //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
-                                    circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                                } else //user has no profile yet - attempt to load default profile image
-                                {
-                                    if (!new File(Environment.getExternalStorageDirectory().getPath().toString()
-                                            + "/Icebreak/profile/profile_default.png").exists()) {
-                                        //Attempt to download default profile image
-                                        options = new BitmapFactory.Options();
-                                        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                                        b = RemoteComms.getImage(getActivity(),"profile_default", ".png", "/profile", options);
-                                        if(b!=null)
-                                        {
-                                            /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                                    + "/Icebreak/profile/profile_default.png", getActivity());*/
-                                            options = new BitmapFactory.Options();
-                                            options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                                            bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                                                    + "/Icebreak/profile/profile_default.png", options);
-                                            circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                                        } else //Couldn't download default profile image
-                                        {
-                                            Toast.makeText(getActivity(), "Could not download default profile images, please check your internet connection.",
-                                                    Toast.LENGTH_LONG).show();
-                                        }
-                                    } else//default profile image exists
-                                    {
-                                        /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                                + "/Icebreak/profile/profile_default.png",getActivity());*/
-                                        options = new BitmapFactory.Options();
-                                        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                                        bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                                                + "/Icebreak/profile/profile_default.png", options);
-                                        circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                                    }
-                                }
-                            } else//user profile image exists
-                            {
-                                bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                        + "/Icebreak/profile/" + u.getUsername() + ".png", getActivity());
+                                bitmap = LocalComms.getImage(getContext(),u.getUsername(),".png","/profile",options);
+                                if(bitmap==null)
+                                    bitmap = RemoteComms.getImage(getActivity(),u.getUsername(), ".png", "/profile", options);
+
                                 circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                            }
-                            if (bitmap == null || circularbitmap == null) {
+
+                            if (bitmap == null || circularbitmap == null)
                                 System.err.println("Bitmap is null");
-                            } else {
+                            else
+                            {
+                                Log.d(TAG,"Loaded bitmap to memory.");
                                 bitmaps.add(circularbitmap);
                                 bitmap.recycle();
                             }
@@ -243,18 +207,6 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                                 }
                             };
                             runOnUI(runnable);
-                            /*runOnUiThread(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    if (recyclerView != null)
-                                    {
-                                        recyclerView.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
-                                        Log.d(TAG, "Set contact list");
-                                    }
-                                }
-                            });*/
                         }
                     } catch (IOException e) {
                         //TODO: Error Logging

@@ -160,8 +160,9 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         Intent icebreakChecker = new Intent(this,IcebreakCheckerService.class);
         //context.stopService(icebreakChecker);
         startService(icebreakChecker);
+        Log.d(TAG,"Started IcebreakCheckerService");
 
-        //Start message polling service
+        //Start message listener service
         Intent intMsgService = new Intent(this, MessageFcmService.class);
         //inMsg.putExtra("Username", SharedPreference.getUsername(this));
         startService(intMsgService);
@@ -170,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         //Start token registration service
         Intent intTokenService = new Intent(this, IbTokenRegistrationService.class);
         startService(intTokenService);
-        Log.d(TAG,"Started TokenService");
+        Log.d(TAG,"Started IbTokenRegistrationService");
 
         //startIcebreakListenerService();
 

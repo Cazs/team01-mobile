@@ -101,6 +101,7 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
                         break;
                 }
 
+                //Add message (or update status) on local DB
                 LocalComms.addMessageToLocalDB(getApplicationContext(),msg);
 
                 //System.err.println(json_msg);

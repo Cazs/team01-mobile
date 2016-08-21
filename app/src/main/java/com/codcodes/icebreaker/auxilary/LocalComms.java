@@ -84,7 +84,6 @@ public class LocalComms
         {
             //Close DB
             db.close();
-
             return null;
         }
     }

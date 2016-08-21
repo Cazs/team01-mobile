@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
@@ -22,7 +24,8 @@ import android.widget.Toast;
 import com.codcodes.icebreaker.auxilary.ContactListSwitches;
 import com.codcodes.icebreaker.auxilary.CustomListAdapter;
 import com.codcodes.icebreaker.auxilary.JSON;
-import com.codcodes.icebreaker.auxilary.Restful;
+import com.codcodes.icebreaker.auxilary.LocalComms;
+import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.screens.EventDetailActivity;
 import com.codcodes.icebreaker.R;
@@ -76,7 +79,7 @@ public class EventsFragment extends android.support.v4.app.Fragment
                events = new ArrayList<>();
                try
                {
-                   String eventsJson = Restful.sendGetRequest("readEvents");
+                   String eventsJson = RemoteComms.sendGetRequest("readEvents");
                    JSON.<Event>getJsonableObjectsFromJson(eventsJson,events,Event.class);
                } catch (IOException e)
                {
@@ -116,13 +119,20 @@ public class EventsFragment extends android.support.v4.app.Fragment
                            String iconName = "event_icons-" + e.getId();
                            eventIcons.add("/Icebreak/events/" + iconName + ".png");
                            //Download the file only if it has not been cached
-                           if (!new File(Environment.getExternalStorageDirectory().getPath() + "/Icebreak/events/" + iconName + ".png").exists()) {
+                           BitmapFactory.Options options = new BitmapFactory.Options();
+                           options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+
+                           Bitmap bitmap = LocalComms.getImage(getContext(),iconName,".png","/events",options);
+                           if(bitmap==null)
+                               bitmap  = RemoteComms.getImage(getContext(), iconName, ".png", "/profile", options);
+                           /*if (!new File().exists()) {
                                Log.d(TAG, "No cached " + iconName + ",Image download in progress..");
-                               if (Restful.imageDownloader(iconName, ".png", "/events", getActivity()))
+                               if (RemoteComms.imageDownloader(iconName, ".png", "/events", getActivity()))
                                    Log.d(TAG, "Image download successful");
                                else
                                    Log.d(TAG, "Image download unsuccessful");
-                           }
+                           }*/
+                           Log.d(TAG, "Loaded event image");
                        }
                        String[] eventNamesArr = new String[events.size()];
                        String[] eventIconsArr = new String[events.size()];

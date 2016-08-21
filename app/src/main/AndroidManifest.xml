@@ -84,29 +84,35 @@
             android:enabled="false" />
 
         <service
-            android:name=".services.MessagePollService"
-            android:process=":remote"
-            android:exported="false">
+            android:name=".services.MessageFcmService"
+            android:process=":remote">
             <intent-filter>
                 <action
-                    android:name="com.codcodes.icebreaker.services.MessagePollService" />
+                    android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
         <service
-            android:name=".services.IcebreakListenerService"
-            android:exported="false">
+            android:name=".services.IbTokenRegistrationService">
             <intent-filter>
                 <action
-                    android:name="com.codcodes.icebreaker.services.IcebreakListenerService" />
+                    android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
 
-        <activity android:name="com.codcodes.icebreaker.screens.EventMapActivity" android:label="@string/title_activity_event_map" />
+        <service
+            android:name=".services.IcebreakCheckerService">
+            <intent-filter>
+                <action
+                    android:name="com.codcodes.icebreaker.services.IcebreakCheckerService" />
+            </intent-filter>
+        </service>
+
+        <!--<activity android:name="com.codcodes.icebreaker.screens.EventMapActivity" android:label="@string/title_activity_event_map" />
         <activity android:name="com.codcodes.icebreaker.screens.SignUpActivity" android:label="@string/title_activity_sign_up"
             android:parentActivityName="com.codcodes.icebreaker.screens.InitialActivity" android:theme="@style/AppTheme.NoActionBar">
             <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.InitialActivity" />
-        </activity>
+        </activity>-->
         <activity android:name="com.codcodes.icebreaker.screens.ChatActivity" android:label="Chat"
             android:parentActivityName="com.codcodes.icebreaker.screens.MainActivity" android:theme="@style/AppTheme.NoActionBar">
             <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.MainActivity" />
