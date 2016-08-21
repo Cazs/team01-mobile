@@ -69,12 +69,10 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
     private int event_Radius;
 
     private IOnListFragmentInteractionListener mListener;
-    //private ListView lv;
     private RecyclerView usersAtEventList;
     private ViewFlipper vf;
     private TextView eventDetails;
     private ProgressDialog progress;
-    private static boolean CHUNKED = false;
 
     private LocationDetector locationDetector;
 

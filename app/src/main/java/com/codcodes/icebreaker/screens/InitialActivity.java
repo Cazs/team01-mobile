@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 
 public class InitialActivity extends AppCompatActivity
@@ -46,6 +47,9 @@ public class InitialActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_initial);
+
+        //Check for storage permissions
+        LocalComms.validateStoragePermissions(this);
 
         iv = (ImageView) findViewById(R.id.image1) ;
 

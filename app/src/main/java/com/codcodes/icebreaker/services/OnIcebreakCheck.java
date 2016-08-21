@@ -3,7 +3,6 @@ package com.codcodes.icebreaker.services;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
 
 /**
  * Created by Casper on 2016/08/16.
@@ -16,7 +15,7 @@ public class OnIcebreakCheck extends BroadcastReceiver
     public void onReceive(Context context, Intent intent)
     {
         //System.err.println("Received OnIcebreakCheck broadcast");
-        Intent icebreakChecker = new Intent(context,IcebreakListenerService.class);
+        Intent icebreakChecker = new Intent(context,IcebreakCheckerService.class);
         //context.stopService(icebreakChecker);
         context.startService(icebreakChecker);
     }

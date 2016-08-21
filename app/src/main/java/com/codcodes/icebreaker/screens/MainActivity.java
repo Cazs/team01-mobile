@@ -1,19 +1,11 @@
 package com.codcodes.icebreaker.screens;
 
-import android.app.Activity;
 import android.app.AlarmManager;
-import android.app.Dialog;
 import android.app.PendingIntent;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Environment;
-import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -29,7 +21,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,25 +29,19 @@ import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ContactListSwitches;
 import com.codcodes.icebreaker.auxilary.INTERVALS;
 import com.codcodes.icebreaker.auxilary.LocalComms;
-import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
-import com.codcodes.icebreaker.services.IcebreakListenerService;
+import com.codcodes.icebreaker.services.IbTokenRegistrationService;
+import com.codcodes.icebreaker.services.IcebreakCheckerService;
+import com.codcodes.icebreaker.services.MessageFcmService;
 import com.codcodes.icebreaker.services.OnIcebreakCheck;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
-import com.codcodes.icebreaker.model.Message;
-import com.codcodes.icebreaker.model.MessagePollContract;
-import com.codcodes.icebreaker.model.MessagePollHelper;
 import com.codcodes.icebreaker.model.User;
-import com.codcodes.icebreaker.model.UserContract;
-import com.codcodes.icebreaker.model.UserHelper;
-import com.codcodes.icebreaker.services.MessagePollService;
 import com.codcodes.icebreaker.tabs.EventsFragment;
 import com.codcodes.icebreaker.tabs.ProfileFragment;
 import com.codcodes.icebreaker.tabs.UserContactsFragment;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
 {
@@ -84,14 +69,17 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
 
     private static final String TAG = "IB/MainActivity";
+    public static String uhandle = "";
     private static boolean cview_set = false;
     private static boolean dlg_visible = false;
 
-    private int[] imageResId =
+    private User lcl = null;
+
+    private int[] viewPagerIcons =
             {
-                    R.drawable.ic_location_on_white_24dp,
-                    R.drawable.ic_chat_bubble_white_24dp,
-                    R.drawable.ic_person_white_24dp
+                R.drawable.ic_location_on_white_24dp,
+                R.drawable.ic_chat_bubble_white_24dp,
+                R.drawable.ic_person_white_24dp
             };
 
     @Override
@@ -99,9 +87,44 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //init Firebase
+        //FirebaseApp.initializeApp(getApplicationContext(), FirebaseOptions.fromResource(getApplicationContext()));
 
-        //Check for storage permissions
-        LocalComms.validateStoragePermissions(this);
+        /*try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }*/
+        /*Add local user to local db if they don't already exist in the db*/
+        //Try to get local user from DB
+        lcl = LocalComms.getLocalUser(SharedPreference.getUsername(this).toString(),this);
+        uhandle = SharedPreference.getUsername(this).toString();
+        if(lcl==null)//not in local DB
+        {
+            Thread tLocalUserLoader = new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        lcl = RemoteComms.getUser(SharedPreference.getUsername(getBaseContext()).toString());
+                        if(lcl!=null)
+                            LocalComms.addContact(getBaseContext(), lcl);
+                        else
+                            Log.d(TAG,"Couldn't add local user to local DB");
+                    } catch (IOException e)
+                    {
+                        Log.d(TAG,"Couldn't add local user to local DB: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            });
+            tLocalUserLoader.start();
+        }else//is in DB
+        {
+            Log.d(TAG,"Local user already in local DB!!");
+        }
 
         appInFG = true;
 
@@ -134,15 +157,20 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         tIBloader.start();*/
 
         //Start Icebreak checker service
-        Intent icebreakChecker = new Intent(this,IcebreakListenerService.class);
+        Intent icebreakChecker = new Intent(this,IcebreakCheckerService.class);
         //context.stopService(icebreakChecker);
         startService(icebreakChecker);
 
         //Start message polling service
-        Intent inMsg = new Intent(this, MessagePollService.class);
-        inMsg.putExtra("Username", SharedPreference.getUsername(this));
-        startService(inMsg);
-        Log.d(TAG,"Started MessagePollService");
+        Intent intMsgService = new Intent(this, MessageFcmService.class);
+        //inMsg.putExtra("Username", SharedPreference.getUsername(this));
+        startService(intMsgService);
+        Log.d(TAG,"Started MessageFcmService");
+
+        //Start token registration service
+        Intent intTokenService = new Intent(this, IbTokenRegistrationService.class);
+        startService(intTokenService);
+        Log.d(TAG,"Started TokenService");
 
         //startIcebreakListenerService();
 
@@ -157,9 +185,9 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         //Setup UI components
         mViewPager.setAdapter(new FragmentAdapter(getSupportFragmentManager(),MainActivity.this));
         tablayout.setupWithViewPager(mViewPager);// Set up the ViewPager with the sections adapter.
-        tablayout.getTabAt(0).setIcon(imageResId[0]);
-        tablayout.getTabAt(1).setIcon(imageResId[1]);
-        tablayout.getTabAt(2).setIcon(imageResId[2]);
+        tablayout.getTabAt(0).setIcon(viewPagerIcons[0]);
+        tablayout.getTabAt(1).setIcon(viewPagerIcons[1]);
+        tablayout.getTabAt(2).setIcon(viewPagerIcons[2]);
         headingTextView.setTypeface(ttfInfinity);
         fabSwitch.hide();
 
@@ -219,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         Intent uiUpdateIntent = new Intent(this,OnIcebreakCheck.class);
         //uiUpdateIntent.putExtra("Local Username",receiving_user.ge);
         PendingIntent uiPendingIntent = PendingIntent.getBroadcast(this,0,uiUpdateIntent,PendingIntent.FLAG_UPDATE_CURRENT);
-        Log.d(TAG, "Set up IcebreakListenerService alarm");
+        Log.d(TAG, "Set up IcebreakCheckerService alarm");
 
         //Calendar cal = Calendar.getInstance();
         //cal.add(Calendar.SECOND, INTERVAL);

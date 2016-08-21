@@ -2,6 +2,7 @@ package com.codcodes.icebreaker.screens;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -27,7 +28,9 @@ import com.codcodes.icebreaker.model.User;
 public class IBDialog extends Activity
 {
     private Dialog dialog;
+    private ProgressDialog progress;
     public static boolean active = false;
+    public static boolean status_changing = false;
     public static boolean requesting = true;
     private Bitmap bitmapLocalUser,bitmapRemoteUser;
     private static final String TAG = "IB/IBDialog";
@@ -59,8 +62,6 @@ public class IBDialog extends Activity
                 " FN: " + requesting_user.getFirstname() +
                 " LN: " + requesting_user.getLastname());
 
-        String is_req = dlgIntent.getStringExtra("isRequestResponse");
-
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ALPHA_8;
 
@@ -70,12 +71,12 @@ public class IBDialog extends Activity
             bitmapLocalUser = RemoteComms.getImage(this, receiving_user.getUsername(), ".png", "/profile", options);
 
         //if(is_req.toLowerCase().equals("true"))
-        if(requesting)
+        if(requesting)//remote is requesting Icebreak with local
         {
             populateIcebreakRequestUI();
             initIcebreakRequestHandlers();
 
-        }else// if(is_req.toLowerCase().equals("false"))//Is response
+        }else//remote is receiving requested Icebreak response
         {
             if(icebreak_msg.getStatus()==MESSAGE_STATUSES.ICEBREAK_ACCEPTED.getStatus())
             {
@@ -96,9 +97,31 @@ public class IBDialog extends Activity
             @Override
             public void onDismiss(DialogInterface dialogInterface)
             {
+                IBDialog.requesting = false;
                 closeActivity();//return focus to the MainActivity
             }
         });
+    }
+
+    public void showProgressBar()
+    {
+        if(progress==null)
+            progress = new ProgressDialog(this);
+        if(!progress.isShowing())
+        {
+            progress.setMessage("Loading...");
+            progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progress.setIndeterminate(true);
+            progress.setProgress(0);
+            progress.show();
+        }
+    }
+
+    public void hideProgressBar()
+    {
+        if(progress!=null)
+            if(progress.isShowing())
+                progress.dismiss();
     }
 
     private void populateIcebreakRequestUI()
@@ -130,26 +153,13 @@ public class IBDialog extends Activity
         if(imgIBReqPopup_OtherUser!=null && bitmapRemoteUser!=null)
             imgIBReqPopup_OtherUser.setImageBitmap(bitmapRemoteUser);
 
-        if (requesting_user.getFirstname() != null && requesting_user.getLastname() != null)
-        {
-            if (requesting_user.getFirstname().toLowerCase().equals('x') || requesting_user.getLastname().toLowerCase().equals('x'))
-                txtIBReqPopup_name.setText("Anonymous");
-            else
-                txtIBReqPopup_name.setText(requesting_user.getFirstname() + " " + requesting_user.getLastname());
-            txtIBReqPopup_age.setText(String.valueOf(requesting_user.getAge()));
-            txtIBReqPopup_gender.setText(requesting_user.getGender());
-            txtIBReqPopup_bioTitle.setText("Bio: ");
-            txtIBReqPopup_bio.setText(requesting_user.getBio());
-            txtIBReqPopup_occ.setText("Is a " + requesting_user.getOccupation());
-        }
-        else
-        {
-            txtIBReqPopup_name.setText("Anonymous");
-            txtIBReqPopup_age.setText("0");
-            txtIBReqPopup_gender.setText("Unknown");
-            txtIBReqPopup_bioTitle.setText("Bio: ");
-            txtIBReqPopup_bio.setText("<empty>");
-        }
+        String name = LocalComms.getValidatedName(requesting_user);
+        txtIBReqPopup_name.setText(name);
+        txtIBReqPopup_age.setText(String.valueOf(requesting_user.getAge()));
+        txtIBReqPopup_gender.setText(requesting_user.getGender());
+        txtIBReqPopup_bioTitle.setText("Bio: ");
+        txtIBReqPopup_bio.setText(requesting_user.getBio());
+        txtIBReqPopup_occ.setText("Is a " + requesting_user.getOccupation());
     }
 
 
@@ -162,6 +172,8 @@ public class IBDialog extends Activity
             public void onClick(View view)
             {
                 Log.d(TAG,"Accept Icebreak request.");
+                showProgressBar();
+                status_changing = true;
                 icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_ACCEPTED.getStatus());
                 Thread tStatusUpdater = new Thread(new Runnable()
                 {
@@ -177,6 +189,7 @@ public class IBDialog extends Activity
                             LocalComms.addContact(getBaseContext(),requesting_user);
 
                             Log.d(TAG,"Accept Button> Updated Icebreak request locally and remotely.");
+                            status_changing = false;
                         }
                         runOnUiThread(new Runnable()
                         {
@@ -184,6 +197,7 @@ public class IBDialog extends Activity
                             public void run()
                             {
                                 //dialog.dismiss();
+                                hideProgressBar();
                                 drawAcceptanceUI();
                             }
                         });
@@ -198,6 +212,8 @@ public class IBDialog extends Activity
             @Override
             public void onClick(View view)
             {
+                showProgressBar();
+                status_changing = true;
                 icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_REJECTED.getStatus());
                 Thread tStatusUpdater = new Thread(new Runnable()
                 {
@@ -209,6 +225,8 @@ public class IBDialog extends Activity
                             LocalComms.updateMessageStatusById(getBaseContext(),icebreak_msg.getId(),icebreak_msg.getStatus());
                             Log.d(TAG,"Reject Button> Updated Icebreak request locally and remotely.");
                         }
+                        hideProgressBar();
+                        status_changing = false;
                         dialog.dismiss();
                     }
                 });
@@ -243,11 +261,41 @@ public class IBDialog extends Activity
             public void onClick(View view)
             {
                 //Start ChatActivity
-                dialog.dismiss();
-
-                Intent chatIntent = new Intent(getBaseContext(),ChatActivity.class);
-                chatIntent.putExtra("Username",icebreak_msg.getSender());
-                startActivity(chatIntent);
+                Log.d(TAG,"End Icebreak request.");
+                if(requesting)
+                {
+                    dialog.dismiss();
+                    Intent chatIntent = new Intent(getBaseContext(),ChatActivity.class);
+                    chatIntent.putExtra("Username",icebreak_msg.getSender());
+                    startActivity(chatIntent);
+                }
+                else
+                {
+                    showProgressBar();
+                    status_changing = true;
+                    //update status
+                    icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_DONE.getStatus());
+                    Thread tStatusUpdater = new Thread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            //Send signal to server
+                            if(RemoteComms.sendMessage(getBaseContext(),icebreak_msg))//TODO: update by ID
+                            {
+                                LocalComms.updateMessageStatusById(getBaseContext(),icebreak_msg.getId(),icebreak_msg.getStatus());
+                                Log.d(TAG,"Continue Button> Updated Icebreak request locally and remotely.");
+                            }
+                            hideProgressBar();
+                            status_changing = false;
+                            dialog.dismiss();
+                            Intent chatIntent = new Intent(getBaseContext(),ChatActivity.class);
+                            chatIntent.putExtra("Username",icebreak_msg.getSender());
+                            startActivity(chatIntent);
+                        }
+                    });
+                    tStatusUpdater.start();
+                }
             }
         });
 
@@ -257,23 +305,34 @@ public class IBDialog extends Activity
             public void onClick(View view)
             {
                 Log.d(TAG,"End Icebreak request.");
-                icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_DONE.getStatus());
-                Thread tStatusUpdater = new Thread(new Runnable()
+                if(requesting)
                 {
-                    @Override
-                    public void run()
+                    dialog.dismiss();
+                }
+                else
+                {
+                    showProgressBar();
+                    status_changing = true;
+                    //update status
+                    icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_DONE.getStatus());
+                    Thread tStatusUpdater = new Thread(new Runnable()
                     {
-                        //Send signal to server
-                        if(RemoteComms.sendMessage(getBaseContext(),icebreak_msg))//TODO: update by ID
+                        @Override
+                        public void run()
                         {
-                            LocalComms.updateMessageStatusById(getBaseContext(),icebreak_msg.getId(),icebreak_msg.getStatus());
-                            Log.d(TAG,"Continue Button> Updated Icebreak request locally and remotely.");
+                            //Send signal to server
+                            if(RemoteComms.sendMessage(getBaseContext(),icebreak_msg))//TODO: update by ID
+                            {
+                                LocalComms.updateMessageStatusById(getBaseContext(),icebreak_msg.getId(),icebreak_msg.getStatus());
+                                Log.d(TAG,"Continue Button> Updated Icebreak request locally and remotely.");
+                            }
+                            hideProgressBar();
+                            status_changing = false;
+                            dialog.dismiss();
                         }
-                    }
-                });
-                tStatusUpdater.start();
-                //Close dialog
-                dialog.dismiss();
+                    });
+                    tStatusUpdater.start();
+                }
             }
         });
     }
@@ -303,6 +362,7 @@ public class IBDialog extends Activity
             public void onClick(View view)
             {
                 Log.d(TAG,"End Icebreak request.");
+                showProgressBar();
                 icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_DONE.getStatus());
                 Thread tStatusUpdater = new Thread(new Runnable()
                 {
@@ -316,6 +376,7 @@ public class IBDialog extends Activity
 
                             Log.d(TAG,"Continue Button> Updated Icebreak request locally and remotely.");
                         }
+                        hideProgressBar();
                     }
                 });
                 tStatusUpdater.start();

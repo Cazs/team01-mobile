@@ -2,16 +2,22 @@ package com.codcodes.icebreaker.auxilary;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
+import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.model.Message;
 import com.codcodes.icebreaker.model.MessagePollContract;
 import com.codcodes.icebreaker.model.MessagePollHelper;
@@ -21,6 +27,7 @@ import com.codcodes.icebreaker.model.UserHelper;
 import com.codcodes.icebreaker.screens.MainActivity;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -32,7 +39,7 @@ public class LocalComms
 
     public static User getLocalUser(String username, Context context)
     {
-        MessagePollHelper dbHelper = new MessagePollHelper(context);
+        UserHelper dbHelper = new UserHelper(context);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         dbHelper.onCreate(db);
 
@@ -52,7 +59,7 @@ public class LocalComms
 
             String usr = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_USERNAME));
             String fname = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_FNAME));
-            String lname = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_FNAME));
+            String lname = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_LNAME));
             String gender = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_GENDER));
             String occ = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_OCCUPATION));
             String bio = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_BIO));
@@ -101,6 +108,144 @@ public class LocalComms
         return  bitmap;
     }
 
+    public static  void updateLocalMessage(Context context, SQLiteDatabase db, Message m)
+    {
+        ContentValues kv_pairs = new ContentValues();
+        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_ID, m.getId());
+        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE, m.getMessage());
+        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER, m.getSender());
+        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER, m.getReceiver());
+        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS, m.getStatus());
+        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_TIME, m.getTime());
+
+        if(!messageIdExistsInDB(context,m.getId()))//Shouldn't technically ever happen
+        {
+
+            if (kv_pairs.size() > 0)
+            {
+                long newRowId = db.insert(MessagePollContract.MessageEntry.TABLE_NAME, null, kv_pairs);
+                Log.d(TAG, "Inserted into Message table: new row=" + newRowId);
+            }
+        }
+        else
+        {
+            String where = MessagePollContract.MessageEntry.COL_MESSAGE_ID + " = ?";
+            String[] where_args = {m.getId()};
+
+            db.update(MessagePollContract.MessageEntry.TABLE_NAME, kv_pairs,where,where_args);
+            Log.d(TAG, "Outbound Message exists (locally and remotely), updated status to " + m.getStatus());
+        }
+    }
+
+    public static void showNotification(Context context, String msg, int notifId)
+    {
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(context)
+                        .setSmallIcon(R.drawable.ic_notification_icon)
+                        .setContentTitle("IceBreak")
+                        .setContentText(msg);
+        //.setContentText("New IceBreak request from "+sender+"!");
+
+        Intent resultIntent = new Intent(context, MainActivity.class);
+
+        // The stack builder object will contain an artificial back stack for the
+        // started Activity.
+        // This ensures that navigating backward from the Activity leads out of
+        // your application to the Home screen.
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        // Adds the back stack for the Intent (but not the Intent itself)
+        stackBuilder.addParentStack(MainActivity.class);
+        // Adds the Intent that starts the Activity to the top of the stack
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        mBuilder.setContentIntent(resultPendingIntent);
+        NotificationManager mNotificationManager = (NotificationManager)
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
+        // mId allows you to update the notification later on.
+        mNotificationManager.notify(notifId, mBuilder.build());
+    }
+
+    public static String getValidatedName(User u)
+    {
+        if(u.getFirstname()==null)
+            u.setFirstname("");
+        if(u.getLastname()==null)
+            u.setLastname("");
+        String fname = u.getFirstname().length()<=0 ? "X" : u.getFirstname();
+        String lname = u.getFirstname().length()<=0 ? "X" : u.getLastname();
+        String name = "";
+        if (!fname.equals("X") && !lname.equals("X"))
+            name = fname + " " + lname.charAt(0) + '.';
+        else
+            name = "Anonymous";
+        return name;
+    }
+
+    public static void addMessageToLocalDB(Context context, Message m) throws IOException {
+        MessagePollHelper dbHelper = new MessagePollHelper(context);//getBaseContext());
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        dbHelper.onCreate(db);
+
+        //Update local and remote DB
+        //Check for Icebreaks
+        if (m.getStatus() == MESSAGE_STATUSES.ICEBREAK_SERV_RECEIVED.getStatus())
+        {
+            //showNotification(context, "New IceBreak request from " + m.getSender(), NOTIFICATION_ID.NOTIF_REQUEST.getId());
+            Log.d(TAG, "New IceBreak request from " + m.getSender());
+            m.setStatus(MESSAGE_STATUSES.ICEBREAK_DELIVERED.getStatus());//set message to delivered in temp memory
+            //Change Message status to DELIVERED remotely
+            if(RemoteComms.sendMessage(context,m))
+            {
+                //Change Message status to DELIVERED locally
+                if (!messageIdExistsInDB(context, m.getId()))//new Message
+                {
+                    ContentValues kv_pairs = new ContentValues();
+                    kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_ID, m.getId());
+                    kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE, m.getMessage());
+                    kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER, m.getSender());
+                    kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER, m.getReceiver());
+                    kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS, m.getStatus());
+                    kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_TIME, m.getTime());
+
+                    long newRowId = db.insert(MessagePollContract.MessageEntry.TABLE_NAME, null, kv_pairs);
+                    Log.d(TAG, "Inserted into Message table: new row=" + newRowId);
+                }
+                else //Existing Message
+                {
+                    updateLocalMessage(context,db,m);
+                    Log.d(TAG, "Message already exists table, updated status");
+                }
+                Log.d(TAG, "Updated local DB");
+            }
+            else
+            {
+                Log.d(TAG, "Could not update remote message status to DELIVERED, therefore couldn't update local message either.");
+            }
+        }
+        else
+        {
+            Log.d(TAG, "IceBreak status: " + m.getStatus());
+        }
+        db.close();
+    }
+
+    public static boolean messageIdExistsInDB(Context ctxt, String id)
+    {
+        String query ="SELECT * FROM "+MessagePollContract.MessageEntry.TABLE_NAME+" WHERE "
+                + MessagePollContract.MessageEntry.COL_MESSAGE_ID +" = ?";
+
+        MessagePollHelper dbHelper = new MessagePollHelper(ctxt);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor c =  db.rawQuery(query, new String[] {id});
+        int rowCount=c.getCount();
+        db.close();
+        if(rowCount>0)
+            return true;
+        else
+            return  false;
+    }
+
     public static void updateMessageStatusById(Context context, String id, int status)
     {
         MessagePollHelper dbHelper = new MessagePollHelper(context);//getBaseContext());
@@ -110,9 +255,14 @@ public class LocalComms
         ContentValues kv_pairs = new ContentValues();
         kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS, status);
 
-        String where = "? = ?";
+        /*String where = "? = ?";
         String[] where_args = {MessagePollContract.MessageEntry.COL_MESSAGE_ID, id};
-        db.update(MessagePollContract.MessageEntry.TABLE_NAME, kv_pairs,where,where_args);
+        db.update(MessagePollContract.MessageEntry.TABLE_NAME, kv_pairs,where,where_args);*/
+        String q = "UPDATE " + MessagePollContract.MessageEntry.TABLE_NAME +
+                " SET " + MessagePollContract.MessageEntry.COL_MESSAGE_STATUS + "=? WHERE " +
+                MessagePollContract.MessageEntry.COL_MESSAGE_ID + "=?";
+        String[] args = {String.valueOf(status), id};
+        db.execSQL(q,args);
         db.close();
         Log.d(TAG, "Successfully updated message status on remote and local DB");
     }
