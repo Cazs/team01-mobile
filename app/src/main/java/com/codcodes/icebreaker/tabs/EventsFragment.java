@@ -30,8 +30,6 @@ import java.util.ConcurrentModificationException;
 
 import pl.bclogic.pulsator4droid.library.PulsatorLayout;
 
-import static com.google.android.gms.internal.zzir.runOnUiThread;
-
 /**
  * Created by tevin on 2016/07/13.
  */
@@ -124,13 +122,15 @@ public class EventsFragment extends android.support.v4.app.Fragment
                        eventIconsArr = eventIcons.toArray(eventIconsArr);
 
                        final CustomListAdapter adapter = new CustomListAdapter(getActivity(), eventNamesArr, eventIconsArr, eventDescriptionsArr);
-                       runOnUiThread(new Runnable() {
+                       Runnable r = new Runnable()
+                       {
                            @Override
                            public void run() {
                                list.setAdapter(adapter);
                                Log.d(TAG, "Set events list");
                            }
-                       });
+                       };
+                       runOnUI(r);
                    }
                    catch(ConcurrentModificationException e)
                    {
@@ -193,6 +193,11 @@ public class EventsFragment extends android.support.v4.app.Fragment
             }
         });
         return v;
+    }
+
+    public void runOnUI(Runnable r)
+    {
+        EventsFragment.this.getActivity().runOnUiThread(r);
     }
 
     public static EventsFragment newInstance(Context context, Bundle b)

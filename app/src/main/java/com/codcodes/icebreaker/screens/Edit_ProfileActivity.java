@@ -40,8 +40,6 @@ import java.net.UnknownHostException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.google.android.gms.internal.zzir.runOnUiThread;
-
 public class Edit_ProfileActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener
 {
     private ImageView circularImageView;

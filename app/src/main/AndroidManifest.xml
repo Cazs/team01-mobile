@@ -28,7 +28,6 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application android:allowBackup="true" android:icon="@mipmap/ic_launcher" android:label="@string/app_name"
         android:supportsRtl="true" android:theme="@style/AppTheme">
@@ -82,17 +81,15 @@
             android:enabled="false" />
 
         <service
-            android:name=".services.MessagePollService"
-            android:process=":remote"
+            android:name=".services.MessageFcmService"
             android:exported="false">
             <intent-filter>
-                <action
-                    android:name="com.codcodes.icebreaker.services.MessagePollService" />
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
         <service
-            android:name=".services.IcebreakListenerService"
+            android:name=".services.IcebreakCheckerService"
             android:exported="false">
             <intent-filter>
                 <action
@@ -100,7 +97,14 @@
             </intent-filter>
         </service>
 
-        <activity android:name="com.codcodes.icebreaker.screens.EventMapActivity" android:label="@string/title_activity_event_map" />
+        <service
+            android:name=".services.IbTokenRegistrationService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+            </intent-filter>
+        </service>
+
         <activity android:name="com.codcodes.icebreaker.screens.SignUpActivity" android:label="@string/title_activity_sign_up"
             android:parentActivityName="com.codcodes.icebreaker.screens.InitialActivity" android:theme="@style/AppTheme.NoActionBar">
             <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.InitialActivity" />

@@ -32,7 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static com.google.android.gms.internal.zzir.runOnUiThread;
+//import static com.google.android.gms.internal.zzir.runOnUiThread;
 /**
  * A fragment representing a list of Items.
  * <p/>
@@ -230,7 +230,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                         }
                         if(MainActivity.val_switch == ContactListSwitches.SHOW_USERS_AT_EVENT)
                         {
-                            runOnUiThread(new Runnable()
+                            Runnable runnable = new Runnable()
                             {
                                 @Override
                                 public void run()
@@ -241,7 +241,20 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                                         Log.d(TAG, "Set contact list");
                                     }
                                 }
-                            });
+                            };
+                            runOnUI(runnable);
+                            /*runOnUiThread(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    if (recyclerView != null)
+                                    {
+                                        recyclerView.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
+                                        Log.d(TAG, "Set contact list");
+                                    }
+                                }
+                            });*/
                         }
                     } catch (IOException e) {
                         //TODO: Error Logging
@@ -268,7 +281,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                     }
                     });
                      */
-                    runOnUiThread(new Runnable()
+                    Runnable runnable = new Runnable()
                     {
                         @Override
                         public void run()
@@ -279,11 +292,17 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                                 Log.d(TAG, "Disabled refresh");
                             }
                         }
-                    });
+                    };
+                    runOnUI(runnable);
                 }
             }
         });
         tContactsLoader.start();
+    }
+
+    public void runOnUI(Runnable r)
+    {
+        UserContactsFragment.this.getActivity().runOnUiThread(r);
     }
 
     /*public void refreshContacts()

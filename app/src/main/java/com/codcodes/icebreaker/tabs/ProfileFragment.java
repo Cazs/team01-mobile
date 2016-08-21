@@ -35,12 +35,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static com.google.android.gms.internal.zzir.runOnUiThread;
-
-
 /**
  * Created by tevin on 2016/07/13.
  */
+
 public class ProfileFragment extends android.support.v4.app.Fragment
 {
     private static AssetManager mgr;
@@ -205,7 +203,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                     }
                 }
 
-                runOnUiThread(new Runnable()
+                Runnable r = new Runnable()
                 {
                     @Override
                     public void run()
@@ -217,7 +215,8 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                         circularImageView.setImageBitmap(circularbitmap);
                         editButton.setVisibility(View.VISIBLE);
                     }
-                });
+                };
+                runOnUI(r);
             }
         });
         thread.start();
@@ -288,6 +287,11 @@ public class ProfileFragment extends android.support.v4.app.Fragment
             }
         });
         return v;
+    }
+
+    public void runOnUI(Runnable r)
+    {
+        ProfileFragment.this.getActivity().runOnUiThread(r);
     }
 
     public static ProfileFragment newInstance(Context context)

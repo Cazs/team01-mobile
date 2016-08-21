@@ -32,10 +32,13 @@ dependencies {
     compile 'com.sothree.slidinguppanel:library:3.3.0'
     compile 'com.github.siyamed:android-shape-imageview:0.9.+@aar'
     compile 'de.hdodenhof:circleimageview:2.0.0'
-    compile 'com.google.android.gms:play-services:8.4.0'
     compile 'com.android.support:recyclerview-v7:24.1.1'
-    compile 'com.google.android.gms:play-services-ads:8.4.0'
-    compile 'com.google.android.gms:play-services-auth:8.4.0'
-    compile 'com.google.android.gms:play-services-gcm:8.4.0'
+    compile 'com.google.android.gms:play-services-ads:9.4.0'
+    compile 'com.google.android.gms:play-services-auth:9.4.0'
+    compile 'com.google.android.gms:play-services-gcm:9.4.0'
     compile 'pl.bclogic:pulsator4droid:1.0.2'
+    compile 'com.google.firebase:firebase-core:9.4.0'
+    compile 'com.google.firebase:firebase-messaging:9.4.0'
 }
+
+apply plugin: 'com.google.gms.google-services'

@@ -68,13 +68,14 @@ public class RemoteComms
             JSON.getJsonable(userJson, u);
         else return null;
         //TODO: Save to local DB
+        u.setUsername(username);
         return u;
     }
 
-    public static int postData(String url, ArrayList<AbstractMap.SimpleEntry<String,String>> params) throws IOException
+    public static int postData(String function, ArrayList<AbstractMap.SimpleEntry<String,String>> params) throws IOException
     {
-        url = url.charAt(0)=='/'||url.charAt(0)=='\\'?url.substring(1):url;//Remove first slash if it exists
-        URL urlConn = new URL("http://icebreak.azurewebsites.net/IBUserRequestService.svc/" + url);
+        function = function.charAt(0)=='/'||function.charAt(0)=='\\'?function.substring(1):function;//Remove first slash if it exists
+        URL urlConn = new URL("http://icebreak.azurewebsites.net/IBUserRequestService.svc/" + function);
         HttpURLConnection httpConn = (HttpURLConnection)urlConn.openConnection();
         httpConn.setReadTimeout(10000);
         httpConn.setConnectTimeout(15000);

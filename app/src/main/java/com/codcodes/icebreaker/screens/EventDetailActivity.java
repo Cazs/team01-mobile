@@ -57,12 +57,10 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
     private ArrayList<String> userIcon;
     private int AccessCode;
     private IOnListFragmentInteractionListener mListener;
-    //private ListView lv;
     private RecyclerView usersAtEventList;
     private ViewFlipper vf;
     private TextView eventDetails;
     private ProgressDialog progress;
-    private static boolean CHUNKED = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)

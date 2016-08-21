@@ -16,7 +16,7 @@ public enum MESSAGE_STATUSES
     ICEBREAK_REJECTED(104),
     ICEBREAK_DONE(105);
 
-    private int value;
+    private final int value;
 
     private MESSAGE_STATUSES(int status)
     {
