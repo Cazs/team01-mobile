@@ -81,16 +81,14 @@
             android:enabled="false" />
 
         <service
-            android:name=".services.MessageFcmService"
-            android:exported="false">
+            android:name=".services.MessageFcmService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
         <service
-            android:name=".services.IcebreakCheckerService"
-            android:exported="false">
+            android:name=".services.IcebreakCheckerService">
             <intent-filter>
                 <action
                     android:name="com.codcodes.icebreaker.services.IcebreakListenerService" />
@@ -98,8 +96,7 @@
         </service>
 
         <service
-            android:name=".services.IbTokenRegistrationService"
-            android:exported="true">
+            android:name=".services.IbTokenRegistrationService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
             </intent-filter>

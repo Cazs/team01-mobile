@@ -157,20 +157,20 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         tIBloader.start();*/
 
         //Start Icebreak checker service
-        Intent icebreakChecker = new Intent(this,IcebreakCheckerService.class);
+        //Intent icebreakChecker = new Intent(this,IcebreakCheckerService.class);
         //context.stopService(icebreakChecker);
-        startService(icebreakChecker);
+        //startService(icebreakChecker);
+
+        //Start token registration service
+        Intent intTokenService = new Intent(this, IbTokenRegistrationService.class);
+        startService(intTokenService);
+        Log.d(TAG,"Started TokenService");
 
         //Start message polling service
         Intent intMsgService = new Intent(this, MessageFcmService.class);
         //inMsg.putExtra("Username", SharedPreference.getUsername(this));
         startService(intMsgService);
         Log.d(TAG,"Started MessageFcmService");
-
-        //Start token registration service
-        Intent intTokenService = new Intent(this, IbTokenRegistrationService.class);
-        startService(intTokenService);
-        Log.d(TAG,"Started TokenService");
 
         //startIcebreakListenerService();
 

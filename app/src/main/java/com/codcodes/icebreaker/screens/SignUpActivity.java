@@ -7,9 +7,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -37,6 +40,7 @@ public class SignUpActivity extends AppCompatActivity {
     EditText confirmPassword;
     Button btnSignUp;
     ProgressBar bar;
+    CheckBox checkBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,8 +54,8 @@ public class SignUpActivity extends AppCompatActivity {
         email = (EditText) findViewById(R.id.email_sign_up);
         username = (EditText) findViewById(R.id.username_sign_up);
         password = (EditText) findViewById(R.id.password_sign_up);
-        confirmPassword = (EditText) findViewById(R.id.confirm_password);
         btnSignUp = (Button) findViewById(R.id.sign_up_button);
+        checkBox = (CheckBox) findViewById(R.id.checkbox);
         bar = (ProgressBar) findViewById(R.id.progressbar);
         bar.setVisibility(View.GONE);
         btnSignUp.setOnClickListener(new View.OnClickListener() {
@@ -88,18 +92,25 @@ public class SignUpActivity extends AppCompatActivity {
                             "\n • Special characters");
                     return;
                 }
-                if(!Compare(cp,p))
-                {
-                    bar.setVisibility(View.GONE);
-                    confirmPassword.setError("Passwords do not match");
-                    return;
-                }
+
                 bar.setVisibility(View.VISIBLE);
                 PostToDB(e,u,cp,view);
 
             }
         });
+
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(!isChecked) {
+                    password.setInputType(129);
+                } else {
+                    password.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                }
+            }
+        });
     }
+
 
 
     private Handler toastHandler(final String text)
@@ -235,8 +246,3 @@ public class SignUpActivity extends AppCompatActivity {
         thread.start();
     }
 }
-
-
-
-
-
