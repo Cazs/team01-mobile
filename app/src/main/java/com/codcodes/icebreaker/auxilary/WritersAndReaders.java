@@ -19,14 +19,14 @@ import java.util.Random;
 
 public class WritersAndReaders 
 {
-	private static String path = Environment.getExternalStorageDirectory().getPath();
+	private static String TAG = "IB/WritersAndReaders";
 
 	public static void saveImage(byte[] data,String filename)
 	{
         File f=null;
         String folders = "";
-		//make directory if it doesn't exist
-        if(filename.contains("/"))
+		/**Directory creation**/
+        if(filename.contains("/") || filename.contains("\\"))
         {
             //Remove first slash if it exists
             folders = (filename.charAt(0)=='/'||filename.charAt(0)=='\\') ? filename.substring(1) : filename;
@@ -34,15 +34,20 @@ public class WritersAndReaders
             String directories = "/";
             for(int i=0;i<dirs.length-1;i++)
                 directories = directories +"/" + dirs[i];
+
             f = new File(MainActivity.rootDir + "/Icebreak" + directories);
 
-            //System.err.println("Directory structure: " + f.getPath().toString());
-
             if(!f.isDirectory())
-                System.out.println(f.getPath() + " directory creation: " + f.mkdirs());
+                Log.d(TAG,f.getPath() + " directory creation: " + f.mkdirs());
 
-            //f = new File(path+"/Icebreak" + directories + "/"+ dirs[dirs.length-1]);
             f = new File(MainActivity.rootDir + "/Icebreak" + filename);
+        }else
+        {
+            /*
+             * For rare but possible cases where the image is to be saved on the app's root directory
+             * In such cases the filename variable will not have a preceding '/'
+             */
+            f = new File(MainActivity.rootDir + "/Icebreak/" + filename);
         }
 
 		try
@@ -51,11 +56,13 @@ public class WritersAndReaders
             fos.write(data);
 			fos.flush();
             fos.close();
-			Log.d("W&R","Saved image to disk: " + f.getPath().toString());
+			Log.d(TAG,"Saved image to disk: " + f.getPath().toString());
 		}
 		catch (IOException e)
 		{
-			System.err.println("Could not write file: " + e.getMessage());
+            //TODO: better logging
+			Log.d(TAG,"Could not write file: " + e.getMessage());
+            e.printStackTrace();
 		}
 	}
 

@@ -246,8 +246,3 @@ public class SignUpActivity extends AppCompatActivity {
         thread.start();
     }
 }
-
-
-
-
-

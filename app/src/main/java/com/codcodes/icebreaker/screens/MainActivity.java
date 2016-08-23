@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 {
                     try
                     {
-                        lcl = RemoteComms.getUser(SharedPreference.getUsername(getBaseContext()).toString());
+                        lcl = RemoteComms.getUser(getApplicationContext(), SharedPreference.getUsername(getBaseContext()).toString());
                         if(lcl!=null)
                             LocalComms.addContact(getBaseContext(), lcl);
                         else

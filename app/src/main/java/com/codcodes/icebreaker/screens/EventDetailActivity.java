@@ -310,7 +310,7 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
         if(loc1 != null || loc2 != null)
         {
             Log.d("Testing", "not null");
-            if(code == AccessCode && inLocation(loc1,loc2,radius))
+            if(code == AccessCode)// && inLocation(loc1,loc2,radius))TODO:Aaron's location code
             {
                 SharedPreference.setEventId(this,Eventid);
                 return true;

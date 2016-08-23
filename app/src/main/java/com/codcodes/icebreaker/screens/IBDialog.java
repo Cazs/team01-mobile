@@ -32,7 +32,7 @@ public class IBDialog extends Activity
     public static boolean active = false;
     public static boolean status_changing = false;
     public static boolean requesting = true;
-    private Bitmap bitmapLocalUser,bitmapRemoteUser;
+    private Bitmap bitmapReceivingUser,bitmapRequestingUser;
     private static final String TAG = "IB/IBDialog";
     private static Message icebreak_msg = null;
     private static User requesting_user = null;
@@ -51,6 +51,7 @@ public class IBDialog extends Activity
         super.onCreate(savedInstanceState);
         dialog = new Dialog(this);
 
+        System.err.println("IBDialog creation in progress.....");
         ttfInfinity = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
         ttfAilerons = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
 
@@ -58,30 +59,37 @@ public class IBDialog extends Activity
         icebreak_msg = dlgIntent.getParcelableExtra("Message");
         receiving_user = dlgIntent.getParcelableExtra("Receiver");
         requesting_user = dlgIntent.getParcelableExtra("Sender");
-        System.err.println("Sender: " + requesting_user.getUsername() +
-                " FN: " + requesting_user.getFirstname() +
-                " LN: " + requesting_user.getLastname());
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ALPHA_8;
 
         if(requesting_user!=null)
-            bitmapRemoteUser = RemoteComms.getImage(this, requesting_user.getUsername(), ".png", "/profile", options);
-        if(receiving_user!=null)
-            bitmapLocalUser = RemoteComms.getImage(this, receiving_user.getUsername(), ".png", "/profile", options);
+        {
+            //try to load local image for sender
+            bitmapRequestingUser = LocalComms.getImage(this, requesting_user.getUsername(), ".png", "/profile", options);
+            if (bitmapRequestingUser == null)//try get image from server if no local image
+                bitmapRequestingUser = RemoteComms.getImage(this, requesting_user.getUsername(), ".png", "/profile", options);
+        }else Log.d(TAG,"Requesting user is null");
 
-        //if(is_req.toLowerCase().equals("true"))
-        if(requesting)//remote is requesting Icebreak with local
+        if(receiving_user!=null)
+        {
+            //try to load local image for receiver
+            bitmapReceivingUser = LocalComms.getImage(this, receiving_user.getUsername(), ".png", "/profile", options);
+            if (bitmapReceivingUser == null)//try get image from server if no local image
+                bitmapReceivingUser = RemoteComms.getImage(this, receiving_user.getUsername(), ".png", "/profile", options);
+        }else Log.d(TAG,"Receiving user is null");
+
+        if(requesting)//Icebreak request
         {
             populateIcebreakRequestUI();
             initIcebreakRequestHandlers();
 
-        }else//remote is receiving requested Icebreak response
+        }else//Icebreak response
         {
             if(icebreak_msg.getStatus()==MESSAGE_STATUSES.ICEBREAK_ACCEPTED.getStatus())
             {
                 //Add user to local contacts table
-                LocalComms.addContact(getBaseContext(),receiving_user);
+                //LocalComms.addContact(getBaseContext(),receiving_user);
                 drawAcceptanceUI();
             }
             else if(icebreak_msg.getStatus()==MESSAGE_STATUSES.ICEBREAK_REJECTED.getStatus())
@@ -97,19 +105,21 @@ public class IBDialog extends Activity
             @Override
             public void onDismiss(DialogInterface dialogInterface)
             {
+                bitmapReceivingUser.recycle();
+                bitmapRequestingUser.recycle();
                 IBDialog.requesting = false;
                 closeActivity();//return focus to the MainActivity
             }
         });
     }
 
-    public void showProgressBar()
+    public void showProgressBar(String msg)
     {
         if(progress==null)
             progress = new ProgressDialog(this);
         if(!progress.isShowing())
         {
-            progress.setMessage("Loading...");
+            progress.setMessage(msg);
             progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             progress.setIndeterminate(true);
             progress.setProgress(0);
@@ -150,8 +160,8 @@ public class IBDialog extends Activity
         accept.setTypeface(ttfInfinity);
         reject.setTypeface(ttfInfinity);
 
-        if(imgIBReqPopup_OtherUser!=null && bitmapRemoteUser!=null)
-            imgIBReqPopup_OtherUser.setImageBitmap(bitmapRemoteUser);
+        if(imgIBReqPopup_OtherUser!=null && bitmapRequestingUser!=null)
+            imgIBReqPopup_OtherUser.setImageBitmap(bitmapRequestingUser);
 
         String name = LocalComms.getValidatedName(requesting_user);
         txtIBReqPopup_name.setText(name);
@@ -162,8 +172,6 @@ public class IBDialog extends Activity
         txtIBReqPopup_occ.setText("Is a " + requesting_user.getOccupation());
     }
 
-
-
     private void initIcebreakRequestHandlers()
     {
         accept.setOnClickListener(new View.OnClickListener()
@@ -171,8 +179,8 @@ public class IBDialog extends Activity
             @Override
             public void onClick(View view)
             {
-                Log.d(TAG,"Accept Icebreak request.");
-                showProgressBar();
+                Log.d(TAG,"Accepted Icebreak request.");
+                showProgressBar("Accepting request...");
                 status_changing = true;
                 icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_ACCEPTED.getStatus());
                 Thread tStatusUpdater = new Thread(new Runnable()
@@ -212,7 +220,7 @@ public class IBDialog extends Activity
             @Override
             public void onClick(View view)
             {
-                showProgressBar();
+                showProgressBar("Rejecting request...");
                 status_changing = true;
                 icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_REJECTED.getStatus());
                 Thread tStatusUpdater = new Thread(new Runnable()
@@ -237,7 +245,7 @@ public class IBDialog extends Activity
 
     private void drawAcceptanceUI()
     {
-        dialog.setContentView(R.layout.popup_accept);
+        dialog.setContentView(R.layout.popup_accepted);
         //dialog.show();
 
         TextView txtSuccessfulMatch = (TextView)dialog.findViewById(R.id.SuccessfulMatch);
@@ -248,8 +256,8 @@ public class IBDialog extends Activity
         TextView or = (TextView)dialog.findViewById(R.id.or);
         Button btnContinue = (Button)dialog.findViewById(R.id.popup1_Keep_playing);
 
-        imgLocalUser.setImageBitmap(bitmapLocalUser);
-        imgRemoteUser.setImageBitmap(bitmapRemoteUser);
+        imgLocalUser.setImageBitmap(bitmapReceivingUser);
+        imgRemoteUser.setImageBitmap(bitmapRequestingUser);
 
         txtSuccessfulMatch.setTypeface(ttfInfinity);
         phrase.setTypeface(ttfInfinity);
@@ -271,7 +279,7 @@ public class IBDialog extends Activity
                 }
                 else
                 {
-                    showProgressBar();
+                    showProgressBar("Loading...");
                     status_changing = true;
                     //update status
                     icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_DONE.getStatus());
@@ -311,7 +319,7 @@ public class IBDialog extends Activity
                 }
                 else
                 {
-                    showProgressBar();
+                    showProgressBar("Loading...");
                     status_changing = true;
                     //update status
                     icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_DONE.getStatus());
@@ -339,18 +347,18 @@ public class IBDialog extends Activity
 
     private void drawRejectionUI()
     {
-        dialog.setContentView(R.layout.popup_reject);
+        dialog.setContentView(R.layout.popup_rejected);
         //dialog.show();
 
+        TextView txtUnsuccess = (TextView)dialog.findViewById(R.id.ib_res_unsuccess);
         TextView txtMotivational = (TextView)dialog.findViewById(R.id.txt_motivational_message);
         ImageView imgLocalUser = (ImageView)dialog.findViewById(R.id.ib_res_local_usr_image);
         ImageView imgRemoteUser = (ImageView)dialog.findViewById(R.id.ib_res_remote_usr_image);
-        TextView txtUnsuccess = (TextView)dialog.findViewById(R.id.ib_res_unsuccess);
 
         Button btnContinue = (Button)dialog.findViewById(R.id.ib_res_btn_continue);
 
-        imgLocalUser.setImageBitmap(bitmapLocalUser);
-        imgRemoteUser.setImageBitmap(bitmapRemoteUser);
+        imgLocalUser.setImageBitmap(bitmapReceivingUser);
+        imgRemoteUser.setImageBitmap(bitmapRequestingUser);
 
         //Set typefaces
         txtMotivational.setTypeface(ttfInfinity);
@@ -362,7 +370,7 @@ public class IBDialog extends Activity
             public void onClick(View view)
             {
                 Log.d(TAG,"End Icebreak request.");
-                showProgressBar();
+                showProgressBar("Loading...");
                 icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_DONE.getStatus());
                 Thread tStatusUpdater = new Thread(new Runnable()
                 {
@@ -377,10 +385,10 @@ public class IBDialog extends Activity
                             Log.d(TAG,"Continue Button> Updated Icebreak request locally and remotely.");
                         }
                         hideProgressBar();
+                        dialog.dismiss();
                     }
                 });
                 tStatusUpdater.start();
-                dialog.dismiss();
             }
         });
     }

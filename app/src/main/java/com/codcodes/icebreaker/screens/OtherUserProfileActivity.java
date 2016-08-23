@@ -174,7 +174,6 @@ public class OtherUserProfileActivity extends AppCompatActivity
                         {
                             final int response_code = RemoteComms.postData("addMessage", msg_details);
                             //Update UI
-                            //prog_bar = false;
                             //progress.hide();
                             if(response_code != HttpURLConnection.HTTP_OK)
                             {

@@ -8,7 +8,6 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="fab_bmargin">30dp</dimen>
 
-    <dimen name="logo_width">50dp</dimen>
     <dimen name="title_text_size">29pt</dimen>
 
     <dimen name="bottom_bar_width">500dp</dimen>
@@ -22,6 +21,9 @@
     <dimen name="btn_signup_text_size">15dp</dimen>
     <dimen name="btn_signup_mleft">50dp</dimen>
     <dimen name="btn_signup_mtop">18dp</dimen>
+
+    <dimen name="signup_logo_w">152dp</dimen>
+    <dimen name="signup_logo_h">20dp</dimen>
 
     <dimen name="logo_w">50dp</dimen>
     <dimen name="logo_h">50dp</dimen>

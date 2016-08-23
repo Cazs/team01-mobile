@@ -17,8 +17,6 @@
         <ImageView
             android:layout_width="@dimen/icon_width"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/dp_size_152"
-            android:layout_marginLeft="@dimen/dp_size_20"
             android:src="@mipmap/ic_launcher"
             />
 
@@ -57,14 +55,14 @@
             android:indeterminate="false" />
 
         <EditText
-        android:id="@+id/email_sign_up"
-        android:layout_width="@dimen/text_box_size"
-        android:layout_height="wrap_content"
-        android:hint="@string/reg_email"
-        android:typeface="monospace"
-        android:inputType="textEmailAddress"
+            android:id="@+id/email_sign_up"
+            android:layout_width="@dimen/text_box_size"
+            android:layout_height="wrap_content"
+            android:hint="@string/reg_email"
+            android:typeface="monospace"
+            android:inputType="textEmailAddress"
 
-        />
+            />
         <EditText
             android:id="@+id/username_sign_up"
             android:layout_width="@dimen/text_box_size"
