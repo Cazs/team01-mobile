@@ -89,7 +89,7 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
 
                             //notify user
                             String name = LocalComms.getValidatedName(rem_usr);
-                            LocalComms.showNotification(getApplicationContext(),name + " accepted also wants to get to know you.", NOTIFICATION_ID.NOTIF_REQUEST.getId());
+                            LocalComms.showNotification(getApplicationContext(),name + " would also like to get to know you.", NOTIFICATION_ID.NOTIF_REQUEST.getId());
                         }
                         break;
                     case 104:

@@ -84,8 +84,7 @@
             android:enabled="false" />
 
         <service
-            android:name=".services.MessageFcmService"
-            android:process=":remote">
+            android:name=".services.MessageFcmService">
             <intent-filter>
                 <action
                     android:name="com.google.firebase.MESSAGING_EVENT" />
