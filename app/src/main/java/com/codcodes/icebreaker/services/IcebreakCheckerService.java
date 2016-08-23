@@ -60,7 +60,6 @@ public class IcebreakCheckerService extends IntentService
         super("IcebreakCheckerService");
     }
 
-    private Context context;
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
@@ -71,11 +70,6 @@ public class IcebreakCheckerService extends IntentService
     @Override
     protected void onHandleIntent(Intent intent)
     {
-        System.err.println("Handling Intent...");
-        //Timer tIcebreakChecker = new Timer();
-
-        //Get local/receiving user
-        //setLocalUser(SharedPreference.getUsername(context).toString());
         if(intent!=null)// && mHandler!=null
         {
             try
@@ -83,80 +77,88 @@ public class IcebreakCheckerService extends IntentService
                 //Check for Icebreaks indefinitely
                 while (true)
                 {
-                    Log.d(TAG,"Checking for local Icebreaks.");
+                    Log.d(TAG,"Checking for local inbound and outbound Icebreaks.");
                     ArrayList<Message> messages = LocalComms.getInboundMessages(this,
                             SharedPreference.getUsername(this).toString(),
                             MESSAGE_STATUSES.ICEBREAK_DELIVERED);
 
-                    for (Message m:messages)
-                        System.err.println(">"+m.getMessage()+":"+m.getStatus());
+                    ArrayList<Message> out_messages = LocalComms.getOutboundMessages(this,
+                            SharedPreference.getUsername(this).toString());
 
                     //If there are Icebreaks
                     if (messages.size() > 0)
                     {
-                        Log.d(TAG,"Found Icebreak/s.");
+                        Log.d(TAG, "Found Icebreak/s.");
+
                         //Get first Icebreak
                         icebreak_msg = messages.get(0);
 
+                        System.err.println(messages.size());
+
                         receiving_user = LocalComms.getLocalUser(icebreak_msg.getReceiver(), this);
                         if (receiving_user == null)//attempt to download user details
-                        {
-                            receiving_user = RemoteComms.getUser(icebreak_msg.getReceiver());
-                        }
-                        System.err.println("Receiver: " + receiving_user.getUsername() +
-                                " FN: " + receiving_user.getFirstname() +
-                                " LN: " + receiving_user.getLastname());
+                            receiving_user = RemoteComms.getUser(this,icebreak_msg.getReceiver());
 
                         requesting_user = LocalComms.getLocalUser(icebreak_msg.getSender(), this);
-
                         if (requesting_user == null)//attempt to download user details
+                            requesting_user = RemoteComms.getUser(this,icebreak_msg.getSender());
+
+                        System.err.println("Inbound checker> IBDialog active: " + IBDialog.active);
+
+                        //always wait for pending message status changes to complete
+                        if (!IBDialog.active && !IBDialog.status_changing)
                         {
-                            System.err.println("Downloading user information for " + icebreak_msg.getSender());
-                            requesting_user = RemoteComms.getUser(icebreak_msg.getSender());
+                            //Show Icebreak Dialog
+                            Intent dlgIntent = new Intent(getApplicationContext(), IBDialog.class);
+                            dlgIntent.putExtra("Message", icebreak_msg);
+                            dlgIntent.putExtra("Receiver", receiving_user);
+                            dlgIntent.putExtra("Sender", requesting_user);
+                            IBDialog.requesting = true;
+
+                            dlgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(dlgIntent);
                         }
+                    }
+                    else Log.d(TAG,"<No local inbound Icebreaks>");
 
-                        System.err.println("Sender: " + requesting_user.getUsername() +
-                                " FN: " + requesting_user.getFirstname() +
-                                " LN: " + requesting_user.getLastname());
-
-                        //set these manually because /getUser/ doesn't set a username - fixed this
-                        //receiving_user.setUsername(icebreak_msg.getReceiver());
-                        //requesting_user.setUsername(icebreak_msg.getSender());
-
-                        Log.d(TAG, "Setup local and remote user.");
-
-                        System.err.println("Dialog active: " + IBDialog.active);
-                        if(!IBDialog.active && !IBDialog.status_changing)//always waiting for pending message status changes to complete
+                    //Check for cases where local user is sender
+                    if(out_messages.size()>0)
+                    {
+                        for(Message m: out_messages)
                         {
-                            //Double check with local DB
-                            //Message m = LocalComms.getMessageById(getBaseContext(),icebreak_msg.getId());
-                            if(icebreak_msg.getStatus() == MESSAGE_STATUSES.ICEBREAK_DELIVERED.getStatus())
+                            //TODO: send messages to server if they haven't been sent
+                            System.err.println("Outbound checker> IBDialog active: " + IBDialog.active);
+                            //always wait for pending message status changes to complete
+                            if (!IBDialog.active && !IBDialog.status_changing)
                             {
-                                //Show Icebreak Dialog
-                                Intent dlgIntent = new Intent(getApplicationContext(), IBDialog.class);
-                                dlgIntent.putExtra("Message",icebreak_msg);
-                                dlgIntent.putExtra("Receiver",receiving_user);
-                                dlgIntent.putExtra("Sender",requesting_user);
-                                IBDialog.requesting = true;
+                                //If local user has been accepted or rejected, show appropriate dialog
+                                if (m.getStatus() == MESSAGE_STATUSES.ICEBREAK_ACCEPTED.getStatus() ||
+                                        m.getStatus() == MESSAGE_STATUSES.ICEBREAK_REJECTED.getStatus())
+                                {
+                                    receiving_user = LocalComms.getLocalUser(m.getReceiver(), this);
+                                    if (receiving_user == null)//attempt to download user details
+                                        receiving_user = RemoteComms.getUser(this,m.getReceiver());
 
-                                dlgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity(dlgIntent);
-                            }
+                                    requesting_user = LocalComms.getLocalUser(m.getSender(), this);
+                                    if (requesting_user == null)//attempt to download user details
+                                        requesting_user = RemoteComms.getUser(this,m.getSender());
+                                    //Show dialog
+                                    Intent dlgIntent = new Intent(getApplicationContext(), IBDialog.class);
+                                    dlgIntent.putExtra("Message", m);
+                                    dlgIntent.putExtra("Receiver", receiving_user);
+                                    dlgIntent.putExtra("Sender", requesting_user);
+                                    IBDialog.requesting = false;
 
-                            if(icebreak_msg.getStatus() == MESSAGE_STATUSES.ICEBREAK_ACCEPTED.getStatus() ||
-                                    icebreak_msg.getStatus() == MESSAGE_STATUSES.ICEBREAK_REJECTED.getStatus())
-                            {
-                                //Show Icebreak Dialog
-                                Intent dlgIntent = new Intent(getApplicationContext(), IBDialog.class);
-                                dlgIntent.putExtra("Message",icebreak_msg);
-                                dlgIntent.putExtra("Receiver",receiving_user);
-                                dlgIntent.putExtra("Sender",requesting_user);
-                                IBDialog.requesting = false;
-
-                                dlgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity(dlgIntent);
+                                    dlgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    startActivity(dlgIntent);
+                                }
                             }
                         }
+                    }
+                    else
+                    {
+                        Log.d(TAG,"<No local outbound Icebreaks>");
+                    }
                         /*mHandler.post(new Runnable()
                         {
                             @Override
@@ -165,11 +167,6 @@ public class IcebreakCheckerService extends IntentService
 
                             }
                         });*/
-                    }
-                    else
-                    {
-                        Log.d(TAG,"<No local Icebreaks>");
-                    }
                     //sleep a bit
                     Thread.sleep(INTERVALS.IB_CHECK_DELAY.getValue());
                 }
@@ -179,8 +176,10 @@ public class IcebreakCheckerService extends IntentService
                 e.printStackTrace();
                 Log.d(TAG,e.getMessage());
             }
-            catch (InterruptedException e) {
+            catch (InterruptedException e)
+            {
                 e.printStackTrace();
+                Log.d(TAG,e.getMessage());
             }
         }
         else
@@ -256,7 +255,7 @@ public class IcebreakCheckerService extends IntentService
 
     private void drawPostAcceptanceUI()
     {
-        dialog.setContentView(R.layout.popup_accept);
+        dialog.setContentView(R.layout.popup_accepted);
 
         TextView txtSuccessfulMatch = (TextView)dialog.findViewById(R.id.SuccessfulMatch);
         ImageView imgLocalUser = (ImageView)dialog.findViewById(R.id.other_pic1);

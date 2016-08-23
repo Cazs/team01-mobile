@@ -35,6 +35,11 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
 {
     private final String TAG="IB/MsgPollService";
 
+    public MessageFcmService()
+    {
+        System.err.println("FirebaseMessagingService:>_ starting..");
+    }
+
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage)
     {
@@ -65,7 +70,7 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
                         {
                             User rem_usr = LocalComms.getLocalUser(msg.getSender(),getApplicationContext());
                             if(rem_usr==null)
-                                rem_usr = RemoteComms.getUser(msg.getSender());
+                                rem_usr = RemoteComms.getUser(getApplicationContext(), msg.getSender());
 
                             //notify user
                             String name = LocalComms.getValidatedName(rem_usr);
@@ -77,7 +82,7 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
                         {
                             User rem_usr = LocalComms.getLocalUser(msg.getReceiver(),getApplicationContext());
                             if(rem_usr==null)
-                                rem_usr = RemoteComms.getUser(msg.getReceiver());
+                                rem_usr = RemoteComms.getUser(getApplicationContext(), msg.getReceiver());
 
                             //Save contact to disk
                             LocalComms.addContact(this, rem_usr);
@@ -92,7 +97,7 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
                         {
                             User rem_usr = LocalComms.getLocalUser(msg.getReceiver(),getApplicationContext());
                             if(rem_usr==null)
-                                rem_usr = RemoteComms.getUser(msg.getReceiver());
+                                rem_usr = RemoteComms.getUser(getApplicationContext(), msg.getReceiver());
 
                             //notify user
                             String name = LocalComms.getValidatedName(rem_usr);

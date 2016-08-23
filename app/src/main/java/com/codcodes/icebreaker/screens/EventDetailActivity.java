@@ -280,53 +280,6 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
                         //Attempt to load images into memory and set the list adapter
                         for (User u : contacts)
                         {
-                            //Look for user profile image
-                            /*if (!new File(Environment.getExternalStorageDirectory().getPath()
-                                    + "/Icebreak/profile/" + u.getUsername() + ".png").exists()) {
-                                //if (imageDownload(u.getUsername() + ".png", "/profile")) {
-                                if (RemoteComms.imageDownloader(u.getUsername(), ".png", "/profile", context))
-                                {
-                                    bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                                            + "/Icebreak/profile/" + u.getUsername() + ".png", options);
-                                    //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
-                                    circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                                } else //user has no profile yet - attempt to load default profile image
-                                {
-                                    if (!new File(Environment.getExternalStorageDirectory().getPath().toString()
-                                            + "/Icebreak/profile/default.png").exists())
-                                    {
-                                        //Attempt to download default profile image
-                                        if (RemoteComms.imageDownloader("default", ".png", "/profile", context))
-                                        {
-                                            /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                                    + "/Icebreak/profile/profile_default.png", getActivity());*
-                                            options = new BitmapFactory.Options();
-                                            options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                                            bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                                                    + "/Icebreak/profile/default.png", options);
-                                            circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                                        } else //Couldn't download default profile image
-                                        {
-                                            Toast.makeText(getApplicationContext(), "Could not download default profile images, please check your internet connection.",
-                                                    Toast.LENGTH_LONG).show();
-                                        }
-                                    } else//default profile image exists
-                                    {
-                                        /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                                + "/Icebreak/profile/profile_default.png",getActivity());*
-                                        options = new BitmapFactory.Options();
-                                        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                                        bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                                                + "/Icebreak/profile/default.png", options);
-                                        circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                                    }
-                                }
-                            } else//user profile image exists
-                            {
-                                bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                        + "/Icebreak/profile/" + u.getUsername() + ".png", context);
-                                circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                            }*/
                             bitmap = RemoteComms.getImage(context,u.getUsername(),".png","/profile",options);
                             circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                             if (bitmap == null || circularbitmap == null) {
@@ -336,8 +289,8 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
                                 bitmap.recycle();
                             }
                         }
-                        //Update UI
 
+                        //Update UI
                          runOnUiThread(new Runnable()
                          {
                              @Override
@@ -349,11 +302,10 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
                                      usersAtEventList.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
                                      getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
-                                     if(progress!=null)
-                                         if(progress.isShowing())
-                                            progress.hide();
+                                     hideProgressBar();
+
                                      vf = (ViewFlipper) findViewById(R.id.viewFlipper);
-                                     eventDetails.setText("List Of People");
+                                     eventDetails.setText("People at this event");
                                      vf.showNext();
                                      Log.d(TAG, "Set users at event list");
                                  }
@@ -379,6 +331,13 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
             }
         });
         tContactsLoader.start();
+    }
+
+    public void hideProgressBar()
+    {
+        if(progress!=null)
+            if(progress.isShowing())
+                progress.dismiss();
     }
 
     @Override

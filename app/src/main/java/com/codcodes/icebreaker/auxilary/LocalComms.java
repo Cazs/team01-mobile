@@ -92,20 +92,17 @@ public class LocalComms
     public static Bitmap getImage(Context context, String filename,String ext, String path, BitmapFactory.Options options)
     {
         path = path.charAt(0) != '/' && path.charAt(0) != '\\' ? '/' + path : path;
-        Bitmap bitmap = null;
         if(!ext.contains("."))//add dot to image extension if it's not there
             ext = '.' + ext;
         //Look for image locally
-        if (!new File(path + '/' + filename + ext).exists())
+        if (!new File(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext).exists())
         {
             Log.d(TAG,path+ filename + ext + " does not exist. returning default.");
-            bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak/profile/default.png", options);
+            //bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak"+path+"/default.png", options);
+            return null;
         }
         else//exists
-        {
-            bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
-        }
-        return  bitmap;
+            return BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
     }
 
     public static  void updateLocalMessage(Context context, SQLiteDatabase db, Message m)
@@ -182,51 +179,51 @@ public class LocalComms
         return name;
     }
 
-    public static void addMessageToLocalDB(Context context, Message m) throws IOException {
+    public static void addMessageToLocalDB(Context context, Message m) throws IOException
+    {
         MessagePollHelper dbHelper = new MessagePollHelper(context);//getBaseContext());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         dbHelper.onCreate(db);
 
-        //Update local and remote DB
+        //Update local and remote statuses on DB
         //Check for Icebreaks
         if (m.getStatus() == MESSAGE_STATUSES.ICEBREAK_SERV_RECEIVED.getStatus())
         {
-            //showNotification(context, "New IceBreak request from " + m.getSender(), NOTIFICATION_ID.NOTIF_REQUEST.getId());
             Log.d(TAG, "New IceBreak request from " + m.getSender());
+            //showNotification(context, "New IceBreak request from " + m.getSender(), NOTIFICATION_ID.NOTIF_REQUEST.getId());
             m.setStatus(MESSAGE_STATUSES.ICEBREAK_DELIVERED.getStatus());//set message to delivered in temp memory
+
             //Change Message status to DELIVERED remotely
             if(RemoteComms.sendMessage(context,m))
             {
-                //Change Message status to DELIVERED locally
-                if (!messageIdExistsInDB(context, m.getId()))//new Message
-                {
-                    ContentValues kv_pairs = new ContentValues();
-                    kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_ID, m.getId());
-                    kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE, m.getMessage());
-                    kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER, m.getSender());
-                    kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER, m.getReceiver());
-                    kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS, m.getStatus());
-                    kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_TIME, m.getTime());
-
-                    long newRowId = db.insert(MessagePollContract.MessageEntry.TABLE_NAME, null, kv_pairs);
-                    Log.d(TAG, "Inserted into Message table: new row=" + newRowId);
-                }
-                else //Existing Message
-                {
-                    updateLocalMessage(context,db,m);
-                    Log.d(TAG, "Message already exists table, updated status");
-                }
-                Log.d(TAG, "Updated local DB");
+                Log.d(TAG, "Updated remote status.");
             }
             else
             {
-                Log.d(TAG, "Could not update remote message status to DELIVERED, therefore couldn't update local message either.");
+                Log.d(TAG, "Couldn't update remote status.");
             }
         }
-        else
+
+        //Change Message status to DELIVERED locally
+        if (!messageIdExistsInDB(context, m.getId()))//new Message
         {
-            Log.d(TAG, "IceBreak status: " + m.getStatus());
+            ContentValues kv_pairs = new ContentValues();
+            kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_ID, m.getId());
+            kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE, m.getMessage());
+            kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER, m.getSender());
+            kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER, m.getReceiver());
+            kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS, m.getStatus());
+            kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_TIME, m.getTime());
+
+            long newRowId = db.insert(MessagePollContract.MessageEntry.TABLE_NAME, null, kv_pairs);
+            Log.d(TAG, "Inserted into Message table: new row=" + newRowId);
         }
+        else //Existing Message
+        {
+            updateMessageStatusById(context,m.getId(),m.getStatus());
+            Log.d(TAG, "Message already exists table, updated status");
+        }
+        Log.d(TAG, "Updated local DB");
         db.close();
     }
 
@@ -252,14 +249,14 @@ public class LocalComms
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         //Didn't create DB here because when updating there should already be a DB
 
-        ContentValues kv_pairs = new ContentValues();
-        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS, status);
+        /*ContentValues kv_pairs = new ContentValues();
+        kv_pairs.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS, status);*/
 
         /*String where = "? = ?";
         String[] where_args = {MessagePollContract.MessageEntry.COL_MESSAGE_ID, id};
         db.update(MessagePollContract.MessageEntry.TABLE_NAME, kv_pairs,where,where_args);*/
         String q = "UPDATE " + MessagePollContract.MessageEntry.TABLE_NAME +
-                " SET " + MessagePollContract.MessageEntry.COL_MESSAGE_STATUS + "=? WHERE " +
+                " SET " + MessagePollContract.MessageEntry.COL_MESSAGE_STATUS + " =? WHERE " +
                 MessagePollContract.MessageEntry.COL_MESSAGE_ID + "=?";
         String[] args = {String.valueOf(status), id};
         db.execSQL(q,args);
@@ -402,7 +399,7 @@ public class LocalComms
         return m;
     }
 
-    public static ArrayList<Message> getOutboundMessages(Context context, String sender, MESSAGE_STATUSES status)
+    public static ArrayList<Message> getOutboundMessages(Context context, String sender)
     {
         MessagePollHelper dbHelper = new MessagePollHelper(context);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -410,13 +407,15 @@ public class LocalComms
 
         ArrayList<Message> messages = new ArrayList<Message>();
 
-        String query = "SELECT * FROM " + MessagePollContract.MessageEntry.TABLE_NAME + " WHERE "
+        String query = "SELECT * FROM " + MessagePollContract.MessageEntry.TABLE_NAME + " WHERE NOT "
                 + MessagePollContract.MessageEntry.COL_MESSAGE_STATUS + " = ? AND "
                 + MessagePollContract.MessageEntry.COL_MESSAGE_SENDER + " = ?";
+        /*String query = "SELECT * FROM " + MessagePollContract.MessageEntry.TABLE_NAME + " WHERE "
+                + MessagePollContract.MessageEntry.COL_MESSAGE_SENDER + " = ?";*/
 
         Cursor c = db.rawQuery(query, new String[]
                 {
-                        String.valueOf(status.getStatus()),
+                        String.valueOf(MESSAGE_STATUSES.ICEBREAK_DONE.getStatus()),
                         sender
                 });
 
@@ -436,6 +435,8 @@ public class LocalComms
             m.setReceiver(recv);
             m.setTime(time);
             m.setStatus(stat);
+
+            messages.add(m);
         }
         //Close DB
         db.close();

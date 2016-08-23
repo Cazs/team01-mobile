@@ -60,15 +60,15 @@ public class RemoteComms
             return  "";
     }
 
-    public static User getUser(String username) throws IOException
+    public static User getUser(Context context, String username) throws IOException
     {
         String userJson = RemoteComms.sendGetRequest("getUser/"+username);
         User u = new User();
         if(userJson!=null)
             JSON.getJsonable(userJson, u);
         else return null;
-        //TODO: Save to local DB
         u.setUsername(username);
+        LocalComms.addContact(context,u);
         return u;
     }
 
@@ -111,7 +111,7 @@ public class RemoteComms
         return httpConn.getResponseCode();
     }
 
-    private boolean imageDownloader(String image, String ext, String destPath, Context context)
+    private static boolean imageDownloader(String image, String ext, String destPath, Context context)
     {
         //Check for invalid filenames
         if(image==null || ext == null)
@@ -279,19 +279,10 @@ public class RemoteComms
         if(!ext.contains("."))//add dot to image extension if it's not there
             ext = '.' + ext;
 
-        System.err.println(path + '/' + filename + ext);
-
-        //Look for image locally
-        if (!new File(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext).exists())
-        {
-            Log.d(TAG,path+ "/" + filename + ext + " does not exist. returning default.");
-            bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak/profile/default.png", options);
-        }
-        else//exists
-        {
-            bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
-        }
-        return  bitmap;
+        if (RemoteComms.imageDownloader(filename, ext, path, context))
+            bitmap = LocalComms.getImage(context,filename,ext,path,options);
+        else Log.d(TAG,"Image could not be downloaded.");//TODO: better logging
+        return bitmap;
     }
 
     public static boolean sendMessage(Context context, Message m)

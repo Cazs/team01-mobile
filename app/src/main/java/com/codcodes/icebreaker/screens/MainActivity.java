@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     private Typeface ttfInfinity, ttfAilerons;
 
     public static String rootDir = Environment.getExternalStorageDirectory().getPath();
-    public static boolean appInFG = false;
     public static ContactListSwitches val_switch = ContactListSwitches.SHOW_USERS_AT_EVENT;
 
 
@@ -108,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 {
                     try
                     {
-                        lcl = RemoteComms.getUser(SharedPreference.getUsername(getBaseContext()).toString());
+                        lcl = RemoteComms.getUser(getApplicationContext(), SharedPreference.getUsername(getBaseContext()).toString());
                         if(lcl!=null)
                             LocalComms.addContact(getBaseContext(), lcl);
                         else
@@ -122,11 +121,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             });
             tLocalUserLoader.start();
         }else//is in DB
-        {
-            Log.d(TAG,"Local user already in local DB!!");
-        }
-
-        appInFG = true;
+            Log.d(TAG,"Local user already in local DB!");
 
         ttfInfinity = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
         ttfAilerons = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
@@ -156,11 +151,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         });
         tIBloader.start();*/
 
-        //Start Icebreak checker service
-        //Intent icebreakChecker = new Intent(this,IcebreakCheckerService.class);
-        //context.stopService(icebreakChecker);
-        //startService(icebreakChecker);
-
         //Start token registration service
         Intent intTokenService = new Intent(this, IbTokenRegistrationService.class);
         startService(intTokenService);
@@ -171,6 +161,11 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         //inMsg.putExtra("Username", SharedPreference.getUsername(this));
         startService(intMsgService);
         Log.d(TAG,"Started MessageFcmService");
+
+        //Start Icebreak checker service
+        Intent icebreakChecker = new Intent(this,IcebreakCheckerService.class);
+        //context.stopService(icebreakChecker);
+        startService(icebreakChecker);
 
         //startIcebreakListenerService();
 
@@ -387,19 +382,12 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     {
         super.onPause();
         //hideDialog();
-        this.appInFG = false;
     }
 
     @Override
     public void onResume()
     {
         super.onResume();
-        this.appInFG = true;
-    }
-
-    public boolean isInForeground()
-    {
-        return this.appInFG;
     }
 
     @Override
