@@ -17,6 +17,7 @@ import com.codcodes.icebreaker.screens.MainActivity;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -204,16 +205,11 @@ public class RemoteComms
                 System.out.println("Succesfully wrote to disk");//"\n>>>>>"+base64bytes);
                 return true;
             }
-            else
-            {
-                //TODO: Throw FileNotFoundException
-                System.err.println("Server> File not found");
-                return false;
-            }
+            else throw new FileNotFoundException("Server> File '"+image+ext+"' was not found");
         }
         catch (IOException e)
         {
-            System.err.println(e.getMessage());
+            Log.d(TAG,e.getMessage());
             return  false;
         }
     }
@@ -315,8 +311,7 @@ public class RemoteComms
             }
         } catch (IOException e)
         {
-            e.printStackTrace();
-            Log.d(TAG, e.getMessage());
+            Log.wtf(TAG, e.getMessage(),e);
             //TODO: Better logging
         }
         return false;

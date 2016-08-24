@@ -27,7 +27,7 @@ public class IbTokenRegistrationService extends FirebaseInstanceIdService
 
     public IbTokenRegistrationService()
     {
-        /*Thread t = new Thread(new Runnable()
+        Thread t = new Thread(new Runnable()
         {
             @Override
             public void run()
@@ -35,7 +35,7 @@ public class IbTokenRegistrationService extends FirebaseInstanceIdService
                 onTokenRefresh();
             }
         });
-        t.start();*/
+        t.start();
     }
 
     @Override

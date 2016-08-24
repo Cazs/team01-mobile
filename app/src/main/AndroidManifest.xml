@@ -76,7 +76,7 @@
 
         <receiver
             android:name=".services.OnMessageReceive"
-            android:enabled="true"
+            android:enabled="false"
             android:process=":remote" />
 
         <receiver
