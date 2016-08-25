@@ -30,17 +30,21 @@
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/ib_res_local_usr_image"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/ib_req_image_w"
-                android:layout_weight="50"
+                android:layout_width="@dimen/dp_size_130"
+                android:layout_height="@dimen/dp_size_130"
+                android:layout_marginTop="@dimen/dp_size_60"
+                android:layout_marginLeft="@dimen/dp_size_10"
                 android:layout_centerHorizontal="true" />
 
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/ib_res_remote_usr_image"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/ib_req_image_w"
-                android:layout_weight="50"/>
+                android:layout_width="@dimen/dp_size_130"
+                android:layout_height="@dimen/dp_size_130"
+                android:layout_marginTop="@dimen/dp_size_60"
+                android:layout_marginLeft="@dimen/dp_size_20"
+                android:layout_centerHorizontal="true"
+                />
         </LinearLayout>
 
         <TextView
@@ -56,10 +60,13 @@
             android:id="@+id/ib_res_btn_continue"
             android:layout_width="@dimen/ib_popup_btn_w"
             android:layout_height="@dimen/ib_popup_btn_h"
+            android:layout_marginTop="@dimen/dp_size_20dp"
             android:fontFamily="monospace"
+            android:gravity="center"
             android:textSize="10pt"
             android:text="Keep Playing"
-            android:gravity="center"
+            android:layout_centerHorizontal="true"
+            android:layout_marginRight="@dimen/dp_size_100"
             android:background="@drawable/icebreak_button" />
 
     </LinearLayout>

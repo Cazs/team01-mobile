@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.codcodes.icebreaker.R;
@@ -37,6 +38,7 @@ public class IBDialog extends Activity
     private static Message icebreak_msg = null;
     private static User requesting_user = null;
     private static User receiving_user = null;
+
 
     private TextView txtIBReqPopup_name,txtIBReqPopup_age,txtIBReqPopup_gender,
                         txtIBReqPopup_bioTitle,txtIBReqPopup_bio, txtIBReqPopup_occ;
@@ -157,6 +159,7 @@ public class IBDialog extends Activity
         txtIBReqPopup_bioTitle.setTypeface(ttfInfinity);
         txtIBReqPopup_bio.setTypeface(ttfInfinity);
         txtIBReqPopup_occ.setTypeface(ttfInfinity);
+
         accept.setTypeface(ttfInfinity);
         reject.setTypeface(ttfInfinity);
 
@@ -252,7 +255,7 @@ public class IBDialog extends Activity
         ImageView imgLocalUser = (ImageView)dialog.findViewById(R.id.other_pic1);
         ImageView imgRemoteUser = (ImageView)dialog.findViewById(R.id.other_pic2);
         TextView phrase = (TextView)dialog.findViewById(R.id.phrase);
-        Button btnChat = (Button)dialog.findViewById(R.id.popup1_Start_Chatting);
+        RadioButton btnChat = (RadioButton) dialog.findViewById(R.id.popup1_Start_Chatting);
         TextView or = (TextView)dialog.findViewById(R.id.or);
         Button btnContinue = (Button)dialog.findViewById(R.id.popup1_Keep_playing);
 
