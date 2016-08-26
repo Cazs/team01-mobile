@@ -62,7 +62,7 @@
 
     <dimen name="init_btn_login_rmarg">10dp</dimen>
     <dimen name="init_btn_login_lmarg">10dp</dimen>
-    <dimen name="ib_popup_btn_w">100dp</dimen>
+    <dimen name="ib_popup_btn_w">200dp</dimen>
     <dimen name="ib_popup_btn_h">40dp</dimen>
     <dimen name="ib_popup_padding">25dp</dimen>
     <dimen name="ib_popup_btn_bpad">25dp</dimen>
@@ -140,4 +140,7 @@
     <dimen name="dp_size_420">420dp</dimen>
     <dimen name="dp_size_190">190dp</dimen>
     <dimen name="dp_size_152">152dp</dimen>
+    <dimen name="dp_size_50dp">50dp</dimen>
+    <dimen name="dp_size_20dp">20dp</dimen>
+    <dimen name="dp_size_5dp">5dp</dimen>
 </resources>

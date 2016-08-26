@@ -173,12 +173,13 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                 {
                     if(matchAccessCode(Integer.parseInt(accessCode.getText().toString()),location,locationDetector.getLocation(),event_Radius))
                     {
-                        showProgressBar();
                         //updateProfile(Eventid,username);
+                        showProgressBar();
                         listPeople(act);
                     }
                     else
                     {
+
                         accessCode.setError("Invalid Access Code Entered");
                     }
                 }
@@ -203,7 +204,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
             progress.setMessage("Loading List");
             progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             progress.setIndeterminate(true);
-            progress.setProgress(0);
+            progress.setProgress(10);
             progress.show();
         }
     }

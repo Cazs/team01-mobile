@@ -120,11 +120,16 @@
             android:parentActivityName="com.codcodes.icebreaker.screens.InitialActivity" android:theme="@style/AppTheme.NoActionBar">
             <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.InitialActivity" />
         </activity>
+        <activity android:name="com.codcodes.icebreaker.screens.SignUpActivity" android:label="@string/title_activity_sign_up"
+            android:parentActivityName="com.codcodes.icebreaker.screens.InitialActivity" android:theme="@style/AppTheme.NoActionBar">
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.InitialActivity" />
+        </activity>
         <activity android:name="com.codcodes.icebreaker.screens.MainActivity" android:label="@string/title_activity_main_page"
             android:parentActivityName="com.codcodes.icebreaker.screens.LoginActivity" android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.codcodes.icebreaker.screens.LoginActivity" />
         </activity>
+
         <activity android:name="com.codcodes.icebreaker.screens.Edit_ProfileActivity" android:label=""
             android:parentActivityName="com.codcodes.icebreaker.screens.MainActivity" android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
