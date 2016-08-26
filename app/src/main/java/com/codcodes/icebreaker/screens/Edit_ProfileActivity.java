@@ -1,6 +1,7 @@
 package com.codcodes.icebreaker.screens;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,6 +9,7 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -24,15 +26,18 @@ import android.widget.Toast;
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.ImageUtils;
+import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.User;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URLEncoder;
@@ -62,9 +67,12 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
     private final String TAG = "ICEBREAK";
     private static boolean CHUNKED = false;
 
+    private ProgressDialog progress;
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_profile);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -185,7 +193,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                System.out.println("Edit photo");
+                Bitmap b = circularImageView.getDrawingCache(false);
                 startActivityForResult(intent, 0);
 
             }
@@ -193,22 +201,85 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
 
     }
 
+    public void showProgressBar(String msg)
+    {
+        if(progress==null)
+            progress = new ProgressDialog(this);
+        if(!progress.isShowing())
+        {
+            progress.setMessage(msg);
+            progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progress.setIndeterminate(true);
+            progress.setProgress(0);
+            progress.show();
+        }
+    }
 
+    public void hideProgressBar()
+    {
+        if(progress!=null)
+            if(progress.isShowing())
+                progress.dismiss();
+    }
 
     public void onActivityResult(int requstCode,int resltCode,Intent data)
     {
         super.onActivityResult(requstCode,resltCode,data);
         Uri targetUri = data.getData();
 
-        //TODO: Upload image here
-        Bitmap bitmap = null;
-        try {
-            bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        circularImageView.setImageBitmap(bitmap);
+        showProgressBar("Uploading image...");
+        try
+        {
+            final String usr = SharedPreference.getUsername(this).toString();
+            Bitmap bitmap = bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG,90,stream);
+            final byte[] bmp_arr = stream.toByteArray();
 
+            //Save  copy of image to app directory
+            WritersAndReaders.saveImage(bmp_arr,"/profile/"+usr+".png");
+            //Set image view
+            circularImageView.setImageBitmap(bitmap);
+            bitmap.recycle();
+            Thread t = new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    Looper.prepare();
+                    int res_code = 0;//TODO: fix directory structure on server and local
+                    try
+                    {
+                        res_code = RemoteComms.imageUpload(bmp_arr,usr,".png");
+                        if(res_code== HttpURLConnection.HTTP_OK)
+                        {
+                            Log.d(TAG,"Image upload successful");
+                            Toast.makeText(getApplicationContext(),"Image upload successful",Toast.LENGTH_LONG).show();
+                        }
+                        else
+                        {
+                            Log.wtf(TAG,"Image upload unsuccessful: " + res_code);
+                            Toast.makeText(getApplicationContext(),"Image upload successful: " + res_code,Toast.LENGTH_LONG).show();
+                        }
+                    } catch (IOException e)
+                    {
+                        Log.wtf(TAG,e.getMessage(),e);
+                    }
+                    hideProgressBar();
+                }
+            });
+            t.start();
+        }
+        catch (FileNotFoundException e)
+        {
+            Log.wtf(TAG,e.getMessage(),e);
+            //TODO: Better logging
+        }
+        catch (IOException e)
+        {
+            Log.wtf(TAG,e.getMessage(),e);
+            //TODO: Better logging
+        }
     }
 
     @Override

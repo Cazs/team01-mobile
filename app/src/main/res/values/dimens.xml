@@ -60,6 +60,8 @@
 
     <dimen name="button_text_size">15dp</dimen>
 
+    <dimen name="init_btn_login_rmarg">10dp</dimen>
+    <dimen name="init_btn_login_lmarg">10dp</dimen>
     <dimen name="ib_popup_btn_w">100dp</dimen>
     <dimen name="ib_popup_btn_h">40dp</dimen>
     <dimen name="ib_popup_padding">25dp</dimen>

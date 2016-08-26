@@ -41,12 +41,17 @@ public class InitialActivity extends AppCompatActivity
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
+    private static View nav_dot_1,nav_dot_2,nav_dot_3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_initial);
+
+        nav_dot_1= (View) this.findViewById(R.id.page1);
+        nav_dot_2 = (View) this.findViewById(R.id.page2);
+        nav_dot_3 = (View) this.findViewById(R.id.page3);
 
         //Check for storage permissions
         LocalComms.validateStoragePermissions(this);
@@ -63,17 +68,40 @@ public class InitialActivity extends AppCompatActivity
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener()
+        {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
+            {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                nav_dot_1.setBackgroundResource(R.drawable.init_nav_dot);
+                nav_dot_2.setBackgroundResource(R.drawable.init_nav_dot);
+                nav_dot_3.setBackgroundResource(R.drawable.init_nav_dot);
+                if(position==0)
+                    nav_dot_1.setBackgroundResource(R.drawable.init_nav_dot_filled);
+                if(position==1)
+                    nav_dot_2.setBackgroundResource(R.drawable.init_nav_dot_filled);
+                if(position==2)
+                    nav_dot_3.setBackgroundResource(R.drawable.init_nav_dot_filled);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
 
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         TextView headingTextView = (TextView) findViewById(R.id.heading);
         headingTextView.setTypeface(heading);
 
         if(SharedPreference.getUsername(InitialActivity.this).length()==0)
-        {
             return;
-            /*Intent intent = new Intent(this,MainActivity.class);
-            startActivity(intent);*/
-        }
         else
         {
             Intent intent = new Intent(this,MainActivity.class);
@@ -83,7 +111,8 @@ public class InitialActivity extends AppCompatActivity
 
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         // Inflate the menu; this adds items to the action bar if it is present.
         //getMenuInflater().inflate(R.menu.menu_initial, menu);
         return true;
@@ -120,7 +149,8 @@ public class InitialActivity extends AppCompatActivity
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment {
+    public static class PlaceholderFragment extends Fragment
+    {
         /**
          * The fragment argument representing the section number for this
          * fragment.
@@ -147,27 +177,24 @@ public class InitialActivity extends AppCompatActivity
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
+            int v= getArguments().getInt(ARG_SECTION_NUMBER);
+
             View rootView = inflater.inflate(R.layout.fragment_initial, container, false);
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
             ImageView temp = (ImageView) rootView.findViewById(R.id.image1);
 
-            int v= getArguments().getInt(ARG_SECTION_NUMBER);
             if (v==1)
             {
                 temp.setImageResource(R.drawable.image1);
-
             }
 
             if (v==2)
             {
                 temp.setImageResource(R.drawable.image2);
-
             }
 
             if (v==3)
             {
                 temp.setImageResource(R.drawable.image3);
-
             }
 
            // textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));

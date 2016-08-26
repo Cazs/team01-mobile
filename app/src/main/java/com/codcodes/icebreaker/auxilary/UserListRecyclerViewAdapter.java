@@ -2,6 +2,7 @@ package com.codcodes.icebreaker.auxilary;
 
 import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,7 @@ public class UserListRecyclerViewAdapter extends RecyclerView.Adapter<UserListRe
 {
     private final List<User> mValues;
     private final List<Bitmap> mProfileBitmaps;
+    private final String TAG = "IB/UserListRecyclerViewAdapter";
 
     private final IOnListFragmentInteractionListener mListener;
 
@@ -44,11 +46,11 @@ public class UserListRecyclerViewAdapter extends RecyclerView.Adapter<UserListRe
     {
         holder.setUser(mValues.get(position));
         holder.mContactName.setText(mValues.get(position).getFirstname() + " " + mValues.get(position).getLastname());
-        holder.mContactBio.setText(mValues.get(position).getBio());
+        holder.mContactBio.setText(mValues.get(position).getCatchphrase());
         if(position<mProfileBitmaps.size())
             holder.getContactProfileImage().setImageBitmap(mProfileBitmaps.get(position));
         else
-            System.err.println("Bitmap ArrayList is empty.");
+            Log.d(TAG,"Bitmap ArrayList is empty.");
         holder.getView().setOnClickListener(new View.OnClickListener()
         {
             @Override

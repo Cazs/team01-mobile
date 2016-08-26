@@ -51,11 +51,10 @@ import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-public class
-EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
+public class EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
 {
     private static final boolean DEBUG = true;
-    private final String TAG = "ICEBREAK";
+    private final String TAG = "IB/EventDetailActivity";
 
     private long Eventid;
     private String eventLoc;
@@ -209,7 +208,7 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
         }
     }
 
-    public void updateProfile(final int eventID,final String username)
+    /*public void updateProfile(final int eventID,final String username)
     {
         Thread thread = new Thread(new Runnable()
         {
@@ -265,7 +264,7 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
             }
         });
         thread.start();
-    }
+    }*/
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
@@ -355,53 +354,6 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
                         //Attempt to load images into memory and set the list adapter
                         for (User u : contacts)
                         {
-                            //Look for user profile image
-                            /*if (!new File(Environment.getExternalStorageDirectory().getPath()
-                                    + "/Icebreak/profile/" + u.getUsername() + ".png").exists()) {
-                                //if (imageDownload(u.getUsername() + ".png", "/profile")) {
-                                if (Restful.imageDownloader(u.getUsername(), ".png", "/profile", context))
-                                {
-                                    bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                                            + "/Icebreak/profile/" + u.getUsername() + ".png", options);
-                                    //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
-                                    circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                                } else //user has no profile yet - attempt to load default profile image
-                                {
-                                    if (!new File(Environment.getExternalStorageDirectory().getPath().toString()
-                                            + "/Icebreak/profile/default.png").exists())
-                                    {
-                                        //Attempt to download default profile image
-                                        if (Restful.imageDownloader("default", ".png", "/profile", context))
-                                        {
-                                            /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                                    + "/Icebreak/profile/profile_default.png", getActivity());*
-                                            options = new BitmapFactory.Options();
-                                            options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                                            bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                                                    + "/Icebreak/profile/default.png", options);
-                                            circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                                        } else //Couldn't download default profile image
-                                        {
-                                            Toast.makeText(getApplicationContext(), "Could not download default profile images, please check your internet connection.",
-                                                    Toast.LENGTH_LONG).show();
-                                        }
-                                    } else//default profile image exists
-                                    {
-                                        /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                                + "/Icebreak/profile/profile_default.png",getActivity());*
-                                        options = new BitmapFactory.Options();
-                                        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                                        bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                                                + "/Icebreak/profile/default.png", options);
-                                        circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                                    }
-                                }
-                            } else//user profile image exists
-                            {
-                                bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                        + "/Icebreak/profile/" + u.getUsername() + ".png", context);
-                                circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                            }*/
                             bitmap = LocalComms.getImage(context,u.getUsername(),".png","/profile",options);
                             if(bitmap==null)
                                 bitmap= RemoteComms.getImage(context,u.getUsername(),".png","/profile",options);

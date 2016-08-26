@@ -6,7 +6,9 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -73,6 +75,50 @@ public class RemoteComms
         return u;
     }
 
+    public static int imageUpload(byte[] bitmap, String remote_filename,String ext) throws IOException
+    {
+        String payload = bytearrayToBase64(bitmap);
+
+        /*ArrayList<AbstractMap.SimpleEntry<String,String>> params = new ArrayList<>();
+        params.add(new AbstractMap.SimpleEntry<String,String>
+                (new AbstractMap.SimpleEntry<String, String>("filename",remote_filename + ext)));
+        params.add(new AbstractMap.SimpleEntry<String,String>
+                (new AbstractMap.SimpleEntry<String, String>("payload",payload)));*/
+
+        URL urlConn = new URL("http://icebreak.azurewebsites.net/IBUserRequestService.svc/imgUpload/"+remote_filename + ext);
+        HttpURLConnection httpConn = (HttpURLConnection)urlConn.openConnection();
+        httpConn.setReadTimeout(10000);
+        httpConn.setConnectTimeout(15000);
+        httpConn.setRequestMethod("PUT");
+        httpConn.setDoInput(true);
+        httpConn.setDoOutput(true);
+
+        //Write to server
+        OutputStream os = httpConn.getOutputStream();
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"UTF-8"));
+        writer.write(bytearrayToBase64(bitmap));
+        writer.flush();
+        writer.close();
+        os.close();
+
+        httpConn.connect();
+
+        /*Scanner scn = new Scanner(new InputStreamReader(httpConn.getErrorStream()));
+        String resp = "";
+        while(scn.hasNext())
+            resp+=scn.nextLine();
+        System.err.println(TAG+": "+resp);*/
+        int rcode = httpConn.getResponseCode();
+        httpConn.disconnect();
+        return rcode;
+    }
+
+    public static String bytearrayToBase64(byte[] img_data) throws IOException
+    {
+        String base64 = Base64.encodeToString(img_data,Base64.DEFAULT);
+        return base64;
+    }
+
     public static int postData(String function, ArrayList<AbstractMap.SimpleEntry<String,String>> params) throws IOException
     {
         function = function.charAt(0)=='/'||function.charAt(0)=='\\'?function.substring(1):function;//Remove first slash if it exists
@@ -92,7 +138,7 @@ public class RemoteComms
             result.append(URLEncoder.encode(entry.getKey(),"UTF-8") + "=");
             result.append(URLEncoder.encode(entry.getValue(),"UTF-8") + (i!=params.size()-1?"&":""));
         }
-        //System.out.println(result);
+
         //Write to server
         OutputStream os = httpConn.getOutputStream();
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"UTF-8"));
@@ -148,23 +194,18 @@ public class RemoteComms
 
             BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
             String resp, base64;
-            while (!in.ready()) {
-            }
+            //TODO: set a timeout
+            while (!in.ready()) {}//wait indefinitely
             Pattern pattern = Pattern.compile("^[A-F0-9]+$");//"((\\d*[A-Fa-f]\\d*){2,}|\\d{1})");//"([0-9A-Fa-f]{2,}|[0-9]{1})");//"[0-9A-Fa-f]");
             String payload = "";
             while ((resp = in.readLine()) != null)
             {
                 //System.out.println(resp);
                 if (resp.toLowerCase().contains("400 bad request"))
-                {
-                    //System.out.println("<<<400 bad request>>>");
                     return false;
-                }
                 if (resp.toLowerCase().contains("404 not found"))
-                {
-                    //System.out.println("<<<404 not found>>>");
                     return false;
-                }
+
                 if (resp.toLowerCase().contains("transfer-encoding"))
                 {
                     String encoding = resp.split(":")[1];
@@ -200,16 +241,16 @@ public class RemoteComms
                 payload = payload.split(":")[1];
                 payload = payload.replaceAll("\"", "");
 
-                byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);//Base64.getDecoder().decode(payload.getBytes());
+                byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);
                 WritersAndReaders.saveImage(binFileArr, destPath + "/" + image + ext);
-                System.out.println("Succesfully wrote to disk");//"\n>>>>>"+base64bytes);
+                Log.d(TAG,"Image download complete");
                 return true;
             }
             else throw new FileNotFoundException("Server> File '"+image+ext+"' was not found");
         }
         catch (IOException e)
         {
-            Log.d(TAG,e.getMessage());
+            Log.d(TAG,e.getMessage(),e);
             return  false;
         }
     }
@@ -218,55 +259,14 @@ public class RemoteComms
     {
         String possibleDigits = "0123456789ABCDEF";
         int dec = 0;
-        for (int i = 0; i < hex.length(); i++) {
+        for (int i = 0; i < hex.length(); i++)
+        {
             char currChar = hex.charAt(i);
             int x = possibleDigits.indexOf(currChar);
             dec = 16 * dec + x;
         }
         return dec;
     }
-
-    /*public static Bitmap getImage(Context context, String filename,String ext, String path, BitmapFactory.Options options)
-    {
-        //path = MainActivity.rootDir + "/Icebreak" + path;
-        path = path.charAt(0) != '/' && path.charAt(0) != '\\' ? '/' + path : path;
-        Bitmap bitmap = null;
-        if(!ext.contains("."))//add dot to image extension if it's not there
-            ext = '.' + ext;
-        //Look for image locally
-        if (!new File(path + '/' + filename + ext).exists())
-        {
-            if (RemoteComms.imageDownloader(filename, ext, path, context))
-            {
-                bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
-                //Bitmap bitmap = ImageUtils.getInstant().compressBitmapImage(holder.getView().getResources(),R.drawable.blue);
-            } else //user has no profile yet - attempt to load default profile image
-            {
-                if (!new File(path + "/default.png").exists())
-                {
-                    //Attempt to download default profile image
-                    if (RemoteComms.imageDownloader("default", ".png", "/profile", context))
-                    {
-                        bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + "/default.png", options);
-                    } else //Couldn't download default profile image
-                    {
-                        Toast.makeText(context, "Could not download default image, please check your internet connection.",
-                                Toast.LENGTH_LONG).show();
-                    }
-                } else//default profile image exists
-                {
-                    System.err.println("default.png image exists");
-                    bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + "/default.png", options);
-                }
-            }
-        }
-        else//User profile exists
-        {
-            System.err.println(filename+".png image exists");
-            bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
-        }
-        return bitmap;
-    }*/
 
     public static Bitmap getImage(Context context, String filename,String ext, String path, BitmapFactory.Options options)
     {
@@ -283,16 +283,13 @@ public class RemoteComms
 
     public static boolean sendMessage(Context context, Message m)
     {
-        /*System.err.println(String.format("id=%s, msg=%s, stat=%s, send=%s, recv=%s",m.getId(),m.getMessage(),
-                m.getStatus(),m.getSender(),m.getReceiver()));*/
-
         ArrayList<AbstractMap.SimpleEntry<String, String>> msg_details = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
         msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_id", m.getId()));
         msg_details.add(new AbstractMap.SimpleEntry<String, String>("message", m.getMessage()));
         msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_status", String.valueOf(m.getStatus())));
-        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_sender", m.getSender()));//TODO
-        //msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_time", m.getTime()));//TODO
-        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_receiver", m.getReceiver()));//TODO
+        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_sender", m.getSender()));
+        //msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_time", m.getTime()));
+        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_receiver", m.getReceiver()));
 
         //Send to server
         try
