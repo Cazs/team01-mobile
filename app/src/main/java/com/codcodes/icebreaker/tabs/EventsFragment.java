@@ -127,7 +127,7 @@ public class EventsFragment extends android.support.v4.app.Fragment
 
                            Bitmap bitmap = LocalComms.getImage(getContext(),iconName,".png","/events",options);
                            if(bitmap==null)
-                               bitmap  = RemoteComms.getImage(getContext(), iconName, ".png", "/profile", options);
+                               bitmap  = RemoteComms.getImage(getContext(), iconName, ".png", "/events", options);
                        }
                        String[] eventNamesArr = new String[events.size()];
                        String[] eventIconsArr = new String[events.size()];

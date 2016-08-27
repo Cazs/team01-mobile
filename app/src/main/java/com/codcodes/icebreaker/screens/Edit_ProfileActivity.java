@@ -11,12 +11,14 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.provider.MediaStore;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -26,6 +28,7 @@ import android.widget.Toast;
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.ImageUtils;
+import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
@@ -63,9 +66,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
 
     private Bitmap circularbitmap,bitmap;
 
-    private static final boolean DEBUG = true;
     private final String TAG = "ICEBREAK";
-    private static boolean CHUNKED = false;
 
     private ProgressDialog progress;
 
@@ -75,10 +76,6 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_profile);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        // getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         final String username = SharedPreference.getUsername(getApplicationContext());
 
@@ -90,16 +87,12 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         Catchphrase = (EditText) findViewById(R.id.CatchPhrase);
 
         Typeface h = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
-        TextView name = (TextView) toolbar.findViewById(R.id.Edit_Heading);
+        TextView name = (TextView) findViewById(R.id.Edit_Heading);
         name.setTypeface(h);
 
         circularImageView = (ImageView) findViewById(R.id.editprofilepic);
 
-
-        Typeface EditFont = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
-        TextView editphoto = (TextView) findViewById(R.id.editphoto);
-        editphoto.setTypeface(EditFont);
-
+        ImageView editphoto = (ImageView) findViewById(R.id.editphoto);
 
         Spinner spinner = (Spinner) findViewById(R.id.spinner1);
         // Create an ArrayAdapter using the string array and a default spinner layout
@@ -111,12 +104,21 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         spinner.setOnItemSelectedListener(this);
 
 
-        ImageView done = (ImageView) findViewById(R.id.edit_profile_done);
+        Button done = (Button) findViewById(R.id.edit_profile_done);
 
+        done.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                updateUserInfo();
+            }
+        });
 
         Bundle extras = getIntent().getExtras();
 
-        if (extras != null) {
+        if (extras != null)
+        {
             Firstname.setText(extras.getString("First Name"));
             Lastname.setText(extras.getString("Last Name"));
             Age.setText(extras.getString("Age"));
@@ -125,6 +127,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
             Bio.setText(extras.getString("Bio"));
             Gender = extras.getString("Gender");
             profilePicture = extras.getString("Picture");
+
             int gender = 0;
             switch(Gender)
             {
@@ -145,60 +148,58 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
             spinner.setSelection(gender);
         }
 
-        done.setOnClickListener(new View.OnClickListener() {
+        editphoto.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
-                String fname = Firstname.getText().toString();
-                String lname = Lastname.getText().toString();
-                String age = Age.getText().toString();
-                String occupation = Occupation.getText().toString();
-                String bio = Bio.getText().toString();
-                String catchphrase = Catchphrase.getText().toString();
-                String g = Gender;
-
-                if(isEmpty(fname))
-                {
-                    Firstname.setError("Cannot be empty");
-                    return;
-                }
-                if(isEmpty(lname))
-                {
-                    Lastname.setError("Cannot be empty");
-                    return;
-                }if(isEmpty(bio))
-                {
-                    Bio.setError("Cannot be empty");
-                    return;
-                }if(isEmpty(age))
-                {
-                    Age.setError("Cannot be empty");
-                    return;
-                }
-                if(isEmpty(catchphrase))
-                {
-                    Catchphrase.setError("Cannot be empty");
-                    return;
-                }
-                if(!isInt(age))
-                {
-                    Age.setError("Must be an integer");
-                    return;
-                }
-                updateProfile(username,fname, lname, age, occupation, bio, catchphrase,g);
-            }
-
-        });
-
-        editphoto.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 Bitmap b = circularImageView.getDrawingCache(false);
                 startActivityForResult(intent, 0);
-
             }
         });
+    }
 
+    public void updateUserInfo()
+    {
+        showProgressBar("Updating your information :)");
+        String fname = Firstname.getText().toString();
+        String lname = Lastname.getText().toString();
+        String age = Age.getText().toString();
+        String occupation = Occupation.getText().toString();
+        String bio = Bio.getText().toString();
+        String catchphrase = Catchphrase.getText().toString();
+        String g = Gender;
+
+        if(isEmpty(fname))
+        {
+            Firstname.setError("Cannot be empty");
+            return;
+        }
+        if(isEmpty(lname))
+        {
+            Lastname.setError("Cannot be empty");
+            return;
+        }if(isEmpty(bio))
+    {
+        Bio.setError("Cannot be empty");
+        return;
+    }if(isEmpty(age))
+    {
+        Age.setError("Cannot be empty");
+        return;
+    }
+        if(isEmpty(catchphrase))
+        {
+            Catchphrase.setError("Cannot be empty");
+            return;
+        }
+        if(!isInt(age))
+        {
+            Age.setError("Must be an integer");
+            return;
+        }
+        updateProfile(SharedPreference.getUsername(this).toString(),fname, lname, age, occupation, bio, catchphrase,g);
     }
 
     public void showProgressBar(String msg)
@@ -225,62 +226,54 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
     public void onActivityResult(int requstCode,int resltCode,Intent data)
     {
         super.onActivityResult(requstCode,resltCode,data);
-        Uri targetUri = data.getData();
+        showProgressBar("Updating image...");
+        if(data!=null) {
+            Uri targetUri = data.getData();
 
-        try
-        {
-            final String usr = SharedPreference.getUsername(this).toString();
-            Bitmap bitmap = bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG,5,stream);
-            final byte[] bmp_arr = stream.toByteArray();
+            try {
+                final String usr = SharedPreference.getUsername(this).toString();
+                Bitmap bitmap = bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 5, stream);
+                final byte[] bmp_arr = stream.toByteArray();
 
-            showProgressBar("Updating image...");
-            //Save  copy of image to app directory
-            WritersAndReaders.saveImage(bmp_arr,"/profile/"+usr+".png");
-            //Set image view
-            circularImageView.setImageBitmap(bitmap);
-            bitmap.recycle();
-            Thread t = new Thread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    Looper.prepare();
-                    int res_code = 0;//TODO: fix directory structure on server and local
-                    try
-                    {
-                        res_code = RemoteComms.imageUpload(bmp_arr, "profile|"+usr, ".png");
-                        if(res_code== HttpURLConnection.HTTP_OK)
-                        {
-                            Log.d(TAG,"Image upload successful");
-                            Toast.makeText(getApplicationContext(),"Image upload successful",Toast.LENGTH_LONG).show();
+
+                //Save  copy of image to app directory
+                WritersAndReaders.saveImage(bmp_arr, "/profile/" + usr + ".png");
+                //Set image view
+                circularImageView.setImageBitmap(bitmap);
+                bitmap.recycle();
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Looper.prepare();
+                        int res_code = 0;//TODO: fix directory structure on server and local
+                        try {
+                            res_code = RemoteComms.imageUpload(bmp_arr, "profile|" + usr, ".png");
+                            if (res_code == HttpURLConnection.HTTP_OK) {
+                                Log.d(TAG, "Image upload successful");
+                                Toast.makeText(getApplicationContext(), "Image upload successful", Toast.LENGTH_LONG).show();
+                            } else {
+                                Log.wtf(TAG, "Image upload unsuccessful: " + res_code);
+                                Toast.makeText(getApplicationContext(), "Image upload successful: " + res_code, Toast.LENGTH_LONG).show();
+                            }
+                        } catch (IOException e) {
+                            hideProgressBar();
+                            Log.wtf(TAG, e.getMessage(), e);
                         }
-                        else
-                        {
-                            Log.wtf(TAG,"Image upload unsuccessful: " + res_code);
-                            Toast.makeText(getApplicationContext(),"Image upload successful: " + res_code,Toast.LENGTH_LONG).show();
-                        }
-                    } catch (IOException e)
-                    {
                         hideProgressBar();
-                        Log.wtf(TAG,e.getMessage(),e);
                     }
-                    hideProgressBar();
-                }
-            });
-            t.start();
+                });
+                t.start();
+            } catch (FileNotFoundException e) {
+                Log.wtf(TAG, e.getMessage(), e);
+                //TODO: Better logging
+            } catch (IOException e) {
+                Log.wtf(TAG, e.getMessage(), e);
+                //TODO: Better logging
+            }
         }
-        catch (FileNotFoundException e)
-        {
-            Log.wtf(TAG,e.getMessage(),e);
-            //TODO: Better logging
-        }
-        catch (IOException e)
-        {
-            Log.wtf(TAG,e.getMessage(),e);
-            //TODO: Better logging
-        }
+        else Log.d(TAG,"Data from image picker is null.");
     }
 
     @Override
@@ -289,17 +282,22 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
     }
 
     @Override
-    public void onNothingSelected(AdapterView<?> adapterView) {
+    public void onNothingSelected(AdapterView<?> adapterView)
+    {
 
     }
 
 
     public void updateProfile(final String username,final String firstname, final String lastname, final String age,final String occupation, final String bio, final String catchphrase,final String gender)
     {
-        Thread thread = new Thread(new Runnable() {
+        Thread thread = new Thread(new Runnable()
+        {
             @Override
-            public void run() {
-
+            public void run()
+            {
+                Looper.prepare();
+                AlertDialog alrt = null;
+                String msg="";
                 try
                 {
                     Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
@@ -327,42 +325,51 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                     boolean found = false;
                     while((resp = in.readLine())!=null)
                     {
-                        if (DEBUG) System.out.println(resp);
-                        Log.d("ICEBREAK",resp);
-                        if(resp.contains("HTTP/1.1 200 OK"))
+                        if(resp.toUpperCase().contains("HTTP/1.1 200 OK"))
                         {
-                            Log.d("ICEBREAK","Found HTTP attr");
+                            Log.d(TAG,"Found HTTP attr");
                             found = true;
                             break;
                         }
                     }
+                    out.close();
+                    in.close();
+
                     if(found)
                     {
-                        //TODO: Figure out how o go back to profile fragment
-                        if (DEBUG) System.out.println("Success");
-                        Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-                        startActivity(intent);
+                        //TODO: Figure out how to go back to profile fragment
+                        Log.d(TAG,"Successfully updated user info on server.");
+                        //alrt = LocalComms.showAlertDialog(getBaseContext(),"Success","Successfully updated your info.");
+                        msg = "Successfully updated your details.";
+                        /*Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                        intent.putExtra("Tab","2");
+                        startActivity(intent);*/
                     }
                     else
                     {
-                        if (DEBUG) System.out.println("UnSuccess");
+                        Log.d(TAG,"Couldn't update user details on server.");
+                        //alrt = LocalComms.showAlertDialog(Edit_ProfileActivity.this,"Failure","Couldn't update user details on server..");
+                        msg = "Couldn't update your details.";
                         //TODO: send message that editing was unsucessful try again
-                        finish();
-                        startActivity(getIntent());
+                        /*finish();
+                        startActivity(getIntent());*/
                     }
-                    out.close();
-                    in.close();
                 }
                 catch (UnknownHostException e)
                 {
-                    e.printStackTrace();
-                    Toast.makeText(getBaseContext(), "No internet access", Toast.LENGTH_LONG).show();
-
+                    Log.d(TAG,"No Internet access.");
+                    msg = e.getMessage();
+                    //alrt = LocalComms.showAlertDialog(Edit_ProfileActivity.this,"No internet","You have no internet access.");
                 }
                 catch (IOException e)
                 {
-                    e.printStackTrace();
+                    Log.d(TAG,e.getMessage(),e);
+                    msg = e.getMessage();
+                    //alrt = LocalComms.showAlertDialog(Edit_ProfileActivity.this,"Error",e.getMessage());
                 }
+                //LocalComms.hideAlertDialog(alrt);
+                Toast.makeText(Edit_ProfileActivity.this, msg, Toast.LENGTH_LONG).show();
+                hideProgressBar();
             }
         });
         thread.start();

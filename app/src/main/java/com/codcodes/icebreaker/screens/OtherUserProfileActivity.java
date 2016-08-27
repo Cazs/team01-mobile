@@ -111,7 +111,6 @@ public class OtherUserProfileActivity extends AppCompatActivity
                         if(bmp_profile!=null)
                         {
                             profileImage.setImageBitmap(bmp_profile);
-                            bmp_profile.recycle();
                             LocalComms.hideImageProgressBar(pb_profile);
                         }
                     }
@@ -147,8 +146,6 @@ public class OtherUserProfileActivity extends AppCompatActivity
         TextView txtBio = (TextView) findViewById(R.id.other_profile_bio);
         txtBio.setTypeface(h);
         txtBio.setText(bio);
-
-
 
         icebreak.setOnClickListener(new View.OnClickListener() {
             @Override

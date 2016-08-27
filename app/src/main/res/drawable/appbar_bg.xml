@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item>
+        <shape>
+            <!-- set the shadow colour -->
+            <stroke
+                android:width="3dp"
+                android:color="#aa00ff" />
+
+            <!-- setting the thickness of shadow -->
+
+            <padding
+                android:bottom="0.1dp"
+                android:left="0dp"
+                android:right="0dp"
+                android:top="0dp" />
+
+            <corners android:radius="0dp" />
+        </shape>
+    </item>
+    <!-- Border colour
+    <item>
+        <shape android:shape="rectangle" >
+            <solid android:color="#000" />
+        </shape>
+    </item>-->
+    <!-- BG  -->
+    <item android:bottom="1.5dp">
+        <shape android:shape="rectangle" >
+            <solid android:color="@color/iceblue" />
+        </shape>
+    </item>
+</layer-list>

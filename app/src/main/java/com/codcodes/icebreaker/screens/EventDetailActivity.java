@@ -187,7 +187,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                                     MainActivity.event = RemoteComms.getEvent(Eventid);
                                     String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + Eventid);
                                     JSON.<User>getJsonableObjectsFromJson(contactsJson, MainActivity.users_at_event, User.class);
-                                    Log.d(TAG,"Set event ID and Event object");
+                                    Log.d(TAG,"Set event ID and Event object.");
                                     EventDetailActivity.this.finish();
                                 }
                                 catch (IllegalAccessException e)

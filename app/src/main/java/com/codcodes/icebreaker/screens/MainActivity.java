@@ -1,7 +1,5 @@
 package com.codcodes.icebreaker.screens;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -27,14 +25,12 @@ import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ContactListSwitches;
-import com.codcodes.icebreaker.auxilary.INTERVALS;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.services.IbTokenRegistrationService;
 import com.codcodes.icebreaker.services.IcebreakCheckerService;
 import com.codcodes.icebreaker.services.MessageFcmService;
-import com.codcodes.icebreaker.services.OnIcebreakCheck;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.User;
@@ -66,7 +62,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     private Typeface ttfInfinity, ttfAilerons;
 
     public static String rootDir = Environment.getExternalStorageDirectory().getPath();
-    public static boolean appInFG = false;
     public static ContactListSwitches val_switch = ContactListSwitches.SHOW_USERS_AT_EVENT;
 
 
@@ -85,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     private int[] viewPagerIcons =
             {
                 R.drawable.ic_location_on_white_24dp,
-                R.drawable.ic_chat_bubble_white_24dp,
+                R.drawable.ic_people_white_24dp,
                 R.drawable.ic_person_white_24dp
             };
 
@@ -96,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         setContentView(R.layout.activity_main);
 
         //Try to get local user from DB
-        lcl = LocalComms.getLocalUser(SharedPreference.getUsername(this).toString(),this);
+        lcl = LocalComms.getContact(this,SharedPreference.getUsername(this).toString());
         uhandle = SharedPreference.getUsername(this).toString();
         if(lcl==null)//not in local DB
         {
@@ -120,25 +115,18 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 }
             });
             tLocalUserLoader.start();
-        }else//is in DB
-        {
-            Log.d(TAG,"Local user already in local DB!!");
-        }
-
-        appInFG = true;
+        }else Log.d(TAG,"Local user already in local DB.");
 
         ttfInfinity = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
         ttfAilerons = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
 
-        //Start Icebreak checker service
+        //Start Icebreak checker service that checks the local DB for Icebreaks
         Intent icebreakChecker = new Intent(this,IcebreakCheckerService.class);
-        //context.stopService(icebreakChecker);
         startService(icebreakChecker);
         Log.d(TAG,"Started IcebreakCheckerService");
 
-        //Start message listener service
+        //Start Message listener service
         Intent intMsgService = new Intent(this, MessageFcmService.class);
-        //inMsg.putExtra("Username", SharedPreference.getUsername(this));
         startService(intMsgService);
         Log.d(TAG,"Started MessageFcmService");
 
@@ -146,8 +134,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         Intent intTokenService = new Intent(this, IbTokenRegistrationService.class);
         startService(intTokenService);
         Log.d(TAG,"Started IbTokenRegistrationService");
-
-        //startIcebreakListenerService();
 
         //Load UI components
         actionBar = (LinearLayout)findViewById(R.id.actionBar);
@@ -172,9 +158,15 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             public void onClick(View view)
             {
                 if(val_switch==ContactListSwitches.SHOW_USER_CONTACTS)
-                    val_switch=ContactListSwitches.SHOW_USERS_AT_EVENT;
+                {
+                    val_switch = ContactListSwitches.SHOW_USERS_AT_EVENT;
+                    fabSwitch.setBackgroundResource(R.drawable.blue);
+                }
                 else
-                    val_switch=ContactListSwitches.SHOW_USER_CONTACTS;
+                {
+                    val_switch = ContactListSwitches.SHOW_USER_CONTACTS;
+                    fabSwitch.setBackgroundResource(R.drawable.turqoise);
+                }
             }
         });
 
@@ -190,7 +182,10 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 else fabSwitch.hide();
 
                 if(position == 2)
+                {
                     title.setText("Your Profile");
+                    title.setTextSize(29);
+                }
                 else title.setText("IceBreak");
             }
 
@@ -207,31 +202,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             }
         });
     }
-
-    private void accept()
-    {
-
-    }
-
-    private void reject()
-    {
-
-    }
-
-    private void startIcebreakListenerService()
-    {
-        AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
-        Intent uiUpdateIntent = new Intent(this,OnIcebreakCheck.class);
-        //uiUpdateIntent.putExtra("Local Username",receiving_user.ge);
-        PendingIntent uiPendingIntent = PendingIntent.getBroadcast(this,0,uiUpdateIntent,PendingIntent.FLAG_UPDATE_CURRENT);
-        Log.d(TAG, "Set up IcebreakCheckerService alarm");
-
-        //Calendar cal = Calendar.getInstance();
-        //cal.add(Calendar.SECOND, INTERVAL);
-
-        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, System.currentTimeMillis(), INTERVALS.UI_UPDATE_DELAY.getValue(), uiPendingIntent);
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -261,21 +231,30 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     @Override
     public void onListFragmentInteraction(User item)
     {
-        if(!item.getFirstname().equals("<Empty>"))
+        if(item!=null)
         {
-            Intent intent = new Intent(this, OtherUserProfileActivity.class);
-            intent.putExtra("Firstname", item.getFirstname());
-            intent.putExtra("Lastname", item.getLastname());
-            intent.putExtra("Username", item.getUsername());
-            intent.putExtra("Age", item.getAge());
-            intent.putExtra("Gender", item.getGender());
-            intent.putExtra("Occupation", item.getOccupation());
-            intent.putExtra("Bio", item.getBio());
-            startActivity(intent);
+            if (!item.getFirstname().equals("<Empty>"))
+            {
+                Intent intent = new Intent(this, OtherUserProfileActivity.class);
+                intent.putExtra("Firstname", item.getFirstname());
+                intent.putExtra("Lastname", item.getLastname());
+                intent.putExtra("Username", item.getUsername());
+                intent.putExtra("Age", item.getAge());
+                intent.putExtra("Gender", item.getGender());
+                intent.putExtra("Occupation", item.getOccupation());
+                intent.putExtra("Bio", item.getBio());
+                startActivity(intent);
+
+                Log.d(TAG, "Loaded other User.");
+            } else {
+                Log.d(TAG, "Either there are no IceBreak users at this event or you don't have an internet connection or you don't have any contacts.");
+                Toast.makeText(this, "Either there are no IceBreak users at this event or you don't have an internet connection or you don't have any contacts.", Toast.LENGTH_LONG).show();
+            }
         }
         else
         {
-            Toast.makeText(this,"Either there are no IceBreak users at this event, you don't have an internet connection or you don't have any contacts.",Toast.LENGTH_LONG).show();
+            Log.d(TAG,"User object is null.");
+            Toast.makeText(this, "User object is null.", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -296,13 +275,10 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             switch (position)
             {
                 case 0:
-                    //actionBar.setVisibility(View.VISIBLE);
                     return EventsFragment.newInstance(context,getIntent().getExtras());
                 case 1:
-                    //actionBar.setVisibility(View.INVISIBLE);
                     return UserContactsFragment.newInstance(context, getIntent().getExtras());
                 case 2:
-                    //actionBar.setVisibility(View.INVISIBLE);
                     return ProfileFragment.newInstance(context);
                 default: return null;
             }
@@ -323,29 +299,17 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     public void onPause()
     {
         super.onPause();
-        //hideDialog();
-        this.appInFG = false;
     }
 
     @Override
     public void onResume()
     {
         super.onResume();
-        this.appInFG = true;
-    }
-
-    public boolean isInForeground()
-    {
-        return this.appInFG;
     }
 
     @Override
     public void onBackPressed()
     {
-        Toast.makeText(this,"Clicked back from MainActivity",Toast.LENGTH_SHORT).show();
-        /*Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_HOME);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);*/
+        Toast.makeText(this,"Clicked back from MainActivity, will close app when clicked twice in the future.",Toast.LENGTH_SHORT).show();
     }
 }

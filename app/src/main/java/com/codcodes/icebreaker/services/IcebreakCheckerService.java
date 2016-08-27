@@ -79,8 +79,7 @@ public class IcebreakCheckerService extends IntentService
                 {
                     Log.d(TAG,"Checking for local inbound and outbound Icebreaks.");
                     ArrayList<Message> messages = LocalComms.getInboundMessages(this,
-                            SharedPreference.getUsername(this).toString(),
-                            MESSAGE_STATUSES.ICEBREAK_DELIVERED);
+                            SharedPreference.getUsername(this).toString());
 
                     ArrayList<Message> out_messages = LocalComms.getOutboundMessages(this,
                             SharedPreference.getUsername(this).toString());
@@ -95,15 +94,15 @@ public class IcebreakCheckerService extends IntentService
 
                         System.err.println(messages.size());
 
-                        receiving_user = LocalComms.getLocalUser(icebreak_msg.getReceiver(), this);
+                        receiving_user = LocalComms.getContact(this,icebreak_msg.getReceiver());
                         if (receiving_user == null)//attempt to download user details
                             receiving_user = RemoteComms.getUser(this,icebreak_msg.getReceiver());
 
-                        requesting_user = LocalComms.getLocalUser(icebreak_msg.getSender(), this);
+                        requesting_user = LocalComms.getContact(this,icebreak_msg.getSender());
                         if (requesting_user == null)//attempt to download user details
                             requesting_user = RemoteComms.getUser(this,icebreak_msg.getSender());
 
-                        System.err.println("Inbound checker> IBDialog active: " + IBDialog.active);
+                        Log.d(TAG+"/IBC", "IBDialog active: " + IBDialog.active);
 
                         //always wait for pending message status changes to complete
                         if (!IBDialog.active && !IBDialog.status_changing)
@@ -127,7 +126,7 @@ public class IcebreakCheckerService extends IntentService
                         for(Message m: out_messages)
                         {
                             //TODO: send messages to server if they haven't been sent
-                            System.err.println("Outbound checker> IBDialog active: " + IBDialog.active);
+                            Log.d(TAG+"/OBC>", "IBDialog active: " + IBDialog.active);
                             //always wait for pending message status changes to complete
                             if (!IBDialog.active && !IBDialog.status_changing)
                             {
@@ -135,11 +134,11 @@ public class IcebreakCheckerService extends IntentService
                                 if (m.getStatus() == MESSAGE_STATUSES.ICEBREAK_ACCEPTED.getStatus() ||
                                         m.getStatus() == MESSAGE_STATUSES.ICEBREAK_REJECTED.getStatus())
                                 {
-                                    receiving_user = LocalComms.getLocalUser(m.getReceiver(), this);
+                                    receiving_user = LocalComms.getContact(this,m.getReceiver());
                                     if (receiving_user == null)//attempt to download user details
                                         receiving_user = RemoteComms.getUser(this,m.getReceiver());
 
-                                    requesting_user = LocalComms.getLocalUser(m.getSender(), this);
+                                    requesting_user = LocalComms.getContact(this,m.getSender());
                                     if (requesting_user == null)//attempt to download user details
                                         requesting_user = RemoteComms.getUser(this,m.getSender());
                                     //Show dialog

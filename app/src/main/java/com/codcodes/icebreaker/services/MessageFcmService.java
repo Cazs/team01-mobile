@@ -68,7 +68,7 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
                         //Add user to local contacts
                         if(msg.getReceiver().equals(MainActivity.uhandle))
                         {
-                            User rem_usr = LocalComms.getLocalUser(msg.getSender(),getApplicationContext());
+                            User rem_usr = LocalComms.getContact(getApplicationContext(),msg.getSender());
                             if(rem_usr==null)
                                 rem_usr = RemoteComms.getUser(getApplicationContext(), msg.getSender());
 
@@ -80,7 +80,7 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
                     case 103:
                         if(msg.getSender().equals(MainActivity.uhandle))//local user got accepted
                         {
-                            User rem_usr = LocalComms.getLocalUser(msg.getReceiver(),getApplicationContext());
+                            User rem_usr = LocalComms.getContact(getApplicationContext(),msg.getReceiver());
                             if(rem_usr==null)
                                 rem_usr = RemoteComms.getUser(getApplicationContext(), msg.getReceiver());
 
@@ -95,7 +95,7 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
                     case 104:
                         if(msg.getSender().equals(MainActivity.uhandle))//local user got rejected
                         {
-                            User rem_usr = LocalComms.getLocalUser(msg.getReceiver(),getApplicationContext());
+                            User rem_usr = LocalComms.getContact(getApplicationContext(), msg.getReceiver());
                             if(rem_usr==null)
                                 rem_usr = RemoteComms.getUser(getApplicationContext(), msg.getReceiver());
 
@@ -127,38 +127,5 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
         /*Log.d(TAG, "FCM Notification Message: " +
                 .getNotification().getBody());*/
     }
-
-    /*@Override
-    protected void onHandleIntent(Intent intent)
-    {
-        Bundle b = intent.getExtras();
-        final String username = b.getString("Username");
-        /*new CountDownTimer(0, INTERVAL)
-        {
-            @Override
-            public void onTick(long l)
-            {
-                poll(username);
-            }
-
-            @Override
-            public void onFinish()
-            {
-                Log.d(TAG,"Done server poll.");
-            }
-        }.start();*
-
-        AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
-        Intent intnt = new Intent(this,OnMessageReceive.class);
-        intnt.putExtra("Username",username);
-        PendingIntent pi = PendingIntent.getBroadcast(this,0,intnt,PendingIntent.FLAG_UPDATE_CURRENT);
-        Log.d(TAG, "Set up alarm");
-
-        //Calendar cal = Calendar.getInstance();
-        //cal.add(Calendar.SECOND, INTERVAL);
-
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVALS.BG_SERVC_POLL_DELAY.getValue(), pi);
-    }*/
-
 
 }

@@ -148,6 +148,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
             public void run()
             {
                 Looper.prepare();
+
                 contacts = new ArrayList<>();
 
                 /**Prepare to set adapter**/
@@ -205,7 +206,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                                     ArrayList<User> temp_lst = new ArrayList<User>();
                                     temp_lst.add(temp);
                                     recyclerView.setAdapter(new UserListRecyclerViewAdapter(temp_lst, bitmaps, mListener));
-                                    Log.d(TAG, "Could not set contact list.");
+                                    Log.d(TAG, "Contact list is empty.");
                                 }
                                 else
                                 {

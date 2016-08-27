@@ -62,28 +62,36 @@ public class IBDialog extends Activity
         receiving_user = dlgIntent.getParcelableExtra("Receiver");
         requesting_user = dlgIntent.getParcelableExtra("Sender");
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
+        final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ALPHA_8;
 
-        if(requesting_user!=null)
+        Thread tImageLoader = new Thread(new Runnable()
         {
-            //try to load local image for sender
-            if(bitmapRequestingUser!=null)
-                bitmapRequestingUser.recycle();
-            bitmapRequestingUser = LocalComms.getImage(this, requesting_user.getUsername(), ".png", "/profile", options);
-            if (bitmapRequestingUser == null)//try get image from server if no local image
-                bitmapRequestingUser = RemoteComms.getImage(this, requesting_user.getUsername(), ".png", "/profile", options);
-        }else Log.d(TAG,"Requesting user is null");
+            @Override
+            public void run()
+            {
+                if(requesting_user!=null)
+                {
+                    //try to load local image for sender
+                    if(bitmapRequestingUser!=null)
+                        bitmapRequestingUser.recycle();
+                    bitmapRequestingUser = LocalComms.getImage(IBDialog.this, requesting_user.getUsername(), ".png", "/profile", options);
+                    if (bitmapRequestingUser == null)//try get image from server if no local image
+                        bitmapRequestingUser = RemoteComms.getImage(IBDialog.this, requesting_user.getUsername(), ".png", "/profile", options);
+                }else Log.d(TAG,"Requesting user is null");
 
-        if(receiving_user!=null)
-        {
-            if(bitmapReceivingUser!=null)
-                bitmapReceivingUser.recycle();
-            //try to load local image for receiver
-            bitmapReceivingUser = LocalComms.getImage(this, receiving_user.getUsername(), ".png", "/profile", options);
-            if (bitmapReceivingUser == null)//try get image from server if no local image
-                bitmapReceivingUser = RemoteComms.getImage(this, receiving_user.getUsername(), ".png", "/profile", options);
-        }else Log.d(TAG,"Receiving user is null");
+                if(receiving_user!=null)
+                {
+                    if(bitmapReceivingUser!=null)
+                        bitmapReceivingUser.recycle();
+                    //try to load local image for receiver
+                    bitmapReceivingUser = LocalComms.getImage(IBDialog.this, receiving_user.getUsername(), ".png", "/profile", options);
+                    if (bitmapReceivingUser == null)//try get image from server if no local image
+                        bitmapReceivingUser = RemoteComms.getImage(IBDialog.this, receiving_user.getUsername(), ".png", "/profile", options);
+                }else Log.d(TAG,"Receiving user is null");
+            }
+        });
+        tImageLoader.start();
 
         if(requesting)//Icebreak request
         {

@@ -35,12 +35,12 @@ public class WritersAndReaders
             for(int i=0;i<dirs.length-1;i++)
                 directories = directories +"/" + dirs[i];
 
-            f = new File(MainActivity.rootDir + "/Icebreak" + directories);
+            f = new File(MainActivity.rootDir + "/Icebreak/" + directories);
 
             if(!f.isDirectory())
                 Log.d(TAG,f.getPath() + " directory creation: " + f.mkdirs());
 
-            f = new File(MainActivity.rootDir + "/Icebreak" + filename);
+            f = new File(MainActivity.rootDir + "/Icebreak/" + filename);
         }else
         {
             /*
