@@ -69,7 +69,7 @@
     <dimen name="ib_req_image_w">220dp</dimen>
     <dimen name="ib_req_image_h">220dp</dimen>
 
-    <dimen name="appbar_title_mtop">5dp</dimen>
+    <dimen name="appbar_title_mtop">14dp</dimen>
 
     <dimen name="dp_size_0">0dp</dimen>
     <dimen name="dp_size_15">15dp</dimen>

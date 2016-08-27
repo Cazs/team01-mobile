@@ -30,14 +30,14 @@
             android:layout_height="wrap_content"
             android:focusable="true"
             android:focusableInTouchMode="true">
-            >
+
             <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/event_image"
                 android:layout_width="@dimen/dp_size_200"
                 android:layout_height="@dimen/dp_size_200"
                 android:layout_marginTop="20dp"
-                android:layout_centerHorizontal="true"
-                android:id="@+id/event_image"
-                />
+                android:layout_centerHorizontal="true"/>
+
             <TextView
                 android:id="@+id/event_name"
                 android:textColor="@color/black"
@@ -45,34 +45,33 @@
                 android:layout_height="wrap_content"
                 android:textSize="18pt"
                 android:fontFamily="monospace"
-                android:layout_marginTop="@dimen/dp_size_250"
+                android:layout_below="@+id/event_image"
                 android:text="Event Name"
-                android:layout_centerHorizontal="true"
-                />
-            <TextView
+                android:layout_centerHorizontal="true"/>
 
+            <TextView
                 android:id="@+id/event_description"
                 android:fontFamily="monospace"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="8pt"
                 android:text="Event Description"
-                android:layout_marginTop="@dimen/dp_size_300"
-                android:layout_centerHorizontal="true"
-                />
+                android:layout_below="@+id/event_name"
+                android:layout_centerHorizontal="true"/>
 
             <EditText
-                android:layout_width="@dimen/dp_size_200"
                 android:id="@+id/AccessCode"
+                android:layout_width="@dimen/dp_size_200"
                 android:layout_height="@dimen/dp_size_40"
                 android:layout_centerHorizontal="true"
                 android:gravity="center"
                 android:hint="Access Code"
-                android:layout_marginTop="450dp"
+                android:layout_marginTop="20dp"
+                android:layout_below="@+id/event_description"
                 android:inputType="number"
                 android:fontFamily="monospace"
-                android:background="@drawable/textbox"
-                />
+                android:background="@drawable/textbox"/>
+
             </RelativeLayout>
     </ScrollView>
     <LinearLayout
@@ -93,7 +92,7 @@
             android:layout_marginRight="2dp"
             app:layoutManager="LinearLayoutManager"
             tools:context=".tabs.UserContactsFragment"
-            tools:listitem="@layout/fragment_usercontacts" />
+            tools:listitem="@layout/fragment_usercontact" />
 
     </LinearLayout>
 </ViewFlipper>

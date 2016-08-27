@@ -227,15 +227,15 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         super.onActivityResult(requstCode,resltCode,data);
         Uri targetUri = data.getData();
 
-        showProgressBar("Uploading image...");
         try
         {
             final String usr = SharedPreference.getUsername(this).toString();
             Bitmap bitmap = bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG,90,stream);
+            bitmap.compress(Bitmap.CompressFormat.PNG,5,stream);
             final byte[] bmp_arr = stream.toByteArray();
 
+            showProgressBar("Updating image...");
             //Save  copy of image to app directory
             WritersAndReaders.saveImage(bmp_arr,"/profile/"+usr+".png");
             //Set image view
@@ -250,7 +250,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                     int res_code = 0;//TODO: fix directory structure on server and local
                     try
                     {
-                        res_code = RemoteComms.imageUpload(bmp_arr,usr,".png");
+                        res_code = RemoteComms.imageUpload(bmp_arr, "profile|"+usr, ".png");
                         if(res_code== HttpURLConnection.HTTP_OK)
                         {
                             Log.d(TAG,"Image upload successful");
@@ -263,6 +263,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                         }
                     } catch (IOException e)
                     {
+                        hideProgressBar();
                         Log.wtf(TAG,e.getMessage(),e);
                     }
                     hideProgressBar();

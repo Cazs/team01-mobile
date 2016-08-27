@@ -17,11 +17,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
+import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.screens.Edit_ProfileActivity;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
@@ -59,7 +61,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
     private FloatingActionButton editButton;
     private static final boolean DEBUG = false;
     private static final String TAG = "IB/ProfileFragment";
-
+    private ProgressBar pb_profile;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
@@ -67,6 +69,9 @@ public class ProfileFragment extends android.support.v4.app.Fragment
         mgr = getActivity().getAssets();
         //TODO: Use this information to send to database to see whch user it is.
         final String username = SharedPreference.getUsername(v.getContext()).toLowerCase();
+
+        pb_profile  = (ProgressBar) v.findViewById(R.id.pb_profile_pic);
+        LocalComms.showImageProgressBar(pb_profile);
 
         Typeface h = Typeface.createFromAsset(mgr, "Infinity.ttf");
         name = (TextView) v.findViewById(R.id.profile_name);
@@ -214,6 +219,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                         circularImageView = (ImageView) v.findViewById(R.id.circleview);
                         circularImageView.setImageBitmap(circularbitmap);
                         editButton.setVisibility(View.VISIBLE);
+                        LocalComms.hideImageProgressBar(pb_profile);
                     }
                 };
                 runOnUI(r);

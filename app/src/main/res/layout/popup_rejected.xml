@@ -58,16 +58,15 @@
 
         <Button
             android:id="@+id/ib_res_btn_continue"
-            android:layout_width="@dimen/ib_popup_btn_w"
-            android:layout_height="@dimen/ib_popup_btn_h"
-            android:layout_marginTop="@dimen/dp_size_20dp"
-            android:fontFamily="monospace"
-            android:gravity="center"
-            android:textSize="10pt"
+            android:layout_width="200dp"
+            android:layout_height="50dp"
+            android:textColor="#000"
+            android:textSize="@dimen/dp_size_15"
+            android:shadowRadius="7"
+            android:background="@drawable/icebreak_button"
             android:text="Keep Playing"
-            android:layout_centerHorizontal="true"
-            android:layout_marginRight="@dimen/dp_size_100"
-            android:background="@drawable/icebreak_button" />
+            android:fontFamily="monospace"
+            android:layout_gravity="center"/>
 
     </LinearLayout>
 </LinearLayout>

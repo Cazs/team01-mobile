@@ -12,6 +12,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.model.Message;
 import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.screens.MainActivity;
@@ -73,6 +74,16 @@ public class RemoteComms
         u.setUsername(username);
         LocalComms.addContact(context,u);
         return u;
+    }
+
+    public static Event getEvent(long event_id) throws IOException
+    {
+        String eventJson = RemoteComms.sendGetRequest("getEvent/"+event_id);
+        Event e = new Event();
+        if(eventJson!=null)
+            JSON.getJsonable(eventJson, e);
+        else return null;
+        return e;
     }
 
     public static int imageUpload(byte[] bitmap, String remote_filename,String ext) throws IOException
@@ -185,7 +196,12 @@ public class RemoteComms
             Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
             System.out.println("Connection established, Sending request..");
             PrintWriter out = new PrintWriter(soc.getOutputStream());
-            String headers = "GET /IBUserRequestService.svc/imageDownload/"+image+ext+" HTTP/1.1\r\n"
+            //Do some formatting, prep for server side
+            if(destPath.charAt(0)=='/'||destPath.charAt(0)=='\\')destPath = destPath.substring(1);
+            if(destPath.contains("/"))destPath = destPath.replaceAll("/","|");
+            if(destPath.contains("\\"))destPath = destPath.replaceAll("\\\\","|");
+
+            String headers = "GET /IBUserRequestService.svc/imageDownload/"+destPath + '|' + image+ext+" HTTP/1.1\r\n"
                     + "Host: icebreak.azurewebsites.net\r\n"
                     + "Content-Type: text/plain;charset=utf-8;\r\n\r\n";
 

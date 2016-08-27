@@ -68,6 +68,8 @@ public class IBDialog extends Activity
         if(requesting_user!=null)
         {
             //try to load local image for sender
+            if(bitmapRequestingUser!=null)
+                bitmapRequestingUser.recycle();
             bitmapRequestingUser = LocalComms.getImage(this, requesting_user.getUsername(), ".png", "/profile", options);
             if (bitmapRequestingUser == null)//try get image from server if no local image
                 bitmapRequestingUser = RemoteComms.getImage(this, requesting_user.getUsername(), ".png", "/profile", options);
@@ -75,6 +77,8 @@ public class IBDialog extends Activity
 
         if(receiving_user!=null)
         {
+            if(bitmapReceivingUser!=null)
+                bitmapReceivingUser.recycle();
             //try to load local image for receiver
             bitmapReceivingUser = LocalComms.getImage(this, receiving_user.getUsername(), ".png", "/profile", options);
             if (bitmapReceivingUser == null)//try get image from server if no local image

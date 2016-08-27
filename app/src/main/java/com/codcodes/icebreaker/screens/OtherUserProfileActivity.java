@@ -17,10 +17,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
@@ -46,19 +48,27 @@ public class OtherUserProfileActivity extends AppCompatActivity
     private String bio;
     private String gender;
     private ProgressDialog progress;
+    private ProgressBar pb_profile;
     private boolean prog_bar = false;
     private final int MSG_ID_LEN = 20;
     private static final String TAG = "IB/OtherUserActivity";
+    private Bitmap bmp_profile;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_other_profile);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
+
+        pb_profile  = (ProgressBar) findViewById(R.id.pb_other_pic);
+        //Show loading icon on profile
+        LocalComms.showImageProgressBar(pb_profile);
 
         Bundle extras = this.getIntent().getExtras();
-        if (extras != null) {
+        if (extras != null)
+        {
             //All this information will need to be sent to other party
             fname = extras.getString("Firstname");
             lname = extras.getString("Lastname");
@@ -82,16 +92,28 @@ public class OtherUserProfileActivity extends AppCompatActivity
         //Load and render selected user's profile
         final Activity ctxt = this;
         final ImageView profileImage = (ImageView) findViewById(R.id.other_pic);
-        Thread tUserProfileLoader = new Thread(new Runnable() {
+        Thread tUserProfileLoader = new Thread(new Runnable()
+        {
             @Override
-            public void run() {
+            public void run()
+            {
+                pb_profile.setProgress(pb_profile.getProgress()+10);
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                final Bitmap bitmap = RemoteComms.getImage(ctxt, username, ".png", "/profile", options);
-                runOnUiThread(new Runnable() {
+                bmp_profile = LocalComms.getImage(ctxt, username, ".png", "/profile", options);
+                if(bmp_profile==null)
+                    bmp_profile = RemoteComms.getImage(ctxt, username, ".png", "/profile", options);
+                runOnUiThread(new Runnable()
+                {
                     @Override
-                    public void run() {
-                        profileImage.setImageBitmap(bitmap);
+                    public void run()
+                    {
+                        if(bmp_profile!=null)
+                        {
+                            profileImage.setImageBitmap(bmp_profile);
+                            bmp_profile.recycle();
+                            LocalComms.hideImageProgressBar(pb_profile);
+                        }
                     }
                 });
             }
@@ -131,7 +153,7 @@ public class OtherUserProfileActivity extends AppCompatActivity
         icebreak.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //dialog.show();
+                showProgressBar();
                 Thread tSender = new Thread(new Runnable()
                 {
                     @Override
@@ -194,75 +216,34 @@ public class OtherUserProfileActivity extends AppCompatActivity
                         }
                         catch (IOException e)
                         {
-                            //e.printStackTrace();
-                            Log.d(TAG, e.getMessage());
-                            Toast.makeText(getBaseContext(), "Unable to send message: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            //TODO: Better logging
+                            hideProgressBar();
+                            Log.wtf(TAG, e.getMessage(),e);
+                            Toast.makeText(getBaseContext(), "Unable to send IceBreak request.", Toast.LENGTH_LONG).show();
                         }
+                        hideProgressBar();
                     }
                 });
                 tSender.start();
             }
         });
-               /*Thread tSender = new Thread(new Runnable()
-               {
-                   @Override
-                   public void run()
-                   {
-                       Looper.prepare();
-
-                       try {
-                           //Populate arrays
-                           ArrayList<AbstractMap.SimpleEntry<String, String>> params = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
-                           ArrayList<AbstractMap.SimpleEntry<String, String>> msg_details = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
-                           msg_details.add(new AbstractMap.SimpleEntry<String, String>("message", "ICEBREAKING"));
-                           msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_status", String.valueOf(MESSAGE_STATUSES.ICEBREAK)));
-                           msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_sender", SharedPreference.getUsername(getBaseContext())));
-                           msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_receiver", username));//TODO
-
-                           //Write to server
-                           int code = RemoteComms.postData("addMessage", msg_details);
-                           if(code != HttpURLConnection.HTTP_OK)
-                           {
-                               Toast.makeText(getBaseContext(),"Could not send request: " + code, Toast.LENGTH_LONG).show();
-                               Log.d(TAG,"Could not send request: " + code);
-                           }
-                           else
-                           {
-                               Log.d(TAG,"Icebreak Sent");
-                           }
-                           runOnUiThread(new Runnable()
-                           {
-                               @Override
-                               public void run()
-                               {
-                                   progress.hide();
-                               }
-                           });
-                       }
-                       catch (IOException e)
-                       {
-                           //TODO: Logging
-                           Log.d(TAG,e.getMessage());
-                       }
-                   }
-               });
-               tSender.start();*/
     }
 
     public void hideProgressBar()
     {
-        progress.hide();
+        if(progress!=null)
+            if(progress.isShowing())
+                progress.dismiss();
     }
 
     public void showProgressBar()
     {
-        progress=new ProgressDialog(this);
+        if(progress==null)
+            progress=new ProgressDialog(this);
         progress.setMessage("Sending request");
         progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progress.setIndeterminate(true);
         progress.setProgress(0);
-        //while (prog_bar)
-            progress.show();
-        //progress.hide();
+        progress.show();
     }
 }

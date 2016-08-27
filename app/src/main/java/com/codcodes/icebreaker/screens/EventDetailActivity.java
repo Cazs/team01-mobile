@@ -63,7 +63,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
     private ArrayList<User> users;
     private ArrayList<String> Name;
     private ArrayList<String> Catchphrase;
-  //  private ArrayList<String> userIcon;
+
     private Location location;
     private int AccessCode;
     private int event_Radius;
@@ -169,17 +169,50 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
             @Override
             public boolean onEditorAction(TextView v, int actionID, KeyEvent event)
             {
+                showProgressBar();
                 if (actionID== EditorInfo.IME_ACTION_DONE)
                 {
                     if(matchAccessCode(Integer.parseInt(accessCode.getText().toString()),location,locationDetector.getLocation(),event_Radius))
                     {
-                        //updateProfile(Eventid,username);
-                        showProgressBar();
-                        listPeople(act);
+                        //Set global variables
+                        //MainActivity.event = RemoteComms.getEvent();
+                        Thread tEventDataLoader = new Thread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                try
+                                {
+                                    MainActivity.event_id = Eventid;
+                                    MainActivity.event = RemoteComms.getEvent(Eventid);
+                                    String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + Eventid);
+                                    JSON.<User>getJsonableObjectsFromJson(contactsJson, MainActivity.users_at_event, User.class);
+                                    Log.d(TAG,"Set event ID and Event object");
+                                    EventDetailActivity.this.finish();
+                                }
+                                catch (IllegalAccessException e)
+                                {
+                                    //TODO: better logging
+                                    Log.wtf(TAG,e.getMessage(),e);
+                                }
+                                catch (InstantiationException e)
+                                {
+                                    //TODO: better logging
+                                    Log.wtf(TAG,e.getMessage(),e);
+                                }
+                                catch (IOException e)
+                                {
+                                    //TODO: better logging
+                                    Log.wtf(TAG,e.getMessage(),e);
+                                }
+                                hideProgressBar();
+                            }
+                        });
+                        tEventDataLoader.start();
+                        //TODO: Go to UserContactsFragment
                     }
                     else
                     {
-
                         accessCode.setError("Invalid Access Code Entered");
                     }
                 }
@@ -195,12 +228,18 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
 
     }
 
+    public void hideProgressBar()
+    {
+        if(progress!=null)
+            if(progress.isShowing())
+                progress.dismiss();
+    }
+
     public void showProgressBar()
     {
         if(progress==null)
-            return;
-        if(!progress.isShowing()) {
             progress = new ProgressDialog(this);
+        if(!progress.isShowing()) {
             progress.setMessage("Loading List");
             progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
             progress.setIndeterminate(true);
@@ -208,64 +247,6 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
             progress.show();
         }
     }
-
-    /*public void updateProfile(final int eventID,final String username)
-    {
-        Thread thread = new Thread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                Looper.prepare();
-
-                try
-                {
-                    Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-                    System.out.println("Connection established");
-                    PrintWriter out = new PrintWriter(soc.getOutputStream());
-                    System.out.println("Sending request");
-
-                    String data = URLEncoder.encode("event_ID", "UTF-8") + "=" + URLEncoder.encode(Integer.toString(eventID), "UTF-8");
-
-                    out.print("POST /IBUserRequestService.svc/userUpdate/"+username+" HTTP/1.1\r\n"
-                            + "Host: icebreak.azurewebsites.net\r\n"
-                            + "Content-Type: text/plain; charset=utf-8\r\n"
-                            + "Content-Length: " + data.length() + "\r\n\r\n"
-                            + data);
-                    out.flush();
-
-                    BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-                    String resp;
-                    boolean found = false;
-                    while((resp = in.readLine())!=null)
-                    {
-                        if (DEBUG) System.out.println(resp);
-                        Log.d("ICEBREAK",resp);
-                        if(resp.contains("HTTP/1.1 200 OK"))
-                        {
-                            Log.d("ICEBREAK","Found HTTP attr");
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    out.close();
-                    in.close();
-                }
-                catch (UnknownHostException e)
-                {
-                    e.printStackTrace();
-                    Toast.makeText(getBaseContext(), "No internet access", Toast.LENGTH_LONG).show();
-
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        });
-        thread.start();
-    }*/
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
@@ -312,7 +293,6 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
             Log.d("Testing", "not null");
             if(code == AccessCode)// && inLocation(loc1,loc2,radius))TODO:Aaron's location code
             {
-                SharedPreference.setEventId(this,Eventid);
                 return true;
             }
         }
@@ -330,22 +310,17 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
         return false;
     }
 
-    public void listPeople(final Activity context)
-    {
-        Thread tContactsLoader = new Thread(new Runnable()
-        {
+    /*public void listPeople(final Activity context) {
+        Thread tContactsLoader = new Thread(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 Looper.prepare();
-                if(Eventid > 0)
-                {
-                    try
-                    {
+                if (Eventid > 0) {
+                    try {
                         String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + Eventid);
                         final ArrayList<User> contacts = new ArrayList<>();
                         JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
-                        System.err.println("Contacts at event: " + Eventid+ " " + contacts.size() + " people");
+                        System.err.println("Contacts at event: " + Eventid + " " + contacts.size() + " people");
 
                         final ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
                         Bitmap circularbitmap = null;
@@ -353,11 +328,10 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                         BitmapFactory.Options options = new BitmapFactory.Options();
                         options.inPreferredConfig = Bitmap.Config.ALPHA_8;
                         //Attempt to load images into memory and set the list adapter
-                        for (User u : contacts)
-                        {
-                            bitmap = LocalComms.getImage(context,u.getUsername(),".png","/profile",options);
-                            if(bitmap==null)
-                                bitmap= RemoteComms.getImage(context,u.getUsername(),".png","/profile",options);
+                        for (User u : contacts) {
+                            bitmap = LocalComms.getImage(context, u.getUsername(), ".png", "/profile", options);
+                            if (bitmap == null)
+                                bitmap = RemoteComms.getImage(context, u.getUsername(), ".png", "/profile", options);
 
                             circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                             if (bitmap == null || circularbitmap == null) {
@@ -369,48 +343,39 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                         }
                         //Update UI
 
-                         runOnUiThread(new Runnable()
-                         {
-                             @Override
-                             public void run()
-                             {
-                                 if (usersAtEventList != null)
-                                 {
-                                     usersAtEventList.setLayoutManager(new LinearLayoutManager(context));
-                                     usersAtEventList.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
-                                     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (usersAtEventList != null) {
+                                    usersAtEventList.setLayoutManager(new LinearLayoutManager(context));
+                                    usersAtEventList.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
+                                    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
-                                     if(progress!=null)
-                                         if(progress.isShowing())
-                                            progress.hide();
-                                     vf = (ViewFlipper) findViewById(R.id.viewFlipper);
-                                     eventDetails.setText("List Of People");
-                                     vf.showNext();
-                                     Log.d(TAG, "Set users at event list");
-                                 }
-                             }
-                         });
+                                    hideProgressBar();
+                                    vf = (ViewFlipper) findViewById(R.id.viewFlipper);
+                                    eventDetails.setText("List Of People");
+                                    vf.showNext();
+                                    Log.d(TAG, "Set users at event list");
+                                }
+                            }
+                        });
                     } catch (IOException e) {
                         //TODO: Error Logging
                         e.printStackTrace();
-                    } catch (java.lang.InstantiationException e)
-                    {
+                    } catch (java.lang.InstantiationException e) {
                         //TODO: Error Logging
                         e.printStackTrace();
-                    } catch (IllegalAccessException e)
-                    {
+                    } catch (IllegalAccessException e) {
                         //TODO: Error Logging
                         e.printStackTrace();
                     }
-                }
-                else
-                {
-                    Toast.makeText(getBaseContext(),"Invalid Event ID",Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getBaseContext(), "Invalid Event ID", Toast.LENGTH_SHORT).show();
                 }
             }
         });
         tContactsLoader.start();
-    }
+    }*/
 
     @Override
     public void onBackPressed()

@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,6 +17,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.model.Message;
@@ -102,6 +105,28 @@ public class LocalComms
         }
         else//exists
             return BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
+    }
+
+    public static void showImageProgressBar(ProgressBar pb)
+    {
+        if(pb!=null)
+        {
+            pb.setVisibility(View.VISIBLE);
+            pb.setIndeterminate(true);
+            pb.setActivated(true);
+            pb.setEnabled(true);
+        } else Log.d(TAG,"ProgressBar is null.");
+    }
+
+    public static void hideImageProgressBar(ProgressBar pb)
+    {
+        if(pb!=null)
+        {
+            pb.setVisibility(View.GONE);
+            pb.setIndeterminate(false);
+            pb.setActivated(false);
+            pb.setEnabled(false);
+        } else Log.d(TAG,"ProgressBar is null.");
     }
 
     public static  void updateLocalMessage(Context context, SQLiteDatabase db, Message m)
@@ -276,37 +301,50 @@ public class LocalComms
                 + MessagePollContract.MessageEntry.COL_MESSAGE_STATUS + " = ? AND "
                 + MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER + " = ?";
 
-        Cursor c = db.rawQuery(query, new String[]
-                {
-                    String.valueOf(status.getStatus()),
-                    receiver
-                });
-
-        while(c.moveToNext())
+        try
         {
-            Message m = new Message();
-            String mgid = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_ID));
-            String send = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER));
-            String msg = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE));
-            String recv = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER));
-            String time = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_TIME));
-            int stat = c.getInt(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS));
+            Cursor c = db.rawQuery(query, new String[]
+                    {
+                            String.valueOf(status.getStatus()),
+                            receiver
+                    });
 
-            //System.err.println(msg + ":" + stat);
+            while (c.moveToNext()) {
+                Message m = new Message();
+                String mgid = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_ID));
+                String send = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER));
+                String msg = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE));
+                String recv = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER));
+                String time = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_TIME));
+                int stat = c.getInt(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS));
 
-            m.setId(mgid);
-            m.setSender(send);
-            m.setMessage(msg);
-            m.setReceiver(recv);
-            m.setTime(time);
-            m.setStatus(stat);
+                //System.err.println(msg + ":" + stat);
 
-            messages.add(m);
+                m.setId(mgid);
+                m.setSender(send);
+                m.setMessage(msg);
+                m.setReceiver(recv);
+                m.setTime(time);
+                m.setStatus(stat);
+
+                messages.add(m);
+            }
+        }
+        catch (SQLiteCantOpenDatabaseException e)
+        {
+            Log.wtf(TAG,e.getMessage(),e);
+            //TODO: Better logging
         }
         //Close DB
-        db.close();
-
+        closeDB(db);
         return messages;
+    }
+
+    private static void closeDB(SQLiteDatabase db)
+    {
+        if(db!=null)
+            if(db.isOpen())
+                db.close();
     }
 
     public static void addContact(Context context, User new_contact)
@@ -337,6 +375,78 @@ public class LocalComms
 
         //Close DB connection
         db.close();
+    }
+
+    public static User getContact(Context ctxt, String username)
+    {
+        String query ="SELECT * FROM " + UserContract.UserEntry.TABLE_NAME + " WHERE "
+                + UserContract.UserEntry.COL_USER_USERNAME +" = ?";
+
+        UserHelper dbHelper = new UserHelper(ctxt);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        dbHelper.onCreate(db);
+
+        Cursor c =  db.rawQuery(query, new String[] {username});
+        int rowCount=c.getCount();
+        db.close();
+        if(rowCount>0)
+        {
+            if(c.moveToFirst())
+            {
+                User u = new User();
+                String usr = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_USERNAME));
+                String fname = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_FNAME));
+                String lname = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_LNAME));
+                int age = c.getInt(c.getColumnIndex(UserContract.UserEntry.COL_USER_AGE));
+                String phrase = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_CATCHPHRASE));
+                String occ = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_OCCUPATION));
+                String gend = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_GENDER));
+                String bio = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_BIO));
+                //String eml = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_EMAIL));
+                u.setUsername(username);
+                u.setOccupation(occ);
+                u.setEmail("NULL");
+                return u;
+            }
+        }
+        return null;
+    }
+
+    public static ArrayList<User> getContacts(Context ctxt)
+    {
+        ArrayList<User> contacts = new ArrayList<>();
+
+        String query ="SELECT * FROM " + UserContract.UserEntry.TABLE_NAME;
+
+        UserHelper dbHelper = new UserHelper(ctxt);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        dbHelper.onCreate(db);
+
+        Cursor c =  db.rawQuery(query, new String[] {});
+        int rowCount=c.getCount();
+        db.close();
+        if(rowCount>0)
+        {
+            while (c.moveToNext())
+            {
+                User u = new User();
+                String usr = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_USERNAME));
+                String fname = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_FNAME));
+                String lname = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_LNAME));
+                int age = c.getInt(c.getColumnIndex(UserContract.UserEntry.COL_USER_AGE));
+                String phrase = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_CATCHPHRASE));
+                String occ = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_OCCUPATION));
+                String gend = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_GENDER));
+                String bio = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_BIO));
+                //String eml = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_EMAIL));
+                u.setUsername(usr);
+                u.setOccupation(occ);
+                u.setEmail("NULL");
+                contacts.add(u);
+            }
+            return contacts;
+        }
+        return null;
     }
 
     public static boolean userExistsInDB(Context ctxt, String username)

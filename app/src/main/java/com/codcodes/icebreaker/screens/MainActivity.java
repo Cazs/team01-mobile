@@ -30,6 +30,7 @@ import com.codcodes.icebreaker.auxilary.ContactListSwitches;
 import com.codcodes.icebreaker.auxilary.INTERVALS;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
+import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.services.IbTokenRegistrationService;
 import com.codcodes.icebreaker.services.IcebreakCheckerService;
 import com.codcodes.icebreaker.services.MessageFcmService;
@@ -42,6 +43,7 @@ import com.codcodes.icebreaker.tabs.ProfileFragment;
 import com.codcodes.icebreaker.tabs.UserContactsFragment;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
 {
@@ -73,6 +75,11 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     private static boolean cview_set = false;
     private static boolean dlg_visible = false;
 
+    //Since this class is called before any other class, we can do this
+    public static long event_id = 0;
+    public static Event event = null;
+    public static ArrayList<User> users_at_event = new ArrayList<>();
+
     private User lcl = null;
 
     private int[] viewPagerIcons =
@@ -87,15 +94,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //init Firebase
-        //FirebaseApp.initializeApp(getApplicationContext(), FirebaseOptions.fromResource(getApplicationContext()));
 
-        /*try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
-        /*Add local user to local db if they don't already exist in the db*/
         //Try to get local user from DB
         lcl = LocalComms.getLocalUser(SharedPreference.getUsername(this).toString(),this);
         uhandle = SharedPreference.getUsername(this).toString();
@@ -130,31 +129,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
         ttfInfinity = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
         ttfAilerons = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
-
-        //Start Icebreak searching service
-        /*Thread tIBloader = new Thread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                Looper.prepare();
-                while (appInFG)
-                {
-                    try
-                    {
-                        checkForIcebreaks();
-                        Thread.sleep(IB_CHECK_DELAY);
-                    } catch (IOException e)//TODO: Fix error handling.
-                    {
-                        e.printStackTrace();
-                    }catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-        tIBloader.start();*/
 
         //Start Icebreak checker service
         Intent icebreakChecker = new Intent(this,IcebreakCheckerService.class);
@@ -209,13 +183,15 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
             {
+                TextView title = (TextView)MainActivity.this.findViewById(R.id.main_heading);
+
                 if(position == 1)
-                {
                     fabSwitch.show();
-                }else
-                {
-                    fabSwitch.hide();
-                }
+                else fabSwitch.hide();
+
+                if(position == 2)
+                    title.setText("Your Profile");
+                else title.setText("IceBreak");
             }
 
             @Override
@@ -285,62 +261,22 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     @Override
     public void onListFragmentInteraction(User item)
     {
-
-        /*Dialog userProfileScreen = new Dialog(this);
-        userProfileScreen.setContentView(R.layout.content_other_user_profile);
-
-        TextView username = (TextView)userProfileScreen.findViewById(R.id.other_user_name);
-        ImageView profile_image = (ImageView)userProfileScreen.findViewById(R.id.other_user_profile_image);
-        TextView level = (TextView)userProfileScreen.findViewById(R.id.other_user_level);
-        TextView age = (TextView)userProfileScreen.findViewById(R.id.other_user_age);
-        TextView gender = (TextView)userProfileScreen.findViewById(R.id.other_user_gender);
-        TextView occupation = (TextView)userProfileScreen.findViewById(R.id.other_user_occupation);
-        TextView phrase = (TextView)userProfileScreen.findViewById(R.id.other_user_phrase);
-        TextView bio = (TextView)userProfileScreen.findViewById(R.id.other_user_bio);
-
-        username.setText(item.getUsername());
-        /*bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                                + "/Icebreak/profile/profile_default.png",getActivity());*
-        Bitmap bitmap = null;
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-        if(new File(Environment.getExternalStorageDirectory().getPath().toString()
-                + "/Icebreak/profile/"+item.getUsername()+".png").exists())
+        if(!item.getFirstname().equals("<Empty>"))
         {
-            bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                    + "/Icebreak/profile/"+item.getUsername()+".png", options);
+            Intent intent = new Intent(this, OtherUserProfileActivity.class);
+            intent.putExtra("Firstname", item.getFirstname());
+            intent.putExtra("Lastname", item.getLastname());
+            intent.putExtra("Username", item.getUsername());
+            intent.putExtra("Age", item.getAge());
+            intent.putExtra("Gender", item.getGender());
+            intent.putExtra("Occupation", item.getOccupation());
+            intent.putExtra("Bio", item.getBio());
+            startActivity(intent);
         }
         else
         {
-            if(new File(Environment.getExternalStorageDirectory().getPath().toString()
-                    + "/Icebreak/profile/profile_default.png").exists())
-            {
-                bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath().toString()
-                        + "/Icebreak/profile/profile_default.png", options);
-            }
+            Toast.makeText(this,"Either there are no IceBreak users at this event, you don't have an internet connection or you don't have any contacts.",Toast.LENGTH_LONG).show();
         }
-        if(bitmap!=null)
-        {
-            Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-            profile_image.setImageBitmap(circularbitmap);
-        }
-        else
-        {
-            Toast.makeText(this,"Could not get profile for selected user, nor could we find the default image.",Toast.LENGTH_LONG).show();
-        }
-
-        //level.setText(item.getLevel());
-        //age.setText(item.getAge());
-        gender.setText(item.getGender());
-        occupation.setText(item.getOccupation());
-        phrase.setText(item.getCatchphrase());
-        bio.setText(item.getBio());
-
-        userProfileScreen.show();
-        */
-        Intent intent = new Intent(getApplicationContext(),ChatActivity.class);
-        intent.putExtra("Username",item.getUsername());
-        startActivity(intent);
     }
 
     public class FragmentAdapter extends FragmentPagerAdapter

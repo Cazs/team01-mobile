@@ -22,13 +22,29 @@
                 android:layout_marginTop="@dimen/dp_size_30"
                 />
 
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_width="@dimen/dp_size_200"
-                android:layout_height="@dimen/dp_size_200"
-                android:layout_marginTop="@dimen/dp_size_70"
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:id="@+id/circleview"
-                />
+                android:layout_gravity="center_horizontal">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:layout_width="@dimen/dp_size_200"
+                    android:layout_height="@dimen/dp_size_200"
+                    android:layout_marginTop="@dimen/dp_size_70"
+                    android:layout_centerHorizontal="true"
+                    android:id="@+id/circleview"
+                    />
+
+                <ProgressBar
+                    android:id="@+id/pb_profile_pic"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center"
+                    android:visibility="visible"
+                    android:indeterminate="true"/>
+
+            </FrameLayout>
 
             <android.support.design.widget.FloatingActionButton
                 android:layout_width="wrap_content"
@@ -95,10 +111,7 @@
                     android:layout_height="@dimen/dp_size_30"
                     android:background="@color/iceblue"
                     android:layout_marginLeft="@dimen/dp_size_20"
-                    android:layout_marginTop="@dimen/dp_size_355"
-                    >
-
-                </View>
+                    android:layout_marginTop="@dimen/dp_size_355"/>
 
                 <ImageView
                     android:layout_width="@dimen/dp_size_20"
@@ -121,22 +134,29 @@
                     />
 
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_below="@+id/link_container"
+                android:layout_marginTop="10dp">
+
+                <Button
+                    android:id="@+id/logOut"
+                    android:layout_width="200dp"
+                    android:layout_height="50dp"
+                    android:textColor="#000"
+                    android:textSize="@dimen/dp_size_15"
+                    android:shadowRadius="5"
+                    android:background="@drawable/buttonshape"
+                    android:text="Sign Out"
+                    android:fontFamily="monospace"
+                    android:onClick="ShowSignUp"
+                    android:layout_gravity="center"/>
+
+            </LinearLayout>
+
         </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <Button
-            android:id="@+id/logOut"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="@dimen/dp_size_430"
-            android:background="@drawable/buttonshape"
-            android:layout_marginLeft="@dimen/dp_size_140"
-            android:text="Sign Out"
-            android:fontFamily="monospace"/>
-    </RelativeLayout>
 
 </RelativeLayout>

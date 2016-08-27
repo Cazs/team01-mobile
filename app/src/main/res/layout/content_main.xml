@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="@color/iceblue"
-        android:layout_weight="10">
+        android:layout_weight="12">
 
         <ImageView
             android:layout_width="@dimen/logo_h"
@@ -30,6 +30,7 @@
             android:id="@+id/main_heading"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/appbar_title_mtop"
             android:text="@string/app_name"
             android:textSize="29pt"
             android:textColor="@color/white"
@@ -41,7 +42,7 @@
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="80"
+        android:layout_weight="78"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <android.support.design.widget.TabLayout

@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -76,6 +77,8 @@ public class EventsFragment extends android.support.v4.app.Fragment
            @Override
            public void run()
            {
+               Looper.prepare();
+
                events = new ArrayList<>();
                try
                {
@@ -84,8 +87,8 @@ public class EventsFragment extends android.support.v4.app.Fragment
                } catch (IOException e)
                {
                    Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_LONG).show();
-                   Log.d(TAG,e.getMessage());
-                   //TODO: Error Logging
+                   Log.wtf(TAG,e.getMessage());
+                   //TODO: Better Logging
                }
                catch (java.lang.InstantiationException e)
                {
@@ -125,14 +128,6 @@ public class EventsFragment extends android.support.v4.app.Fragment
                            Bitmap bitmap = LocalComms.getImage(getContext(),iconName,".png","/events",options);
                            if(bitmap==null)
                                bitmap  = RemoteComms.getImage(getContext(), iconName, ".png", "/profile", options);
-                           /*if (!new File().exists()) {
-                               Log.d(TAG, "No cached " + iconName + ",Image download in progress..");
-                               if (RemoteComms.imageDownloader(iconName, ".png", "/events", getActivity()))
-                                   Log.d(TAG, "Image download successful");
-                               else
-                                   Log.d(TAG, "Image download unsuccessful");
-                           }*/
-                           Log.d(TAG, "Loaded event image");
                        }
                        String[] eventNamesArr = new String[events.size()];
                        String[] eventIconsArr = new String[events.size()];

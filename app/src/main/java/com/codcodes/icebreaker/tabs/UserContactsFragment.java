@@ -1,5 +1,6 @@
 package com.codcodes.icebreaker.tabs;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,7 +16,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ContactListSwitches;
@@ -42,7 +45,8 @@ import java.util.ArrayList;
  */
 public class UserContactsFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener
 {
-
+    private ArrayList<User> contacts = null;
+    private ArrayList<Bitmap> bitmaps;
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
     private static final String TAG = "IB/UserContactsFragment";
@@ -51,7 +55,6 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
     private int mColumnCount = 1;
     private static boolean CHUNKED = false;
     private IOnListFragmentInteractionListener mListener;
-    private int curr_event_id;
     private RecyclerView recyclerView;
     //private SwipeListAdapter swipeAdapter;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -59,10 +62,6 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public UserContactsFragment()
-    {
-        this.curr_event_id = DEBUG?0:-1;
-    }
 
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
@@ -85,7 +84,8 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
 
-
+        //draw UI
+        refresh();
     }
 
     public static UserContactsFragment newInstance(Context context, Bundle b)
@@ -114,10 +114,12 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 public void run()
                 {
                     swipeRefreshLayout.setRefreshing(false);
-                    //refresh();
                 }
             }
         );
+
+        //Refresh list
+        refresh();
 
         if(view != null)
             rview = view.findViewById(R.id.userContactList);
@@ -134,16 +136,8 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
             {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            // Set the adapter
-            refresh();
         }
         return view;
-    }
-
-    public void loadEventId()
-    {
-        //TODO: Do SQLliteDB stuff
-        //for now leave at 0 - if DEBUG else -1
     }
 
     public void refresh()
@@ -154,99 +148,76 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
             public void run()
             {
                 Looper.prepare();
-                if(curr_event_id >= 0)
+                contacts = new ArrayList<>();
+
+                /**Prepare to set adapter**/
+                //Load users at Event
+                if(MainActivity.val_switch == ContactListSwitches.SHOW_USERS_AT_EVENT)
+                    contacts = MainActivity.users_at_event;
+                else//Load local contacts
+                    contacts = LocalComms.getContacts(UserContactsFragment.this.getActivity());
+
+                //Attempt to load images into memory and set the list adapter
+                bitmaps = new ArrayList<Bitmap>();
+                Bitmap circularbitmap = null;
+                Bitmap bitmap = null;
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+                //TODO:
+                for (User u : contacts)
                 {
-                    try
+                    //Look for user profile image
+                    bitmap = LocalComms.getImage(getContext(), u.getUsername(), ".png", "/profile", options);
+                    if (bitmap == null)
+                        bitmap = RemoteComms.getImage(getActivity(), u.getUsername(), ".png", "/profile", options);
+
+                    if(bitmap!=null)
+                        circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_200);
+
+                    if (bitmap == null || circularbitmap == null)
                     {
-                        String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + curr_event_id);
-                        final ArrayList<User> contacts = new ArrayList<>();
-                        JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
-                        System.err.println("Contacts at event: " + curr_event_id+ " " + contacts.size() + " people");
-                        //Attempt to load images into memory and set the list adapter
-                        final ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
-                        Bitmap circularbitmap = null;
-                        Bitmap bitmap = null;
-                        BitmapFactory.Options options = new BitmapFactory.Options();
-                        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+                        Log.d(TAG, "Bitmap is null");
+                        bitmaps.add(null);
+                    }
+                    else
+                    {
+                        Log.d(TAG, "Loaded bitmap to memory.");
+                        bitmaps.add(circularbitmap);
+                        bitmap.recycle();
+                    }
+                }
 
-                        for (User u : contacts)
+                Runnable runnable = new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        if (recyclerView != null)
                         {
-                            //Look for user profile image
-                            /*if (!new File(Environment.getExternalStorageDirectory().getPath()
-                                    + "/Icebreak/profile/" + u.getUsername() + ".png").exists()) {*/
-                                //if (imageDownload(u.getUsername() + ".png", "/profile")) {
-                                options = new BitmapFactory.Options();
-                                options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                                bitmap = LocalComms.getImage(getContext(),u.getUsername(),".png","/profile",options);
-                                if(bitmap==null)
-                                    bitmap = RemoteComms.getImage(getActivity(),u.getUsername(), ".png", "/profile", options);
+                            if(contacts==null)
+                                contacts = new ArrayList<>();
 
-                                circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-
-                            if (bitmap == null || circularbitmap == null)
-                                System.err.println("Bitmap is null");
-                            else
-                            {
-                                Log.d(TAG,"Loaded bitmap to memory.");
-                                bitmaps.add(circularbitmap);
-                                bitmap.recycle();
-                            }
-                        }
-                        if(MainActivity.val_switch == ContactListSwitches.SHOW_USERS_AT_EVENT)
-                        {
-                            Runnable runnable = new Runnable()
-                            {
-                                @Override
-                                public void run()
+                                if(contacts.isEmpty())
                                 {
-                                    if (recyclerView != null)
-                                    {
-                                        recyclerView.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
-                                        Log.d(TAG, "Set contact list");
-                                    }
+                                    User temp = new User();
+                                    temp.setFirstname("<Empty>");
+                                    temp.setLastname("");
+                                    ArrayList<User> temp_lst = new ArrayList<User>();
+                                    temp_lst.add(temp);
+                                    recyclerView.setAdapter(new UserListRecyclerViewAdapter(temp_lst, bitmaps, mListener));
+                                    Log.d(TAG, "Could not set contact list.");
                                 }
-                            };
-                            runOnUI(runnable);
+                                else
+                                {
+                                    recyclerView.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
+                                    Log.d(TAG, "Set contact list.");
+                                }
                         }
-                    } catch (IOException e) {
-                        //TODO: Error Logging
-                        e.printStackTrace();
-                    } catch (java.lang.InstantiationException e) {
-                        //TODO: Error Logging
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        //TODO: Error Logging
-                        e.printStackTrace();
+                        if(swipeRefreshLayout!=null)
+                            swipeRefreshLayout.setRefreshing(false);
                     }
-                }
-                //TODO:load contacts from local SQLiteDB and check with remote DB
-                if(MainActivity.val_switch == ContactListSwitches.SHOW_USER_CONTACTS)
-                {
-                    /**Load contacts from local DB (and double check with server) and set adapter
-                     *
-                     * runOnUiThread(new Runnable() {
-                    @Override public void run() {
-                    if (recyclerView != null) {
-                    recyclerView.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
-                    Log.d(TAG, "Set contact list");
-                    }
-                    }
-                    });
-                     */
-                    Runnable runnable = new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            if (recyclerView != null)
-                            {
-                                swipeRefreshLayout.setRefreshing(false);
-                                Log.d(TAG, "Disabled refresh");
-                            }
-                        }
-                    };
-                    runOnUI(runnable);
-                }
+                };
+                runOnUI(runnable);
             }
         });
         tContactsLoader.start();
@@ -256,40 +227,6 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
     {
         UserContactsFragment.this.getActivity().runOnUiThread(r);
     }
-
-    /*public void refreshContacts()
-    {
-        if(curr_event_id >= 0) {
-            //TODO: load contacts at that event
-            Thread tContactsLoader = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    Looper.prepare();
-                    try {
-                        String contactsJson = RemoteComms.getJsonFromURL("getUsersAtEvent/" + curr_event_id);
-                        final ArrayList<User> contacts = new ArrayList<>();
-                        JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
-                        //Attempt to load images into memory and set the list adapter
-
-                        for (User u : contacts) {
-
-                        }
-                    } catch (java.lang.InstantiationException e) {
-                        Log.d(TAG, e.getMessage());
-                    } catch (IllegalAccessException e) {
-                        Log.d(TAG, e.getMessage());
-                    } catch (IOException e) {
-                        Log.d(TAG, e.getMessage());
-                    }
-                }
-            });
-            tContactsLoader.start();
-        }
-        else
-        {
-            //TODO:load contacts from local SQLiteDB and check with remote DB
-        }
-    }*/
 
     @Override
     public void onAttach(Context context)
@@ -316,9 +253,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
     @Override
     public void onRefresh()
     {
-        //refresh();
         swipeRefreshLayout.setRefreshing(true);
-        Toast.makeText(getActivity(),"Refreshing",Toast.LENGTH_SHORT).show();
-        //refresh();
+        refresh();
     }
 }
