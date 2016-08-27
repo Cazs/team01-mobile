@@ -134,8 +134,9 @@ public class LocalComms
         notif = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_notification_icon)
                 .setContentTitle("IceBreak")
-                .setVibrate(new long[]{300,0,300,300,0,200})
-                .setSound(Uri.parse("/sounds/notif.wav"))
+                .setVibrate(new long[]{500})
+                .setContentText("New IceBreak Request")
+                .setSound(Uri.parse("assets/sounds/notif.wav"))
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
                 .setContentIntent(resultPendingIntent)
                 .build();
@@ -407,7 +408,7 @@ public class LocalComms
             {
                 if(c.moveToFirst())
                 {
-                     u = new User();
+                    u = new User();
                     String usr = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_USERNAME));
                     String fname = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_FNAME));
                     String lname = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_LNAME));
@@ -418,7 +419,13 @@ public class LocalComms
                     String bio = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_BIO));
                     //String eml = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_EMAIL));
                     u.setUsername(username);
+                    u.setFirstname(fname);
+                    u.setLastname(lname);
+                    u.setAge(age);
+                    u.setCatchphrase(phrase);
                     u.setOccupation(occ);
+                    u.setGender(gend);
+                    u.setBio(bio);
                     u.setEmail("NULL");
                 }else Log.wtf(TAG,"The impossible has happened, couldn't set DB cursor to first entry when trying get a User even though " +
                         "the username was found.");

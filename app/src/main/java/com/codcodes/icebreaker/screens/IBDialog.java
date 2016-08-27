@@ -53,7 +53,6 @@ public class IBDialog extends Activity
         super.onCreate(savedInstanceState);
         dialog = new Dialog(this);
 
-        System.err.println("IBDialog creation in progress.....");
         ttfInfinity = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
         ttfAilerons = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
 
@@ -61,37 +60,6 @@ public class IBDialog extends Activity
         icebreak_msg = dlgIntent.getParcelableExtra("Message");
         receiving_user = dlgIntent.getParcelableExtra("Receiver");
         requesting_user = dlgIntent.getParcelableExtra("Sender");
-
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-
-        Thread tImageLoader = new Thread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                if(requesting_user!=null)
-                {
-                    //try to load local image for sender
-                    if(bitmapRequestingUser!=null)
-                        bitmapRequestingUser.recycle();
-                    bitmapRequestingUser = LocalComms.getImage(IBDialog.this, requesting_user.getUsername(), ".png", "/profile", options);
-                    if (bitmapRequestingUser == null)//try get image from server if no local image
-                        bitmapRequestingUser = RemoteComms.getImage(IBDialog.this, requesting_user.getUsername(), ".png", "/profile", options);
-                }else Log.d(TAG,"Requesting user is null");
-
-                if(receiving_user!=null)
-                {
-                    if(bitmapReceivingUser!=null)
-                        bitmapReceivingUser.recycle();
-                    //try to load local image for receiver
-                    bitmapReceivingUser = LocalComms.getImage(IBDialog.this, receiving_user.getUsername(), ".png", "/profile", options);
-                    if (bitmapReceivingUser == null)//try get image from server if no local image
-                        bitmapReceivingUser = RemoteComms.getImage(IBDialog.this, receiving_user.getUsername(), ".png", "/profile", options);
-                }else Log.d(TAG,"Receiving user is null");
-            }
-        });
-        tImageLoader.start();
 
         if(requesting)//Icebreak request
         {
@@ -148,6 +116,69 @@ public class IBDialog extends Activity
                 progress.dismiss();
     }
 
+    public void loadImages(final ImageView[] images)
+    {
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+
+        Thread tImageLoader = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if(requesting_user!=null)
+                {
+                    //try to load local image for sender
+                    if(bitmapRequestingUser!=null)
+                        bitmapRequestingUser.recycle();
+                    bitmapRequestingUser = LocalComms.getImage(IBDialog.this, requesting_user.getUsername(), ".png", "/profile", options);
+                    if (bitmapRequestingUser == null)//try get image from server if no local image
+                        bitmapRequestingUser = RemoteComms.getImage(IBDialog.this, requesting_user.getUsername(), ".png", "/profile", options);
+
+                    //set image
+                    Runnable r = new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            if(images[0]!=null)
+                                images[0].setImageBitmap(bitmapRequestingUser);
+                        }
+                    };
+                    runOnUI(r);
+                }else Log.d(TAG,"Requesting user is null");
+
+                if(receiving_user!=null)
+                {
+                    if(bitmapReceivingUser!=null)
+                        bitmapReceivingUser.recycle();
+                    //try to load local image for receiver
+                    bitmapReceivingUser = LocalComms.getImage(IBDialog.this, receiving_user.getUsername(), ".png", "/profile", options);
+                    if (bitmapReceivingUser == null)//try get image from server if no local image
+                        bitmapReceivingUser = RemoteComms.getImage(IBDialog.this, receiving_user.getUsername(), ".png", "/profile", options);
+
+                    //set image
+                    Runnable r = new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            if(images[1]!=null)
+                                images[1].setImageBitmap(bitmapReceivingUser);
+                        }
+                    };
+                    runOnUI(r);
+                }else Log.d(TAG,"Receiving user is null");
+            }
+        });
+        tImageLoader.start();
+    }
+
+    private void runOnUI(Runnable r)
+    {
+        IBDialog.this.runOnUiThread(r);
+    }
+
     private void populateIcebreakRequestUI()
     {
         dialog.setContentView(R.layout.popup_icebreak);
@@ -160,6 +191,8 @@ public class IBDialog extends Activity
         txtIBReqPopup_occ = (TextView) dialog.findViewById((R.id.ib_req_user_occupation));
 
         imgIBReqPopup_OtherUser = (ImageView) dialog.findViewById(R.id.ib_req_user_image);
+
+        loadImages(new ImageView[]{imgIBReqPopup_OtherUser,null});
 
         accept = (Button) dialog.findViewById(R.id.ib_req_btn_accept);
         reject = (Button) dialog.findViewById(R.id.ib_req_btn_reject);
@@ -175,8 +208,8 @@ public class IBDialog extends Activity
         accept.setTypeface(ttfInfinity);
         reject.setTypeface(ttfInfinity);
 
-        if(imgIBReqPopup_OtherUser!=null && bitmapRequestingUser!=null)
-            imgIBReqPopup_OtherUser.setImageBitmap(bitmapRequestingUser);
+        /*if(imgIBReqPopup_OtherUser!=null && bitmapRequestingUser!=null)
+            imgIBReqPopup_OtherUser.setImageBitmap(bitmapRequestingUser);*/
 
         String name = LocalComms.getValidatedName(requesting_user);
         txtIBReqPopup_name.setText(name);
@@ -271,8 +304,9 @@ public class IBDialog extends Activity
         TextView or = (TextView)dialog.findViewById(R.id.or);
         Button btnContinue = (Button)dialog.findViewById(R.id.popup1_Keep_playing);
 
-        imgLocalUser.setImageBitmap(bitmapReceivingUser);
-        imgRemoteUser.setImageBitmap(bitmapRequestingUser);
+        loadImages(new ImageView[]{imgLocalUser,imgRemoteUser});
+        //imgLocalUser.setImageBitmap(bitmapReceivingUser);
+        //imgRemoteUser.setImageBitmap(bitmapRequestingUser);
 
         txtSuccessfulMatch.setTypeface(ttfInfinity);
         phrase.setTypeface(ttfInfinity);
@@ -363,21 +397,26 @@ public class IBDialog extends Activity
     private void drawRejectionUI()
     {
         dialog.setContentView(R.layout.popup_rejected);
-        //dialog.show();
 
         TextView txtUnsuccess = (TextView)dialog.findViewById(R.id.ib_res_unsuccess);
         TextView txtMotivational = (TextView)dialog.findViewById(R.id.txt_motivational_message);
         ImageView imgLocalUser = (ImageView)dialog.findViewById(R.id.ib_res_local_usr_image);
         ImageView imgRemoteUser = (ImageView)dialog.findViewById(R.id.ib_res_remote_usr_image);
 
-        Button btnContinue = (Button)dialog.findViewById(R.id.ib_res_btn_continue);
-
-        imgLocalUser.setImageBitmap(bitmapReceivingUser);
-        imgRemoteUser.setImageBitmap(bitmapRequestingUser);
-
         //Set typefaces
         txtMotivational.setTypeface(ttfInfinity);
         txtUnsuccess.setTypeface(ttfInfinity);
+
+        Button btnContinue = (Button)dialog.findViewById(R.id.ib_res_btn_continue);
+
+        /*if(imgLocalUser!=null && bitmapRequestingUser!=null)
+            imgLocalUser.setImageBitmap(bitmapRequestingUser);
+        else Log.d(TAG,"Requesting user bitmap NULL.");
+
+        if(imgRemoteUser!=null && bitmapReceivingUser!=null)
+            imgRemoteUser.setImageBitmap(bitmapReceivingUser);
+        else Log.d(TAG,"Receiving user bitmap NULL.");*/
+        loadImages(new ImageView[]{imgLocalUser,imgRemoteUser});
 
         btnContinue.setOnClickListener(new View.OnClickListener()
         {

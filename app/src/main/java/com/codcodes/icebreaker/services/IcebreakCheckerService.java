@@ -92,8 +92,6 @@ public class IcebreakCheckerService extends IntentService
                         //Get first Icebreak
                         icebreak_msg = messages.get(0);
 
-                        System.err.println(messages.size());
-
                         receiving_user = LocalComms.getContact(this,icebreak_msg.getReceiver());
                         if (receiving_user == null)//attempt to download user details
                             receiving_user = RemoteComms.getUser(this,icebreak_msg.getReceiver());
