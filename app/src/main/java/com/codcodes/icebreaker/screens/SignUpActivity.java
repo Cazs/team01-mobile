@@ -1,6 +1,9 @@
 package com.codcodes.icebreaker.screens;
 
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,6 +11,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -20,6 +24,15 @@ import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
+import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,6 +42,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,10 +57,83 @@ public class SignUpActivity extends AppCompatActivity {
     ProgressBar bar;
     CheckBox checkBox;
 
+    private LoginButton loginButton;
+    private CallbackManager callbackManager;
+    private AccessTokenTracker accessTokenTracker = null;
+    private AccessToken accessToken = null;
+
+    private static final String TAG = "IB/SignUpActivity";
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
+
+        //Get Hash and set hash
+        try
+        {
+            PackageInfo info = getPackageManager().getPackageInfo(
+                    getPackageName(),
+                    PackageManager.GET_SIGNATURES);
+            for (Signature signature : info.signatures)
+            {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+            }
+        } catch (PackageManager.NameNotFoundException e)
+        {
+            //TODO: Better logging
+            Log.wtf(TAG,e.getMessage(),e);
+        } catch (NoSuchAlgorithmException e)
+        {
+            //TODO: Better logging
+            Log.wtf(TAG,e.getMessage(),e);
+        }
+
+        //Init Facebook
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(getApplication());
+
         setContentView(R.layout.activity_sign_up);
+
+        //* Begin init Facebook login button
+
+        callbackManager = CallbackManager.Factory.create();
+        loginButton = (LoginButton) findViewById(R.id.login_button);
+        loginButton.setReadPermissions("email");
+        accessTokenTracker = new AccessTokenTracker()
+        {
+            @Override
+            protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken)
+            {
+                accessToken = currentAccessToken;
+            }
+        };
+        accessTokenTracker.startTracking();
+
+        // Callback registration
+        loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>()
+        {
+            @Override
+            public void onSuccess(LoginResult loginResult)
+            {
+                // App code
+                System.err.println("LoginResult: " + loginResult.getAccessToken());
+            }
+
+            @Override
+            public void onCancel() {
+                // App code
+            }
+
+            @Override
+            public void onError(FacebookException exception) {
+                // App code
+            }
+        });
+
+        //* End init Facebook login button
 
         Typeface heading = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
         TextView headingTextView = (TextView) findViewById(R.id.SignUp);
@@ -111,7 +199,21 @@ public class SignUpActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        accessTokenTracker.stopTracking();
+    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        System.err.println(resultCode);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+    }
 
     private Handler toastHandler(final String text)
     {

@@ -18,7 +18,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -89,7 +92,10 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //LinearLayout action_bar = (LinearLayout)MainActivity.this.findViewById(R.id.actionBar);
 
+        TextView title = (TextView)MainActivity.this.findViewById(R.id.main_heading);
+        title.setTextSize(29);
         //Try to get local user from DB
         lcl = LocalComms.getContact(this,SharedPreference.getUsername(this).toString());
         uhandle = SharedPreference.getUsername(this).toString();
@@ -141,7 +147,8 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         TabLayout tablayout = (TabLayout) findViewById(R.id.tab_layout);
         TextView headingTextView = (TextView) findViewById(R.id.main_heading);
         ttfInfinity = Typeface.createFromAsset(this.getAssets(),"Ailerons-Typeface.otf");
-        final FloatingActionButton fabSwitch = (FloatingActionButton)findViewById(R.id.fabSwitch);
+        //final FloatingActionButton fabSwitch = (FloatingActionButton)findViewById(R.id.fabSwitch);
+        //fabSwitch.hide();
 
         //Setup UI components
         mViewPager.setAdapter(new FragmentAdapter(getSupportFragmentManager(),MainActivity.this));
@@ -150,13 +157,27 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         tablayout.getTabAt(1).setIcon(viewPagerIcons[1]);
         tablayout.getTabAt(2).setIcon(viewPagerIcons[2]);
         headingTextView.setTypeface(ttfInfinity);
-        fabSwitch.hide();
 
-        fabSwitch.setOnClickListener(new View.OnClickListener()
+
+        /*fabSwitch.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
+                Animation animation1 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.scale);
+                final ImageView imgAnim = (ImageView)findViewById(R.id.imgAnimCircle);
+                imgAnim.setVisibility(View.VISIBLE);
+                imgAnim.startAnimation(animation1);
+
+                imgAnim.postOnAnimation(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        imgAnim.setVisibility(View.GONE);
+                    }
+                });
+
                 if(val_switch==ContactListSwitches.SHOW_USER_CONTACTS)
                 {
                     val_switch = ContactListSwitches.SHOW_USERS_AT_EVENT;
@@ -168,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                     fabSwitch.setBackgroundResource(R.drawable.turqoise);
                 }
             }
-        });
+        });*/
 
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener()
         {
@@ -177,9 +198,9 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             {
                 TextView title = (TextView)MainActivity.this.findViewById(R.id.main_heading);
 
-                if(position == 1)
+                /*if(position == 1)
                     fabSwitch.show();
-                else fabSwitch.hide();
+                else fabSwitch.hide();*/
 
                 if(position == 2)
                 {
@@ -192,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             @Override
             public void onPageSelected(int position)
             {
-
+                TextView title = (TextView)MainActivity.this.findViewById(R.id.main_heading);
             }
 
             @Override
@@ -233,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     {
         if(item!=null)
         {
-            if (!item.getFirstname().equals("<Empty>"))
+            if (!item.getFirstname().equals(getString(R.string.msg_not_in_event)))
             {
                 Intent intent = new Intent(this, OtherUserProfileActivity.class);
                 intent.putExtra("Firstname", item.getFirstname());

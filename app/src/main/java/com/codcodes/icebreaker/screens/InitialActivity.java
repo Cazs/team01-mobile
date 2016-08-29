@@ -1,6 +1,9 @@
 package com.codcodes.icebreaker.screens;
 
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.graphics.Typeface;
 import android.support.v7.app.AppCompatActivity;
 
@@ -9,6 +12,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,6 +27,23 @@ import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 
+import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.Profile;
+import com.facebook.ProfileTracker;
+import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
+
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+
 public class InitialActivity extends AppCompatActivity
 {
 
@@ -34,6 +56,7 @@ public class InitialActivity extends AppCompatActivity
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     private ImageView iv;
+    private static final String TAG = "IB/InitialActivity";
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
@@ -48,6 +71,7 @@ public class InitialActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_initial);
+
 
         nav_dot_1= (View) this.findViewById(R.id.page1);
         nav_dot_2 = (View) this.findViewById(R.id.page2);
@@ -77,7 +101,8 @@ public class InitialActivity extends AppCompatActivity
             }
 
             @Override
-            public void onPageSelected(int position) {
+            public void onPageSelected(int position)
+            {
                 nav_dot_1.setBackgroundResource(R.drawable.init_nav_dot);
                 nav_dot_2.setBackgroundResource(R.drawable.init_nav_dot);
                 nav_dot_3.setBackgroundResource(R.drawable.init_nav_dot);
@@ -90,7 +115,8 @@ public class InitialActivity extends AppCompatActivity
             }
 
             @Override
-            public void onPageScrollStateChanged(int state) {
+            public void onPageScrollStateChanged(int state)
+            {
 
             }
         });
@@ -99,6 +125,7 @@ public class InitialActivity extends AppCompatActivity
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         TextView headingTextView = (TextView) findViewById(R.id.heading);
         headingTextView.setTypeface(heading);
+        headingTextView.setTextSize(29);
 
         if(SharedPreference.getUsername(InitialActivity.this).length()==0)
             return;
@@ -108,7 +135,6 @@ public class InitialActivity extends AppCompatActivity
             startActivity(intent);
         }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu)

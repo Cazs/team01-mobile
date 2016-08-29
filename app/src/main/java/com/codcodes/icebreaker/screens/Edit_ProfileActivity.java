@@ -85,14 +85,17 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         Occupation = (EditText) findViewById(R.id.editOccupation);
         Bio = (EditText) findViewById(R.id.editbio);
         Catchphrase = (EditText) findViewById(R.id.CatchPhrase);
+        TextView name = (TextView) findViewById(R.id.Edit_Heading);
+        TextView edit_image_link = (TextView) findViewById(R.id.editphoto);
 
         Typeface h = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
-        TextView name = (TextView) findViewById(R.id.Edit_Heading);
+        Typeface ttf_infinity = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
+
         name.setTypeface(h);
+        edit_image_link.setTypeface(ttf_infinity);
+        edit_image_link.setTextSize(18);
 
         circularImageView = (ImageView) findViewById(R.id.editprofilepic);
-
-        ImageView editphoto = (ImageView) findViewById(R.id.editphoto);
 
         Spinner spinner = (Spinner) findViewById(R.id.spinner1);
         // Create an ArrayAdapter using the string array and a default spinner layout
@@ -148,7 +151,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
             spinner.setSelection(gender);
         }
 
-        editphoto.setOnClickListener(new View.OnClickListener()
+        edit_image_link.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
@@ -162,7 +165,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
 
     public void updateUserInfo()
     {
-        showProgressBar("Updating your information :)");
+        progress = LocalComms.showProgressBar(this,"Updating your information...");
         String fname = Firstname.getText().toString();
         String lname = Lastname.getText().toString();
         String age = Age.getText().toString();
@@ -202,35 +205,19 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         updateProfile(SharedPreference.getUsername(this).toString(),fname, lname, age, occupation, bio, catchphrase,g);
     }
 
-    public void showProgressBar(String msg)
-    {
-        if(progress==null)
-            progress = new ProgressDialog(this);
-        if(!progress.isShowing())
-        {
-            progress.setMessage(msg);
-            progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            progress.setIndeterminate(true);
-            progress.setProgress(0);
-            progress.show();
-        }
-    }
 
-    public void hideProgressBar()
-    {
-        if(progress!=null)
-            if(progress.isShowing())
-                progress.dismiss();
-    }
 
     public void onActivityResult(int requstCode,int resltCode,Intent data)
     {
         super.onActivityResult(requstCode,resltCode,data);
-        showProgressBar("Updating image...");
-        if(data!=null) {
+        if(data!=null)
+        {
+            progress = LocalComms.showProgressBar(this,"Updating image...");
+
             Uri targetUri = data.getData();
 
-            try {
+            try
+            {
                 final String usr = SharedPreference.getUsername(this).toString();
                 Bitmap bitmap = bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -248,27 +235,33 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                     public void run() {
                         Looper.prepare();
                         int res_code = 0;//TODO: fix directory structure on server and local
-                        try {
+                        try
+                        {
                             res_code = RemoteComms.imageUpload(bmp_arr, "profile|" + usr, ".png");
-                            if (res_code == HttpURLConnection.HTTP_OK) {
+                            if (res_code == HttpURLConnection.HTTP_OK)
+                            {
                                 Log.d(TAG, "Image upload successful");
                                 Toast.makeText(getApplicationContext(), "Image upload successful", Toast.LENGTH_LONG).show();
-                            } else {
+                            } else
+                            {
                                 Log.wtf(TAG, "Image upload unsuccessful: " + res_code);
                                 Toast.makeText(getApplicationContext(), "Image upload successful: " + res_code, Toast.LENGTH_LONG).show();
                             }
-                        } catch (IOException e) {
-                            hideProgressBar();
+                        } catch (IOException e)
+                        {
+                            LocalComms.hideProgressBar(progress);
                             Log.wtf(TAG, e.getMessage(), e);
                         }
-                        hideProgressBar();
+                        LocalComms.hideProgressBar(progress);
                     }
                 });
                 t.start();
-            } catch (FileNotFoundException e) {
+            } catch (FileNotFoundException e)
+            {
                 Log.wtf(TAG, e.getMessage(), e);
                 //TODO: Better logging
-            } catch (IOException e) {
+            } catch (IOException e)
+            {
                 Log.wtf(TAG, e.getMessage(), e);
                 //TODO: Better logging
             }
@@ -296,7 +289,6 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
             public void run()
             {
                 Looper.prepare();
-                AlertDialog alrt = null;
                 String msg="";
                 try
                 {
@@ -369,7 +361,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                 }
                 //LocalComms.hideAlertDialog(alrt);
                 Toast.makeText(Edit_ProfileActivity.this, msg, Toast.LENGTH_LONG).show();
-                hideProgressBar();
+                LocalComms.hideProgressBar(progress);
             }
         });
         thread.start();

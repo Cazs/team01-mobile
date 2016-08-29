@@ -43,12 +43,20 @@
         android:layout_weight="78"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+    <!--<ImageView
+        android:id="@+id/imgAnimCircle"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center|bottom"
+        android:visibility="gone"
+        android:src="@drawable/translucent_circle"/>-->
+
     <android.support.design.widget.TabLayout
         android:id="@+id/tab_layout"
         style="@style/MyCustomTabLayout"
         android:layout_weight="10"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@color/iceblue"
-        />
+        android:background="@color/iceblue" />
+
 </LinearLayout>

@@ -13,5 +13,5 @@ public enum ContactListSwitches
     private ContactListSwitches(int swtch)
     {this.swtch = swtch;}
 
-    public int getSwtch(){return  this.swtch;}
+    public int getSwitch(){return  this.swtch;}
 }

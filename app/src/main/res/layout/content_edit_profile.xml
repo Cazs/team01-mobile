@@ -28,12 +28,13 @@
                 android:layout_marginTop="@dimen/dp_size_20"
                 android:layout_centerHorizontal="true" />
 
-            <ImageView
+            <TextView
                 android:id="@+id/editphoto"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/upload_image_bg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_below="@+id/editprofilepic"
+                android:textColor="@color/iceblue2"
+                android:text="Change Picture"
                 android:layout_centerHorizontal="true"/>
 
             <EditText

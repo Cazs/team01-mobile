@@ -72,6 +72,15 @@
                 android:fontFamily="monospace"
                 android:background="@drawable/textbox"/>
 
+            <Button
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/qr_code_scanner_btn_bg"
+                android:layout_below="@+id/AccessCode"
+                android:onClick="startQRscanner"
+                android:layout_centerHorizontal="true"/>
+
             </RelativeLayout>
     </ScrollView>
     <LinearLayout

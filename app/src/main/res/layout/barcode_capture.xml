@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/topLayout"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".screens.BarcodeCaptureActivity"
+    android:keepScreenOn="true">
+
+    <LinearLayout
+        android:id="@+id/actionBar"
+        android:layout_width="match_parent"
+        android:layout_height="65dp"
+        android:background="@color/iceblue">
+
+        <ImageView
+            android:layout_width="@dimen/logo_h"
+            android:layout_height="@dimen/logo_w"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="@dimen/dp_size_20"
+            android:src="@mipmap/ic_launcher" />
+
+        <TextView
+            android:id="@+id/txtTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="Event Sign In"
+            android:textSize="22pt"
+            android:textColor="@color/white" />
+
+    </LinearLayout>
+
+    <com.codcodes.icebreaker.auxilary.camera.CameraSourcePreview
+        android:id="@+id/preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.codcodes.icebreaker.auxilary.camera.GraphicOverlay
+            android:id="@+id/graphicOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </com.codcodes.icebreaker.auxilary.camera.CameraSourcePreview>
+
+</LinearLayout>

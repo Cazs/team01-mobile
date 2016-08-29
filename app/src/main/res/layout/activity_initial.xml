@@ -32,17 +32,16 @@
                     android:layout_marginTop="@dimen/dp_size_2"
                     android:layout_marginLeft="@dimen/dp_size_20"
                     android:layout_height="wrap_content"
-                    android:src="@mipmap/ic_launcher"
-                    />
+                    android:src="@mipmap/ic_launcher"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
                     android:text="@string/app_name"
                     android:id="@+id/heading"
                     android:textSize="29pt"
-                    android:textColor="@color/white"
-                    />
+                    android:textColor="@color/white"/>
 
             </LinearLayout>
         </android.support.design.widget.AppBarLayout>
@@ -87,7 +86,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="12"
+            android:layout_weight="14"
             android:background="@color/iceblue"
             android:orientation="vertical">
 
@@ -100,7 +99,7 @@
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="@dimen/init_btn_login_rmarg"
+                    android:layout_marginRight="@dimen/init_btn_login_marg"
                     android:textColor="#000"
                     android:textSize="@dimen/dp_size_15"
                     android:background="@drawable/buttonshape"
@@ -117,15 +116,14 @@
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/init_btn_login_lmarg"
+                    android:layout_marginLeft="@dimen/init_btn_login_marg"
                     android:textColor="#000"
                     android:textSize="@dimen/dp_size_15"
                     android:shadowRadius="5"
                     android:background="@drawable/buttonshape"
                     android:text="Sign Up"
                     android:fontFamily="monospace"
-                    android:onClick="ShowSignUp"
-                    />
+                    android:onClick="ShowSignUp" />
 
             </LinearLayout>
         </RelativeLayout>

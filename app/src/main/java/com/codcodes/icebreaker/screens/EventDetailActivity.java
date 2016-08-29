@@ -9,20 +9,16 @@ import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
-import android.view.WindowManager;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
-
-import android.widget.ProgressBar;
 
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,25 +26,16 @@ import android.widget.ViewFlipper;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
-import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
-import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.LocationDetector;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
-import com.codcodes.icebreaker.auxilary.UserListRecyclerViewAdapter;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.User;
+import com.google.android.gms.common.api.CommonStatusCodes;
+import com.google.android.gms.vision.barcode.Barcode;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.URLEncoder;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
@@ -75,6 +62,8 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
     private ProgressDialog progress;
 
     private LocationDetector locationDetector;
+
+    private static final int RC_BARCODE_CAPTURE = 9001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -172,49 +161,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                 showProgressBar();
                 if (actionID== EditorInfo.IME_ACTION_DONE)
                 {
-                    if(matchAccessCode(Integer.parseInt(accessCode.getText().toString()),location,locationDetector.getLocation(),event_Radius))
-                    {
-                        //Set global variables
-                        //MainActivity.event = RemoteComms.getEvent();
-                        Thread tEventDataLoader = new Thread(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                try
-                                {
-                                    MainActivity.event_id = Eventid;
-                                    MainActivity.event = RemoteComms.getEvent(Eventid);
-                                    String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + Eventid);
-                                    JSON.<User>getJsonableObjectsFromJson(contactsJson, MainActivity.users_at_event, User.class);
-                                    Log.d(TAG,"Set event ID and Event object.");
-                                    EventDetailActivity.this.finish();
-                                }
-                                catch (IllegalAccessException e)
-                                {
-                                    //TODO: better logging
-                                    Log.wtf(TAG,e.getMessage(),e);
-                                }
-                                catch (InstantiationException e)
-                                {
-                                    //TODO: better logging
-                                    Log.wtf(TAG,e.getMessage(),e);
-                                }
-                                catch (IOException e)
-                                {
-                                    //TODO: better logging
-                                    Log.wtf(TAG,e.getMessage(),e);
-                                }
-                                hideProgressBar();
-                            }
-                        });
-                        tEventDataLoader.start();
-                        //TODO: Go to UserContactsFragment
-                    }
-                    else
-                    {
-                        accessCode.setError("Invalid Access Code Entered");
-                    }
+                    validateEventLogin(Integer.parseInt(accessCode.getText().toString()));
                 }
                 return false;
             }
@@ -226,6 +173,94 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
             Log.d("Testing", String.valueOf(loc.getLongitude()) + " : " + String.valueOf(loc.getLatitude() ));
         }*/
 
+    }
+
+    private void validateEventLogin(int code)
+    {
+        if(matchAccessCode(code,location,locationDetector.getLocation(),event_Radius))
+        {
+            //Set global variables
+            //MainActivity.event = RemoteComms.getEvent();
+            Thread tEventDataLoader = new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        MainActivity.event_id = Eventid;
+                        MainActivity.event = RemoteComms.getEvent(Eventid);
+                        String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + Eventid);
+                        JSON.<User>getJsonableObjectsFromJson(contactsJson, MainActivity.users_at_event, User.class);
+                        Log.d(TAG,"Set event ID and Event object.");
+                        EventDetailActivity.this.finish();
+                    }
+                    catch (IllegalAccessException e)
+                    {
+                        //TODO: better logging
+                        Log.wtf(TAG,e.getMessage(),e);
+                    }
+                    catch (InstantiationException e)
+                    {
+                        //TODO: better logging
+                        Log.wtf(TAG,e.getMessage(),e);
+                    }
+                    catch (IOException e)
+                    {
+                        //TODO: better logging
+                        Log.wtf(TAG,e.getMessage(),e);
+                    }
+                    hideProgressBar();
+                }
+            });
+            tEventDataLoader.start();
+            //TODO: Go to UserContactsFragment
+        }
+        else
+        {
+            Toast.makeText(this,"Invalid access code. Please try again.", Toast.LENGTH_LONG).show();
+            Log.d(TAG,"Invalid Access Code Entered");
+        }
+    }
+
+    public void startQRscanner(View v)
+    {
+        Intent intent = new Intent(this, BarcodeCaptureActivity.class);
+        intent.putExtra(BarcodeCaptureActivity.AutoFocus, true);
+        intent.putExtra(BarcodeCaptureActivity.UseFlash, false);
+
+        startActivityForResult(intent, RC_BARCODE_CAPTURE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if (requestCode == RC_BARCODE_CAPTURE)
+        {
+            if (resultCode == CommonStatusCodes.SUCCESS)
+            {
+                if (data != null)
+                {
+                    Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
+                    validateEventLogin(Integer.valueOf(barcode.displayValue));
+                    Log.d(TAG, "Barcode read: " + barcode.displayValue);
+                }
+                else
+                {
+                    Toast.makeText(this,"No barcode captured.", Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "No barcode captured, intent data is null");
+                }
+            } else
+            {
+                Toast.makeText(this,String.format(getString(R.string.barcode_error),
+                        CommonStatusCodes.getStatusCodeString(resultCode)), Toast.LENGTH_LONG).show();
+                Log.d(TAG, String.format(getString(R.string.barcode_error),
+                        CommonStatusCodes.getStatusCodeString(resultCode)));
+            }
+        }
+        else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     public void hideProgressBar()
@@ -290,7 +325,6 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
     {
         if(loc1 != null || loc2 != null)
         {
-            Log.d("Testing", "not null");
             if(code == AccessCode)// && inLocation(loc1,loc2,radius))TODO:Aaron's location code
             {
                 return true;

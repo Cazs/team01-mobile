@@ -7,6 +7,7 @@ public enum INTERVALS
 {
     IB_CHECK_DELAY(1500),
     BG_SERVC_POLL_DELAY(1000),
+    USERS_AT_EVENT_REFRESH_DELAY(3000),
     UI_UPDATE_DELAY(500);
 
     private final int value;

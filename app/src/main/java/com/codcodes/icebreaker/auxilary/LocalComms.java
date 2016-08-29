@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -15,6 +16,7 @@ import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Path;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -61,6 +63,30 @@ public class LocalComms
         }
         else//exists
             return BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
+    }
+
+    public static ProgressDialog showProgressBar(Context context, String msg)
+    {
+        ProgressDialog progress = new ProgressDialog(context);
+        progress.setCanceledOnTouchOutside(false);
+
+        if(!progress.isShowing())
+        {
+            progress.setMessage(msg);
+            progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progress.setIndeterminate(true);
+            progress.setProgress(0);
+            progress.show();
+        }
+
+        return progress;
+    }
+
+    public static void hideProgressBar(ProgressDialog progress)
+    {
+        if(progress!=null)
+            if(progress.isShowing())
+                progress.dismiss();
     }
 
     public static void showImageProgressBar(ProgressBar pb)
@@ -131,14 +157,17 @@ public class LocalComms
         NotificationManager mNotificationManager = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
 
+        Uri soundUri = Uri.parse("android.resource://" + context.getPackageName() + "/assets/sounds/notif.wav");
+
         notif = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_notification_icon)
                 .setContentTitle("IceBreak")
                 .setVibrate(new long[]{500})
                 .setContentText("New IceBreak Request")
-                .setSound(Uri.parse("assets/sounds/notif.wav"))
+                .setSound(soundUri)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
                 .setContentIntent(resultPendingIntent)
+                .setLights(Color.CYAN,700,1000)
                 .build();
 
         mNotificationManager.notify(notifId, notif);
@@ -632,23 +661,42 @@ public class LocalComms
 
     public static void validateStoragePermissions(Activity activity)
     {
-        int REQUEST_EXTERNAL_STORAGE = 1;
-        String[] PERMISSIONS_STORAGE =
+        int REQUEST = 1;
+        String[] PERMISSIONS =
                 {
+                        Manifest.permission.INTERNET,
                         Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION
                 };
         //Check for write permissions
-        int w_permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        int r_permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE);
-        if (w_permission != PackageManager.PERMISSION_GRANTED || r_permission != PackageManager.PERMISSION_GRANTED)
+        //int w_permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        //int r_permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE);
+        //if (w_permission != PackageManager.PERMISSION_GRANTED || r_permission != PackageManager.PERMISSION_GRANTED)
+        ArrayList<String> not_granted = new ArrayList<>();
+        for(String s:PERMISSIONS)
         {
-            //No permission - prompt the user for permission
+            int permission = ActivityCompat.checkSelfPermission(activity, s);
+            if(permission != PackageManager.PERMISSION_GRANTED)
+            {
+                not_granted.add(s);
+            }
+        }
+
+        Object[] arr = not_granted.toArray();
+        String[] perms = new String[arr.length];
+        System.arraycopy(arr,0,perms,0,arr.length);
+
+        if(not_granted.size()>0)
+        {
+            //Some permissions not granted - prompt the user for permission
             ActivityCompat.requestPermissions
                     (
                             activity,
-                            PERMISSIONS_STORAGE,
-                            REQUEST_EXTERNAL_STORAGE
+                            perms,
+                            REQUEST
                     );
         }
     }

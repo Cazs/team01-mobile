@@ -101,7 +101,7 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
 
                             //notify user
                             String name = LocalComms.getValidatedName(rem_usr);
-                            LocalComms.showNotification(getApplicationContext(),name + " is not in the mood right now, better luck next time ;)", NOTIFICATION_ID.NOTIF_REQUEST.getId());
+                            LocalComms.showNotification(getApplicationContext(),name + " is not keen right now, better luck next time ;)", NOTIFICATION_ID.NOTIF_REQUEST.getId());
                         }
                         break;
                 }
@@ -109,7 +109,6 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
                 //Add message (or update status) on local DB
                 LocalComms.addMessageToLocalDB(getApplicationContext(),msg);
 
-                //System.err.println(json_msg);
             } catch (IOException e)
             {
                 Log.d(TAG,e.getMessage());//TODO: better logging

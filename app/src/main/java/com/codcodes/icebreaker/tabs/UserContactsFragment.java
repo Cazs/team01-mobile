@@ -22,6 +22,7 @@ import android.widget.ViewFlipper;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ContactListSwitches;
+import com.codcodes.icebreaker.auxilary.INTERVALS;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
@@ -35,6 +36,8 @@ import com.codcodes.icebreaker.screens.MainActivity;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 //import static com.google.android.gms.internal.zzir.runOnUiThread;
 /**
@@ -53,6 +56,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
     private static final boolean DEBUG = true;
     // TODO: Customize parameters
     private int mColumnCount = 1;
+    private Timer tContactsRefresh = null;
     private static boolean CHUNKED = false;
     private IOnListFragmentInteractionListener mListener;
     private RecyclerView recyclerView;
@@ -118,9 +122,6 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
             }
         );
 
-        //Refresh list
-        refresh();
-
         if(view != null)
             rview = view.findViewById(R.id.userContactList);
 
@@ -137,91 +138,156 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
         }
+
+        /*
+        *The reason I did the following is so that the only entry in the contacts is the
+        * R.string.msg_not_in_event message
+        */
+        Thread t = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                refreshUsersAtEvent();
+            }
+        });
+        t.start();
+
         return view;
     }
 
     public void refresh()
     {
-        Thread tContactsLoader = new Thread(new Runnable()
+        tContactsRefresh = new Timer();
+        tContactsRefresh.scheduleAtFixedRate(new TimerTask()
         {
             @Override
             public void run()
             {
-                Looper.prepare();
-
-                contacts = new ArrayList<>();
-
-                /**Prepare to set adapter**/
-                //Load users at Event
-                if(MainActivity.val_switch == ContactListSwitches.SHOW_USERS_AT_EVENT)
-                    contacts = MainActivity.users_at_event;
-                else//Load local contacts
-                    contacts = LocalComms.getContacts(UserContactsFragment.this.getActivity());
-
-                //Attempt to load images into memory and set the list adapter
-                bitmaps = new ArrayList<Bitmap>();
-                Bitmap circularbitmap = null;
-                Bitmap bitmap = null;
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                //TODO:
-                for (User u : contacts)
+                try
                 {
-                    //Look for user profile image
-                    bitmap = LocalComms.getImage(getContext(), u.getUsername(), ".png", "/profile", options);
-                    if (bitmap == null)
-                        bitmap = RemoteComms.getImage(getActivity(), u.getUsername(), ".png", "/profile", options);
-
-                    if(bitmap!=null)
-                        circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_200);
-
-                    if (bitmap == null || circularbitmap == null)
+                    if (MainActivity.event_id > 0)
                     {
-                        Log.d(TAG, "Bitmap is null");
-                        bitmaps.add(null);
+                        ArrayList<User> users = new ArrayList<User>();
+                        MainActivity.event = RemoteComms.getEvent(MainActivity.event_id);
+                        String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + MainActivity.event_id);
+                        JSON.<User>getJsonableObjectsFromJson(contactsJson, users, User.class);
+                        int i=0;
+                        if(users.size()!=MainActivity.users_at_event.size())//then number of users has changed
+                        {
+                            MainActivity.users_at_event = new ArrayList<User>();
+                            for(User u:users)
+                                MainActivity.users_at_event.add(u);
+                            refreshUsersAtEvent();
+                        }
+                        /* Commented out due to performance considerations
+                        else //Still the same number of users, compare each user
+                        {
+                            boolean has_changes = false;
+                            for(User u:users)
+                            {
+                                if(!u.getUsername().equals(MainActivity.users_at_event.get(i)))
+                                    has_changes = true;
+                                ++i;
+                            }
+                            if(has_changes)
+                            {
+                                MainActivity.users_at_event = new ArrayList<User>();
+                                for(User u:users)
+                                    MainActivity.users_at_event.add(u);
+                                refreshUsersAtEvent();
+                            }
+                        }*/
+                    } else Log.d(TAG,"User not at an event.");
+                } catch (java.lang.InstantiationException e)
+                {
+                    //TODO: Better logging.
+                    Log.wtf(TAG,e.getMessage(),e);
+                } catch (IllegalAccessException e)
+                {
+                    //TODO: Better logging.
+                    Log.wtf(TAG,e.getMessage(),e);
+                } catch (IOException e)
+                {
+                    //TODO: Better logging.
+                    Log.wtf(TAG,e.getMessage(),e);
+                }
+            }
+        }, 0, INTERVALS.USERS_AT_EVENT_REFRESH_DELAY.getValue());
+    }
+
+    private void refreshUsersAtEvent()
+    {
+        contacts = new ArrayList<>();
+
+        /**Prepare to set adapter**/
+        //Load users at Event
+        if(MainActivity.val_switch.getSwitch() == ContactListSwitches.SHOW_USERS_AT_EVENT.getSwitch())
+            contacts = MainActivity.users_at_event;
+        else//Load local contacts
+            contacts = LocalComms.getContacts(UserContactsFragment.this.getActivity());
+
+        //Attempt to load images into memory and set the list adapter
+        bitmaps = new ArrayList<Bitmap>();
+        Bitmap circularbitmap = null;
+        Bitmap bitmap = null;
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+
+        for (User u : contacts)
+        {
+            //Look for user profile image
+            bitmap = LocalComms.getImage(getContext(), u.getUsername(), ".png", "/profile", options);
+            if (bitmap == null)
+                bitmap = RemoteComms.getImage(getActivity(), u.getUsername(), ".png", "/profile", options);
+
+            if(bitmap!=null)
+                circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_200);
+
+            if (bitmap == null || circularbitmap == null)
+            {
+                Log.wtf(TAG, "Bitmap "+u.getUsername()+".png is null");
+                bitmaps.add(null);
+            }
+            else
+            {
+                //Log.d(TAG, "Loaded bitmap to memory.");
+                bitmaps.add(circularbitmap);
+                bitmap.recycle();
+            }
+        }
+
+        Runnable runnable = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if (recyclerView != null)
+                {
+                    if(contacts==null)
+                        contacts = new ArrayList<>();
+
+                    if(contacts.isEmpty())
+                    {
+                        User temp = new User();
+                        temp.setFirstname(getString(R.string.msg_not_in_event));
+                        temp.setLastname("");
+                        ArrayList<User> temp_lst = new ArrayList<User>();
+                        temp_lst.add(temp);
+                        recyclerView.setAdapter(new UserListRecyclerViewAdapter(temp_lst, bitmaps, mListener));
+                        Log.d(TAG, "Contact list is empty.");
                     }
                     else
                     {
-                        Log.d(TAG, "Loaded bitmap to memory.");
-                        bitmaps.add(circularbitmap);
-                        bitmap.recycle();
+                        recyclerView.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
+                        Log.d(TAG, "Set contact list.");
                     }
                 }
-
-                Runnable runnable = new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        if (recyclerView != null)
-                        {
-                            if(contacts==null)
-                                contacts = new ArrayList<>();
-
-                                if(contacts.isEmpty())
-                                {
-                                    User temp = new User();
-                                    temp.setFirstname("<Empty>");
-                                    temp.setLastname("");
-                                    ArrayList<User> temp_lst = new ArrayList<User>();
-                                    temp_lst.add(temp);
-                                    recyclerView.setAdapter(new UserListRecyclerViewAdapter(temp_lst, bitmaps, mListener));
-                                    Log.d(TAG, "Contact list is empty.");
-                                }
-                                else
-                                {
-                                    recyclerView.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
-                                    Log.d(TAG, "Set contact list.");
-                                }
-                        }
-                        if(swipeRefreshLayout!=null)
-                            swipeRefreshLayout.setRefreshing(false);
-                    }
-                };
-                runOnUI(runnable);
+                if(swipeRefreshLayout!=null)
+                    swipeRefreshLayout.setRefreshing(false);
             }
-        });
-        tContactsLoader.start();
+        };
+        runOnUI(runnable);
     }
 
     public void runOnUI(Runnable r)
@@ -255,6 +321,14 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
     public void onRefresh()
     {
         swipeRefreshLayout.setRefreshing(true);
-        refresh();
+        Thread t = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                refreshUsersAtEvent();
+            }
+        });
+        t.start();
     }
 }

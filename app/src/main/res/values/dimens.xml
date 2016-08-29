@@ -18,6 +18,10 @@
     <dimen name="btn_login_mleft">75dp</dimen>
     <dimen name="btn_login_mtop">18dp</dimen>
 
+    <dimen name="facebook_btn_w">140dp</dimen>
+    <dimen name="facebook_btn_h">90dp</dimen>
+    <dimen name="init_fb_login_pad">15dp</dimen>
+
     <dimen name="btn_signup_text_size">15dp</dimen>
     <dimen name="btn_signup_mleft">50dp</dimen>
     <dimen name="btn_signup_mtop">18dp</dimen>
@@ -60,8 +64,7 @@
 
     <dimen name="button_text_size">15dp</dimen>
 
-    <dimen name="init_btn_login_rmarg">10dp</dimen>
-    <dimen name="init_btn_login_lmarg">10dp</dimen>
+    <dimen name="init_btn_login_marg">10dp</dimen>
     <dimen name="ib_popup_btn_w">200dp</dimen>
     <dimen name="ib_popup_btn_h">40dp</dimen>
     <dimen name="ib_popup_padding">25dp</dimen>
