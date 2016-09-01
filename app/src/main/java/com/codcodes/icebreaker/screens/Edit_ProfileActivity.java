@@ -359,9 +359,12 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                     msg = e.getMessage();
                     //alrt = LocalComms.showAlertDialog(Edit_ProfileActivity.this,"Error",e.getMessage());
                 }
-                //LocalComms.hideAlertDialog(alrt);
-                Toast.makeText(Edit_ProfileActivity.this, msg, Toast.LENGTH_LONG).show();
-                LocalComms.hideProgressBar(progress);
+                finally
+                {
+                    //LocalComms.hideAlertDialog(alrt);
+                    Toast.makeText(Edit_ProfileActivity.this, msg, Toast.LENGTH_LONG).show();
+                    LocalComms.hideProgressBar(progress);
+                }
             }
         });
         thread.start();

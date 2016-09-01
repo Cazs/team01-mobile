@@ -136,6 +136,8 @@ public class EventsFragment extends android.support.v4.app.Fragment
                        eventDescriptionsArr = eventDescriptions.toArray(eventDescriptionsArr);
                        eventIconsArr = eventIcons.toArray(eventIconsArr);
 
+                       if(eventNamesArr==null)
+                           eventNamesArr=new String[]{"<No Events>"};
                        final CustomListAdapter adapter = new CustomListAdapter(getActivity(), eventNamesArr, eventIconsArr, eventDescriptionsArr);
                        Runnable r = new Runnable()
                        {

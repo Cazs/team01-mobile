@@ -169,6 +169,41 @@ public class RemoteComms
         return httpConn.getResponseCode();
     }
 
+    public static String postData(String function, String params) throws IOException
+    {
+        function = function.charAt(0)=='/'||function.charAt(0)=='\\'?function.substring(1):function;//Remove first slash if it exists
+        URL urlConn = new URL("http://icebreak.azurewebsites.net/IBUserRequestService.svc/" + function);
+        HttpURLConnection httpConn = (HttpURLConnection)urlConn.openConnection();
+        httpConn.setReadTimeout(10000);
+        httpConn.setConnectTimeout(15000);
+        httpConn.setRequestMethod("POST");
+        httpConn.setDoInput(true);
+        httpConn.setDoOutput(true);
+
+        //Write to server
+        OutputStream os = httpConn.getOutputStream();
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"UTF-8"));
+        writer.write(params);
+        writer.flush();
+        writer.close();
+        os.close();
+
+        httpConn.connect();
+
+        Scanner scn=null;
+        if(httpConn.getResponseCode()==HttpURLConnection.HTTP_OK)
+             scn = new Scanner(new InputStreamReader(httpConn.getInputStream()));
+        else
+            scn = new Scanner(new InputStreamReader(httpConn.getErrorStream()));
+        String resp = "";
+        if(scn!=null)
+            while(scn.hasNext())
+                resp+=scn.nextLine();
+        //System.err.println(resp);
+
+        return httpConn.getResponseCode() + ":" + resp;
+    }
+
     private static boolean imageDownloader(String image, String ext, String destPath, Context context)
     {
         //Check for invalid filenames

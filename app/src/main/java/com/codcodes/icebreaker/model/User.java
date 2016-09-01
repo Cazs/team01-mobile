@@ -2,6 +2,10 @@ package com.codcodes.icebreaker.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 /**
  * Created by USER on 2016/08/02.
@@ -18,6 +22,10 @@ public class User implements IJsonable, Parcelable
     private String password;
     private String gender;
     private String username;
+    private String fb_id;
+    private String fb_token;
+
+    private final String TAG = "IB/User";
 
     public User() {}
 
@@ -94,9 +102,7 @@ public class User implements IJsonable, Parcelable
         return password;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public void setPassword(String password) {this.password = password;}
 
     public String getGender() {
         return gender;
@@ -114,9 +120,70 @@ public class User implements IJsonable, Parcelable
         this.username = username;
     }
 
+    public String getFbID() {
+        return this.fb_id;
+    }
+
+    public void setFbID(String id) {
+        this.fb_id = id;
+    }
+
+    public String getFbToken() {
+        return this.fb_token;
+    }
+
+    public void setFbToken(String token) {
+        this.fb_token = token;
+    }
+
     @Override
-    public String toString() {
-        return age + " " + occupation + " " + bio + " " + catchphrase + " " + gender + " " + username;
+    public String toString()
+    {
+        String s = "";
+        StringBuilder result = new StringBuilder();
+        try
+        {
+            if (this.username != null)
+                result.append(URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(this.username, "UTF-8") + "&");
+            if (this.firstname != null)
+                result.append(URLEncoder.encode("fname", "UTF-8") + "=" + URLEncoder.encode(this.firstname, "UTF-8") + "&");
+            if (this.lastname != null)
+                result.append(URLEncoder.encode("lname", "UTF-8") + "=" + URLEncoder.encode(this.lastname, "UTF-8") + "&");
+            if (this.age > 0)
+                result.append(URLEncoder.encode("age", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(this.age), "UTF-8") + "&");
+            if (this.bio != null)
+                result.append(URLEncoder.encode("bio", "UTF-8") + "=" + URLEncoder.encode(this.bio, "UTF-8") + "&");
+            if (this.catchphrase != null)
+                result.append(URLEncoder.encode("catchphrase", "UTF-8") + "=" + URLEncoder.encode(this.catchphrase, "UTF-8") + "&");
+            if (this.occupation != null)
+                result.append(URLEncoder.encode("occupation", "UTF-8") + "=" + URLEncoder.encode(this.occupation, "UTF-8") + "&");
+            if (this.gender != null)
+                result.append(URLEncoder.encode("gender", "UTF-8") + "=" + URLEncoder.encode(this.gender, "UTF-8") + "&");
+            if (this.email != null)
+                result.append(URLEncoder.encode("email", "UTF-8") + "=" + URLEncoder.encode(this.email, "UTF-8") + "&");
+            if (this.password != null)
+                result.append(URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(this.password, "UTF-8") + "&");
+            if (this.fb_token != null)
+                result.append(URLEncoder.encode("fb_token", "UTF-8") + "=" + URLEncoder.encode(this.fb_token, "UTF-8") + "&");
+            if (this.fb_id != null)
+                result.append(URLEncoder.encode("fb_id", "UTF-8") + "=" + URLEncoder.encode(this.fb_id, "UTF-8") + "&");
+
+            s = result.toString();
+            //Remove ending '&'
+            if(s!=null)
+                if(s.length()>0)
+                    s=s.substring(0,s.length()-1);
+
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            //TODO: Better logging
+            Log.wtf(TAG,e.getMessage(),e);
+        }
+        finally
+        {
+            return s;
+        }
     }
 
     @Override

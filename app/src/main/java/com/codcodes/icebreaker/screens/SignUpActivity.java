@@ -5,6 +5,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -23,13 +24,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.LocalComms;
+import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
+import com.codcodes.icebreaker.model.User;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
+import com.facebook.Profile;
+import com.facebook.ProfileTracker;
 import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
@@ -44,6 +50,9 @@ import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,6 +69,8 @@ public class SignUpActivity extends AppCompatActivity {
     private LoginButton loginButton;
     private CallbackManager callbackManager;
     private AccessTokenTracker accessTokenTracker = null;
+    private ProfileTracker profileTracker = null;
+    private Profile profile = null;
     private AccessToken accessToken = null;
 
     private static final String TAG = "IB/SignUpActivity";
@@ -112,6 +123,54 @@ public class SignUpActivity extends AppCompatActivity {
         };
         accessTokenTracker.startTracking();
 
+        profileTracker = new ProfileTracker()
+        {
+            @Override
+            protected void onCurrentProfileChanged(
+                    Profile oldProfile,
+                    Profile currentProfile)
+            {
+                profile = currentProfile;
+                if(profile!=null)//for cases like when they sign out
+                {
+                    //Write Facebook profile image to local storage
+                    Uri prof_pic = currentProfile.getProfilePictureUri(400, 400);
+                    //Write Facebook profile image to remote storage
+
+                    //Create IceBreak account
+                    if (accessToken == null)
+                    {
+                        Log.wtf(TAG, "For some reason the Facebook access token is null.");
+                        return;
+                    }
+                    String usr = "";
+                    if (SharedPreference.getUsername(SignUpActivity.this).length() == 0)
+                        usr = "user_" + accessToken.getUserId() + "_fb";
+                    else
+                        usr = SharedPreference.getUsername(SignUpActivity.this);//Use existing username if available
+
+                    String pwd = accessToken.getUserId().substring(0, 6) + String.valueOf(new Date().getTime());
+
+                    User new_user = new User();
+                    new_user.setFirstname(profile.getFirstName());
+                    new_user.setLastname(profile.getLastName());
+                    new_user.setUsername(usr);
+                    new_user.setPassword(pwd);
+                    new_user.setFbID(accessToken.getUserId());
+                    new_user.setFbToken(accessToken.getToken());
+                    new_user.setEmail("NONE");
+
+
+                    Log.d(TAG, "Sending registration to server..");
+
+                    startProgressBar();
+
+                    PostToDB(new_user.toString(), new_user.getUsername());
+                }else  Log.d(TAG,"Profile is null.");
+            }
+        };
+        profileTracker.startTracking();
+
         // Callback registration
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>()
         {
@@ -119,16 +178,17 @@ public class SignUpActivity extends AppCompatActivity {
             public void onSuccess(LoginResult loginResult)
             {
                 // App code
-                System.err.println("LoginResult: " + loginResult.getAccessToken());
             }
 
             @Override
-            public void onCancel() {
+            public void onCancel()
+            {
                 // App code
             }
 
             @Override
-            public void onError(FacebookException exception) {
+            public void onError(FacebookException exception)
+            {
                 // App code
             }
         });
@@ -145,12 +205,14 @@ public class SignUpActivity extends AppCompatActivity {
         btnSignUp = (Button) findViewById(R.id.sign_up_button);
         checkBox = (CheckBox) findViewById(R.id.checkbox);
         bar = (ProgressBar) findViewById(R.id.progressbar);
-        bar.setVisibility(View.GONE);
-        btnSignUp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                bar = (ProgressBar) findViewById(R.id.progressbar);
+        stopProgressBar();
 
+        btnSignUp.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                startProgressBar();
 
                 final String e = email.getText().toString();
                 final String p = password.getText().toString();
@@ -158,12 +220,13 @@ public class SignUpActivity extends AppCompatActivity {
                 final String cp = confirmPassword.getText().toString();
                 if (!isValidEmail(e))
                 {
+                    stopProgressBar();
                     email.setError("Invalid Email");
                     return;
                 }
                 if (!isValidPassword(p))
                 {
-                    bar.setVisibility(View.GONE);
+                    stopProgressBar();
                     password.setError("Password must include:" +
                             " \n • A minimum of 6 characters" +
                             " \n • At least one uppercase alphabet" +
@@ -174,26 +237,86 @@ public class SignUpActivity extends AppCompatActivity {
                 }
                 if(!isValidUsername(u))
                 {
-                    bar.setVisibility(View.GONE);
+                    stopProgressBar();
                     username.setError("Username must not include:" +
                             "\n • White spaces" +
                             "\n • Special characters");
                     return;
                 }
 
-                bar.setVisibility(View.VISIBLE);
-                PostToDB(e,u,cp,view);
 
+                User new_user = new User();
+                if(profile!=null)
+                {
+                    new_user.setFirstname(profile.getFirstName());
+                    new_user.setLastname(profile.getLastName());
+                }
+                else
+                {
+                    new_user.setFirstname(" ");
+                    new_user.setLastname(" ");
+                }
+                new_user.setUsername(u);
+                new_user.setPassword(cp);
+                if(accessToken!=null)
+                {
+                    new_user.setFbID(accessToken.getUserId());
+                    new_user.setFbToken(accessToken.getToken());
+                }
+                new_user.setEmail(e);
+
+                PostToDB(new_user.toString(),new_user.getUsername());
             }
         });
 
-        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(!isChecked) {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                if(!isChecked)
+                {
                     password.setInputType(129);
-                } else {
+                }
+                else
+                {
                     password.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                }
+            }
+        });
+    }
+
+    public void stopProgressBar()
+    {
+        SignUpActivity.this.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if(bar!=null)
+                {
+                    bar.setIndeterminate(false);
+                    bar.setActivated(false);
+                    bar.setEnabled(false);
+                    bar.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+
+    public void startProgressBar()
+    {
+        SignUpActivity.this.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                if(bar!=null)
+                {
+                    bar.setIndeterminate(true);
+                    bar.setActivated(true);
+                    bar.setEnabled(true);
+                    bar.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -204,6 +327,7 @@ public class SignUpActivity extends AppCompatActivity {
     {
         super.onDestroy();
         accessTokenTracker.stopTracking();
+        profileTracker.stopTracking();
     }
 
     @Override
@@ -211,14 +335,15 @@ public class SignUpActivity extends AppCompatActivity {
     {
         super.onActivityResult(requestCode, resultCode, data);
 
-        System.err.println(resultCode);
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
     private Handler toastHandler(final String text)
     {
-        Handler toastHandler = new Handler(Looper.getMainLooper()) {
-            public void handleMessage(Message msg) {
+        Handler toastHandler = new Handler(Looper.getMainLooper())
+        {
+            public void handleMessage(Message msg)
+            {
                 super.handleMessage(msg);
                 Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
             }
@@ -226,7 +351,7 @@ public class SignUpActivity extends AppCompatActivity {
         return toastHandler;
     }
 
-    private void showEditProfile(View view)
+    private void showEditProfile()
     {
         Intent editScreen = new Intent(this,Edit_ProfileActivity.class);
         startActivity(editScreen);
@@ -271,77 +396,62 @@ public class SignUpActivity extends AppCompatActivity {
 
     }
 
-    private void PostToDB(final String email, final String username, final String confirmPassword, final View view)
+    private void PostToDB(final String data, final String username)
     {
-        Thread thread = new Thread(new Runnable() {
+        Thread thread = new Thread(new Runnable()
+        {
             @Override
-            public void run() {
+            public void run()
+            {
+                Looper.prepare();
+                startProgressBar();
                 try
                 {
-                    Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-                    System.out.println("Connection established");
-                    PrintWriter out = new PrintWriter(soc.getOutputStream());
-                    System.out.println("Sending request");
-
-                    String data = URLEncoder.encode("fname", "UTF-8") + "=" + URLEncoder.encode(" ", "UTF-8") + "&"
-                            + URLEncoder.encode("lname", "UTF-8") + "=" + URLEncoder.encode(" ", "UTF-8") + "&"
-                            + URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(username, "UTF-8") + "&"
-                            + URLEncoder.encode("email", "UTF-8") + "=" + URLEncoder.encode(email, "UTF-8") + "&"
-                            + URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(confirmPassword, "UTF-8");
-
-                    out.print("POST /IBUserRequestService.svc/signup HTTP/1.1\r\n"
-                            + "Host: icebreak.azurewebsites.net\r\n"
-                            //+ "Content-Type: application/x-www-form-urlencoded\r\n"
-                            + "Content-Type: text/plain; charset=utf-8\r\n"
-                            + "Content-Length: " + data.length() + "\r\n\r\n"
-                            + data);
-                    out.flush();
-
-                    BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-                    String resp;
-                    boolean found = false;
-                    while((resp = in.readLine())!=null)
+                    if(data.length()>0)
                     {
-                        Log.d("ICEBREAK",resp);
-                        if(resp.contains("HTTP/1.1 200 OK"))
+                        String resp = RemoteComms.postData("signup", data);
+                        if(resp.contains("200"))
                         {
-                            Log.d("ICEBREAK","Found HTTP attr");
-                            found = true;
-                            break;
+                            Message messaage = toastHandler("Registered your account.").obtainMessage();
+                            messaage.sendToTarget();
+
+                            SharedPreference.setUsername(getApplicationContext(), username);
+                            //Toast.makeText(getBaseContext(), "Successful sign up", Toast.LENGTH_LONG).show();
+                            //findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
+                            showEditProfile();
+                        }
+                        else
+                        {
+                            if(resp.toLowerCase().contains("exists=true"))
+                            {
+                                Toast.makeText(getApplicationContext(), "Username already exists, please try again.", Toast.LENGTH_LONG).show();
+                                Message messaage = toastHandler("Username already exists, please try again.").obtainMessage();
+                                messaage.sendToTarget();
+                            }
+                            else
+                            {
+                                Message messaage = toastHandler("Could not register your account.").obtainMessage();
+                                messaage.sendToTarget();
+                            }
                         }
                     }
-                    if(found) {
-                        SharedPreference.setUsername(getApplicationContext(),username);
-                        //Toast.makeText(getBaseContext(), "Successful sign up", Toast.LENGTH_LONG).show();
-                        //findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
-                        showEditProfile(view);
-
-
-                    }
-                    else {
-                        //Toast.makeText(getApplicationContext(), "Unsuccessful sign up", Toast.LENGTH_LONG).show();
-                        Message messaage = toastHandler("Connection Error").obtainMessage();
-                        messaage.sendToTarget();
-                        finish();
-                        startActivity(getIntent());
-                    }
-                    out.close();
-                    in.close();
                 }
                 catch (UnknownHostException e)
                 {
-                    bar.setVisibility(View.GONE);
-                    Message messaage = toastHandler("No Internet Access").obtainMessage();
+                    Message messaage = toastHandler("No Internet Access..").obtainMessage();
                     messaage.sendToTarget();
                     e.printStackTrace();
 
                 }
                 catch (IOException e)
                 {
-                    bar.setVisibility(View.GONE);
-                    Message messaage = toastHandler("Couldn't refreash feeds").obtainMessage();
+                    Message messaage = toastHandler(e.getMessage()).obtainMessage();
                     messaage.sendToTarget();
                     e.printStackTrace();
+                }
+                finally
+                {
+                    stopProgressBar();
                 }
             }
         });

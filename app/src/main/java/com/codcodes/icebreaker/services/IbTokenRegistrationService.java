@@ -35,7 +35,7 @@ public class IbTokenRegistrationService extends FirebaseInstanceIdService
                 onTokenRefresh();
             }
         });
-        t.start();
+        //t.start();
     }
 
     @Override
