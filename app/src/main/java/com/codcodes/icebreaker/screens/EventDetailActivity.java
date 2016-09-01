@@ -38,6 +38,7 @@ import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.UserListRecyclerViewAdapter;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.User;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -62,7 +63,9 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
     private ArrayList<String> Name;
     private ArrayList<String> Catchphrase;
   //  private ArrayList<String> userIcon;
-    private Location location;
+    private ArrayList<LatLng> polygon;
+    private LatLng me;
+    private LocationDetector locationChecker;
     private int AccessCode;
     private int event_Radius;
 
@@ -83,7 +86,7 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
         setContentView(R.layout.activity_event_detail);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        locationDetector = new LocationDetector(this);
+        //locationDetector = new LocationDetector(this);
        // getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -97,8 +100,19 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
 
         Bundle extras = getIntent().getExtras();
         final Activity act =this;
-        location = new Location("");
 
+        polygon = new ArrayList<>();
+        polygon.add(new LatLng(-26.182944, 27.997387));
+        polygon.add(new LatLng(-26.183185, 27.996846));
+        polygon.add(new LatLng(-26.183816, 27.996964));
+        polygon.add(new LatLng(-26.184235, 27.997307));
+        polygon.add(new LatLng(-26.184312, 27.997704));
+        polygon.add(new LatLng(-26.184201, 27.997913));
+        polygon.add(new LatLng(-26.184008, 27.998251));
+        polygon.add(new LatLng(-26.183815, 27.998380));
+        polygon.add(new LatLng(-26.183517, 27.998471));
+        me = new LatLng(-26.182944, 27.997387);
+        locationChecker = new LocationDetector();
         /*
         //If there's a cached eventID use that
         String strEvId = SharedPreference.getEventId(this);
@@ -126,9 +140,8 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
             AccessCode = extras.getInt("Access ID");
             event_Radius = extras.getInt("Event Radius");
             //location = (Location) extras.get("Access Location");
-            location.setLatitude(-26.180908900266168);
-            location.setLongitude(27.98675119404803);
-            Log.d("Testing", String.valueOf(location.getLongitude()) + ":" + String.valueOf(location.getLatitude()));
+
+            //Log.d("Testing", String.valueOf(location.getLongitude()) + ":" + String.valueOf(location.getLatitude()));
             TextView eventDescription = (TextView)findViewById(R.id.event_description);
             eventDescription.setText(extras.getString("Event Description"));
 
@@ -160,7 +173,7 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
             {
                 if (actionID== EditorInfo.IME_ACTION_DONE)
                 {
-                    if(matchAccessCode(Integer.parseInt(accessCode.getText().toString()),location,locationDetector.getLocation(),event_Radius))
+                    if(matchAccessCode(Integer.parseInt(accessCode.getText().toString()),locationChecker.containsLocation(me,polygon,true)))
                     {
                         showProgressBar();
                         //updateProfile(Eventid,username);
@@ -267,50 +280,18 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
         return super.onOptionsItemSelected(item);
 
     }
-    public boolean inLocation(Location loc1, Location loc2 ,int radius)
+
+
+    public boolean matchAccessCode(int code, boolean inRange)
     {
-        if(loc1 != null || loc2 != null)
+
+        Log.d("Testing", "not null");
+        if(code == AccessCode && inRange)
         {
-            double earthRadius = 6371;
-            double dLat = Math.toRadians(loc2.getLatitude() - loc1.getLatitude());
-            double dLng = Math.toRadians(loc2.getLongitude() - loc1.getLongitude());
-            double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                    Math.cos(Math.toRadians(loc1.getLatitude())) * Math.cos(Math.toRadians(loc2.getLatitude())) *
-                            Math.sin(dLng / 2) * Math.sin(dLng / 2);
-            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            float dist = (float) (earthRadius * c);
-            Log.d("Testing","Distance : " + String.valueOf(dist));
-            if(dist<=radius)
-            {
-                return true;
-            }
+            SharedPreference.setEventId(this,Eventid);
+            return true;
         }
 
-        return false;
-    }
-
-    public boolean matchAccessCode(int code,Location loc1, Location loc2 ,int radius)
-    {
-        if(loc1 != null || loc2 != null)
-        {
-            Log.d("Testing", "not null");
-            if(code == AccessCode && inLocation(loc1,loc2,radius))
-            {
-                SharedPreference.setEventId(this,Eventid);
-                return true;
-            }
-        }
-        else
-        {
-            if(loc1 == null)
-            {
-                Log.d("Testing", "loc1");
-            }
-            else
-            {
-                Log.d("Testing", "loc2");
-            }
-        }
         return false;
     }
 
@@ -464,9 +445,5 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
 
         startActivity(intent);
     }
-    public boolean locationValidation()
-    {
 
-        return true;
-    }
 }

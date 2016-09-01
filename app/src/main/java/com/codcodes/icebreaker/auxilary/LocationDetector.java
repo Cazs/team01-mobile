@@ -1,112 +1,125 @@
 package com.codcodes.icebreaker.auxilary;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Bundle;
-import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.util.Log;
+import com.google.android.gms.maps.model.LatLng;
 
-import com.google.android.gms.location.LocationServices;
+import java.util.List;
+
+import android.graphics.Point;
+
+import com.google.android.gms.maps.model.LatLng;
+
+import java.util.List;
 
 /**
- * Created by MrSekati on 8/15/2016.
+ * Created by MrSekati on 8/31/2016.
  */
-public class LocationDetector implements LocationListener{
-    private Context myContext;
-    private LocationManager locationManager;
-    private Location location;
+public class LocationDetector {
 
-    private static final int MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
-    private static final long MIN_TIME_UPDATES = 1000 * 60 * 30;
+    private static final double PI = 3.141592653589793;
 
-    public LocationDetector(Context myContext) {
-        this.myContext = myContext;
-    }
-
-    public boolean isGPSEnabbled() {
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-    }
-
-    public Location getLocation() {
-        locationManager = (LocationManager) myContext.getSystemService(myContext.LOCATION_SERVICE);
-        if(!isGPSEnabbled())
-        {
-           // showEnableDilog();
-          //  Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-          //  myContext.startActivity(intent);
-            Log.d("Testing","Disabled");
-            return null;
+    public static boolean containsLocation(LatLng point, List<LatLng> polygon, boolean geodesic)
+    {
+        final int size = polygon.size();
+        if (size == 0) {
+            return false;
         }
-        else
-        {
-            try{
-                if(location == null)
-                {
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                    if(locationManager != null)
-                    {
-                        location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    }
-                    return location;
-
-                }
-            }catch (SecurityException e)
-            {
-                //dialogGPS(myContext); // lets the user know there is a problem with the gps
+        double lat3 = toRadians(point.latitude);
+        double lng3 = toRadians(point.longitude);
+        LatLng prev = polygon.get(size - 1);
+        double lat1 = toRadians(prev.latitude);
+        double lng1 = toRadians(prev.longitude);
+        int nIntersect = 0;
+        for (LatLng point2 : polygon) {
+            double dLng3 = wrap(lng3 - lng1, -PI, PI);
+            // Special case: point equal to vertex is inside.
+            if (lat3 == lat1 && dLng3 == 0) {
+                return true;
             }
-
+            double lat2 = toRadians(point2.latitude);
+            double lng2 = toRadians(point2.longitude);
+            // Offset longitudes by -lng1.
+            if (intersects(lat1, lat2, wrap(lng2 - lng1, -PI, PI), lat3, dLng3, geodesic)) {
+                ++nIntersect;
+            }
+            lat1 = lat2;
+            lng1 = lng2;
         }
-        return null;
+        return (nIntersect & 1) != 0;
     }
 
-    private void showEnableDilog() {
-        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(myContext);
-        alertBuilder.setMessage("Location Disabled Would You like to Enable it?");
-        alertBuilder.setCancelable(false);
-        alertBuilder.setPositiveButton("Enable Location", new DialogInterface.OnClickListener(){
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                myContext.startActivity(intent);
-            }
-        });
-        alertBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-            }
-        });
-        AlertDialog arlert = alertBuilder.create();
-        arlert.show();
-    }
+    private static boolean intersects(double lat1, double lat2, double lng2,double lat3, double lng3, boolean geodesic) {
 
+        // Both ends on the same side of lng3.
+        if ((lng3 >= 0 && lng3 >= lng2) || (lng3 < 0 && lng3 < lng2)) {
+            return false;
+        }
+        // Point is South Pole.
+        if (lat3 <= -PI/2) {
+            return false;
+        }
+        // Any segment end is a pole.
+        if (lat1 <= -PI/2 || lat2 <= -PI/2 || lat1 >= PI/2 || lat2 >= PI/2) {
+            return false;
+        }
 
-    @Override
-    public void onLocationChanged(Location location) {
+        if (lng2 <= -PI) {
+            return false;
+        }
+        double linearLat = (lat1 * (lng2 - lng3) + lat2 * lng3) / lng2;
+        // Northern hemisphere and point under lat-lng line.
+        if (lat1 >= 0 && lat2 >= 0 && lat3 < linearLat) {
+            return false;
+        }
+        // Southern hemisphere and point above lat-lng line.
+        if (lat1 <= 0 && lat2 <= 0 && lat3 >= linearLat) {
+            return true;
+        }
+        // North Pole.
+        if (lat3 >= PI/2) {
+            return true;
+        }
 
-    }
-
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String s) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String s) {
+        // Compare lat3 with latitude on the GC/Rhumb segment corresponding to lng3.
+        // Compare through a strictly-increasing function (tan() or mercator()) as convenient.
+        return geodesic ?
+                Math.tan(lat3) >= tanLatGC(lat1, lat2, lng2, lng3) :
+                mercator(lat3) >= mercatorLatRhumb(lat1, lat2, lng2, lng3);
 
     }
+    /**
+     * Returns tan(latitude-at-lng3) on the great circle (lat1, lng1) to (lat2, lng2). lng1==0.
+     * See http://williams.best.vwh.net/avform.htm .
+     */
+    private static double tanLatGC(double lat1, double lat2, double lng2, double lng3) {
+        return (Math.tan(lat1) * Math.sin(lng2 - lng3) + Math.tan(lat2) * Math.sin(lng3)) / Math.sin(lng2);
+    }
+
+    /**
+     * Returns mercator Y corresponding to latitude.
+     * See http://en.wikipedia.org/wiki/Mercator_projection .
+     */
+    static double mercator(double lat) {
+        return Math.log(Math.tan(lat * 0.5 + PI/4));
+    }
+
+    /**
+     * Returns mercator(latitude-at-lng3) on the Rhumb line (lat1, lng1) to (lat2, lng2). lng1==0.
+     */
+    private static double mercatorLatRhumb(double lat1, double lat2, double lng2, double lng3) {
+        return (mercator(lat1) * (lng2 - lng3) + mercator(lat2) * lng3) / lng2;
+    }
+
+    //Wraps the given value into the inclusive-exclusive interval between min and max.
+    private static double wrap(double value, double min, double max) {
+        return (value >= min && value < max) ? value : (mod(value - min, max - min) + min);
+    }
+
+    private static double mod(double value, double value1) {
+        return ((value % value1) +value1) % value1;
+    }
+
+    private static double toRadians(double latitude) {
+        return latitude *(PI/180);
+    }
+
 }
