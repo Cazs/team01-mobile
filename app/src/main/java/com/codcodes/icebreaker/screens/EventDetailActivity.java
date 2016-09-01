@@ -7,6 +7,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
@@ -445,5 +447,61 @@ EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteract
 
         startActivity(intent);
     }
+    public LatLng getUserLocation()
+    {
+        Location location = null;
+        LocationManager locationManager;
 
+
+        final int MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
+        final long MIN_TIME_UPDATES = 1000 * 60 * 30;
+        locationManager = (LocationManager) this.getSystemService(this.LOCATION_SERVICE);
+        if(!(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)))
+        {
+            // showEnableDilog();
+            //  Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            //  myContext.startActivity(intent);
+            Log.d("Testing","Disabled");
+            return null;
+        }
+        else
+        {
+            try{
+                if(location == null)
+                {
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, new LocationListener() {
+                        @Override
+                        public void onLocationChanged(Location location) {
+
+                        }
+
+                        @Override
+                        public void onStatusChanged(String s, int i, Bundle bundle) {
+
+                        }
+
+                        @Override
+                        public void onProviderEnabled(String s) {
+
+                        }
+
+                        @Override
+                        public void onProviderDisabled(String s) {
+
+                        }
+                    });
+                    if(locationManager != null)
+                    {
+                        location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    }
+                    return new LatLng(location.getLatitude(),location.getLongitude());
+
+                }
+            }catch (SecurityException e)
+            {
+                //dialogGPS(myContext); // lets the user know there is a problem with the gps
+            }
+        }
+        return null;
+    }
 }
