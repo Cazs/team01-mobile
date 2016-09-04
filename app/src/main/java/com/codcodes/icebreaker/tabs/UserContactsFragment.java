@@ -36,6 +36,7 @@ import com.codcodes.icebreaker.screens.MainActivity;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -216,7 +217,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
         }, 0, INTERVALS.USERS_AT_EVENT_REFRESH_DELAY.getValue());
     }
 
-    private void refreshUsersAtEvent()
+    private void refreshUsersAtEvent() throws ConcurrentModificationException
     {
         contacts = new ArrayList<>();
 

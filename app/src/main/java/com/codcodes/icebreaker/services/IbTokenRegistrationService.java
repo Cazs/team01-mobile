@@ -43,7 +43,7 @@ public class IbTokenRegistrationService extends FirebaseInstanceIdService
     {
         // Get updated InstanceID token.
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
-        Log.d(TAG, "Refreshed token: " + refreshedToken);
+        Log.d(TAG, "Refreshed token: <token_hidden>");
 
         // Update Instance ID token on server.
         ArrayList<AbstractMap.SimpleEntry<String,String>> params = new ArrayList<>();

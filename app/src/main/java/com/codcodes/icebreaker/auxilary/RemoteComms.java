@@ -126,6 +126,7 @@ public class RemoteComms
         params.add(new AbstractMap.SimpleEntry<String,String>
                 (new AbstractMap.SimpleEntry<String, String>("payload",payload)));*/
 
+        System.err.println(remote_filename + ext);
         URL urlConn = new URL("http://icebreak.azurewebsites.net/IBUserRequestService.svc/imgUpload/"+remote_filename + ext);
         HttpURLConnection httpConn = (HttpURLConnection)urlConn.openConnection();
         httpConn.setReadTimeout(10000);

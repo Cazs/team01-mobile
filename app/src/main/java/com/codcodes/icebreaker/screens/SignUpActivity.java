@@ -165,7 +165,7 @@ public class SignUpActivity extends AppCompatActivity
                                 //Write image to local disk
                                 WritersAndReaders.saveImage(res,"profile/"+usr+".png");
                                 //Update remote Image
-                                int code = RemoteComms.imageUpload(res,"profile>"+usr,".png");
+                                int code = RemoteComms.imageUpload(res,"profile;"+usr,".png");
                                 if(code==HttpURLConnection.HTTP_OK)
                                     Log.d(TAG,"Successfully uploaded new profile photo.");
                                 else
@@ -200,17 +200,18 @@ public class SignUpActivity extends AppCompatActivity
                     new_user.setLastname(profile.getLastName());
                     new_user.setFbID(accessToken.getUserId());
                     new_user.setFbToken(accessToken.getToken());
-                    new_user.setEmail("<No email>");
                     new_user.setGender("Unspecified");
                     new_user.setUsername(usr);
                     new_user.setPassword(pwd);
-                    new_user.setCatchphrase("<No catchphrase>");
-                    new_user.setOccupation("<No occupation specified.>");
-                    new_user.setBio("<No bio>");
+
+                    /*new_user.setEmail("");
+                    new_user.setCatchphrase("");
+                    new_user.setOccupation("");
+                    new_user.setBio("");*/
 
                     Log.d(TAG, "Sending registration[new user] to server..");
 
-                    restart(new_user);//drop users table and add first user - the local user
+                    //restart(new_user);//drop users table and add first user - the local user
 
                     PostToDB("signup", new_user);
                 }else  Log.d(TAG,"FB Profile is null.");
@@ -316,7 +317,7 @@ public class SignUpActivity extends AppCompatActivity
                 new_user.setEmail(e);
                 new_user.setGender("Unspecified");
 
-                restart(new_user);//add first user - the registering user
+                //restart(new_user);//add first user - the registering user
 
                 PostToDB("signup",new_user);
             }
@@ -341,6 +342,14 @@ public class SignUpActivity extends AppCompatActivity
 
     public void restart(User u)
     {
+        if(u.getEmail().isEmpty())
+            u.setEmail("<No email specified>");
+        if(u.getCatchphrase().isEmpty())
+            u.setCatchphrase("<No catchphrase specified>");
+        if(u.getOccupation().isEmpty())
+            u.setOccupation("<No occupation specified>");
+        if(u.getBio().isEmpty())
+            u.setBio("<No bio specified>");
         //Clear table
         UserHelper dbHelper = new UserHelper(this);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -416,18 +425,21 @@ public class SignUpActivity extends AppCompatActivity
         return toastHandler;
     }
 
-    private void showEditProfile(User u)
+    private void showEditProfile(User u) throws IOException
     {
+        User new_user = RemoteComms.getUser(this,u.getUsername());
+        restart(new_user);
+
         Intent editScreen = new Intent(this,Edit_ProfileActivity.class);
 
-        editScreen.putExtra("First Name",u.getFirstname());
-        editScreen.putExtra("Last Name",u.getLastname());
-        editScreen.putExtra("Age",String.valueOf(u.getAge()));
-        editScreen.putExtra("Occupation",u.getOccupation());
-        editScreen.putExtra("Catchphrase",u.getCatchphrase());
-        editScreen.putExtra("Bio",u.getBio());
-        editScreen.putExtra("Gender",u.getGender());
-        editScreen.putExtra("Username",u.getUsername());
+        editScreen.putExtra("First Name",new_user.getFirstname());
+        editScreen.putExtra("Last Name",new_user.getLastname());
+        editScreen.putExtra("Age",String.valueOf(new_user.getAge()));
+        editScreen.putExtra("Occupation",new_user.getOccupation());
+        editScreen.putExtra("Catchphrase",new_user.getCatchphrase());
+        editScreen.putExtra("Bio",new_user.getBio());
+        editScreen.putExtra("Gender",new_user.getGender());
+        editScreen.putExtra("Username",new_user.getUsername());
 
         startActivity(editScreen);
     }
@@ -490,7 +502,7 @@ public class SignUpActivity extends AppCompatActivity
 
                         if(resp.contains("200"))
                         {
-                            message = toastHandler("Successfully registered your account.").obtainMessage();
+                            message = toastHandler("Successfully logged in.").obtainMessage();
                             message.sendToTarget();
 
                             SharedPreference.setUsername(getApplicationContext(), user.getUsername());
@@ -498,8 +510,8 @@ public class SignUpActivity extends AppCompatActivity
 
                             if(resp.toLowerCase().contains("exists=true"))
                             {
-                                message = toastHandler("Username already exists on remote server.").obtainMessage();
-                                message.sendToTarget();
+                                //message = toastHandler("Username exists.").obtainMessage();
+                                //message.sendToTarget();
                                 Log.d(TAG,"Username already exists on remote server.");
                             }
                         }

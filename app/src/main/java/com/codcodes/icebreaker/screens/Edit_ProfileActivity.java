@@ -242,12 +242,9 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                 final String usr = SharedPreference.getUsername(this).toString();
                 Bitmap bitmap = bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 5, stream);
+                bitmap.compress(Bitmap.CompressFormat.PNG, 20, stream);
                 final byte[] bmp_arr = stream.toByteArray();
-
-
-                //Save  copy of image to app directory
-                WritersAndReaders.saveImage(bmp_arr, "/profile/" + usr + ".png");
+                stream.close();
                 //Set image view
                 circularImageView.setImageBitmap(bitmap);
                 bitmap.recycle();
@@ -258,15 +255,20 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                         int res_code = 0;
                         try
                         {
-                            res_code = RemoteComms.imageUpload(bmp_arr, "profile>" + usr, ".png");
+                            res_code = RemoteComms.imageUpload(bmp_arr, "profile;" + usr, ".png");
                             if (res_code == HttpURLConnection.HTTP_OK)
                             {
                                 Log.d(TAG, "Image upload successful");
-                                Toast.makeText(Edit_ProfileActivity.this, "Image upload successful", Toast.LENGTH_LONG).show();
+                                Message message = toastHandler("Image upload successful").obtainMessage();
+                                message.sendToTarget();
+
+                                //Save  copy of image to app directory iff it was uploaded successfully
+                                WritersAndReaders.saveImage(bmp_arr, "/profile/" + usr + ".png");
                             } else
                             {
+                                Message message = toastHandler("Image upload successful: " + res_code).obtainMessage();
+                                message.sendToTarget();
                                 Log.wtf(TAG, "Image upload unsuccessful: " + res_code);
-                                Toast.makeText(Edit_ProfileActivity.this, "Image upload successful: " + res_code, Toast.LENGTH_LONG).show();
                             }
                         }catch (IOException e)
                         {
@@ -277,10 +279,6 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                     }
                 });
                 t.start();
-            } catch (FileNotFoundException e)
-            {
-                Log.wtf(TAG, e.getMessage(), e);
-                //TODO: Better logging
             } catch (IOException e)
             {
                 Log.wtf(TAG, e.getMessage(), e);
@@ -291,7 +289,8 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
     }
 
     @Override
-    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l)
+    {
         Gender = adapterView.getItemAtPosition(i).toString();
     }
 
@@ -389,48 +388,6 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         thread.start();
     }
 
-    public static boolean imageUpload(Socket soc,String iconName) throws IOException
-    {
-        System.out.println("Sending image upload request");
-        PrintWriter out = new PrintWriter(soc.getOutputStream());
-        //Android: final String base64 = ;
-        String headers = "GET /IBUserRequestService.svc/imageUpload/"+iconName+" HTTP/1.1\r\n"
-                + "Host: icebreak.azurewebsites.net\r\n"
-                //+ "Content-Type: application/x-www-form-urlencoded\r\n"
-                + "Content-Type: text/plain;\r\n"// charset=utf-8
-                + "Content-Length: 0\r\n\r\n";
-
-        out.print(headers);
-        out.flush();
-
-        //TODO: Not Sure what do
-        BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-        String resp;
-        while(!in.ready()){}
-        while((resp = in.readLine())!=null)
-        {
-            //System.out.println(resp);
-
-            if(resp.toLowerCase().contains("payload"))
-            {
-                String base64bytes = resp.split(":")[1];
-                base64bytes = base64bytes.substring(1, base64bytes.length());
-                byte[] binFileArr = android.util.Base64.decode(base64bytes, android.util.Base64.DEFAULT);
-                WritersAndReaders.saveImage(binFileArr,iconName);
-                return true;
-            }
-
-            if(!in.ready())
-            {
-                //if(DEBUG)System.out.println(">>Done<<");
-                break;
-            }
-        }
-        out.close();
-        //in.close();
-        soc.close();
-        return false;
-    }
     private boolean isEmpty(String check)
     {
         if(check.isEmpty())
