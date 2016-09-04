@@ -24,6 +24,7 @@ public class User implements IJsonable, Parcelable
     private String username;
     private String fb_id;
     private String fb_token;
+    private Event event;
 
     private final String TAG = "IB/User";
 
@@ -41,6 +42,10 @@ public class User implements IJsonable, Parcelable
         this.gender = gender;
         this.username = username;
     }
+
+    public Event getEvent(){return  this.event;}
+
+    public void setEvent(Event e){this.event = e;}
 
     public String getFirstname() {
         return this.firstname;
@@ -163,6 +168,8 @@ public class User implements IJsonable, Parcelable
                 result.append(URLEncoder.encode("email", "UTF-8") + "=" + URLEncoder.encode(this.email, "UTF-8") + "&");
             if (this.password != null)
                 result.append(URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(this.password, "UTF-8") + "&");
+            if (this.event != null)
+                result.append(URLEncoder.encode("event_id", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(this.event.getId()), "UTF-8") + "&");
             if (this.fb_token != null)
                 result.append(URLEncoder.encode("fb_token", "UTF-8") + "=" + URLEncoder.encode(this.fb_token, "UTF-8") + "&");
             if (this.fb_id != null)

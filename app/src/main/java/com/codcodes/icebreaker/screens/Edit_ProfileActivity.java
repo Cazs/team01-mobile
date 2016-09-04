@@ -9,7 +9,9 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -62,11 +64,11 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
     private EditText Username;
     private String Gender;
     private String profilePicture;
-    private User user;
+    //private User user;
 
     private Bitmap circularbitmap,bitmap;
 
-    private final String TAG = "ICEBREAK";
+    private final String TAG = "IB/EditProfActivity";
 
     private ProgressDialog progress;
 
@@ -129,7 +131,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
             Catchphrase.setText(extras.getString("Catchphrase"));
             Bio.setText(extras.getString("Bio"));
             Gender = extras.getString("Gender");
-            profilePicture = extras.getString("Picture");
+            profilePicture = extras.getString("Username");
 
             int gender = 0;
             switch(Gender)
@@ -144,8 +146,9 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                     gender = 2;
                     break;
             }
-            bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                    + profilePicture, getApplicationContext());
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+            bitmap = LocalComms.getImage(getApplicationContext(),profilePicture,".png","/profile",options);
             circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
             circularImageView.setImageBitmap(circularbitmap);
             spinner.setSelection(gender);
@@ -165,14 +168,26 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
 
     public void updateUserInfo()
     {
-        progress = LocalComms.showProgressBar(this,"Updating your information...");
         String fname = Firstname.getText().toString();
         String lname = Lastname.getText().toString();
-        String age = Age.getText().toString();
+        int age = 0;
+        try
+        {
+            if(!isInt(Age.getText().toString()))
+                throw new NumberFormatException("Value '"+Age.getText().toString()+"' is not a number.");
+            age = Integer.valueOf(Age.getText().toString());
+        }
+        catch (NumberFormatException e)
+        {
+            Message message = toastHandler("Value '"+Age.getText().toString()+"' is not a number.").obtainMessage();
+            message.sendToTarget();
+            return;
+        }
+
         String occupation = Occupation.getText().toString();
         String bio = Bio.getText().toString();
         String catchphrase = Catchphrase.getText().toString();
-        String g = Gender;
+        String gender = Gender;
 
         if(isEmpty(fname))
         {
@@ -183,26 +198,32 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         {
             Lastname.setError("Cannot be empty");
             return;
-        }if(isEmpty(bio))
-    {
-        Bio.setError("Cannot be empty");
-        return;
-    }if(isEmpty(age))
-    {
-        Age.setError("Cannot be empty");
-        return;
-    }
+        }
+
+        if(isEmpty(bio))
+            bio = "<No bio>";//Bio.setError("Cannot be empty");
+
+        if(age<=0)
+        {
+            Age.setError("Must be a number greater than zero.");
+            return;
+        }
         if(isEmpty(catchphrase))
-        {
-            Catchphrase.setError("Cannot be empty");
-            return;
-        }
-        if(!isInt(age))
-        {
-            Age.setError("Must be an integer");
-            return;
-        }
-        updateProfile(SharedPreference.getUsername(this).toString(),fname, lname, age, occupation, bio, catchphrase,g);
+            catchphrase = "<No catchphrase>";
+
+        progress = LocalComms.showProgressBar(this,"Updating your information...");
+
+        User new_user = new User();
+        new_user.setFirstname(fname);
+        new_user.setLastname(lname);
+        new_user.setAge(age);
+        new_user.setOccupation(occupation);
+        new_user.setGender(gender);
+        new_user.setCatchphrase(catchphrase);
+        new_user.setBio(bio);
+        new_user.setUsername(SharedPreference.getUsername(this).toString());
+
+        updateProfile(new_user);
     }
 
 
@@ -234,20 +255,20 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                     @Override
                     public void run() {
                         Looper.prepare();
-                        int res_code = 0;//TODO: fix directory structure on server and local
+                        int res_code = 0;
                         try
                         {
-                            res_code = RemoteComms.imageUpload(bmp_arr, "profile|" + usr, ".png");
+                            res_code = RemoteComms.imageUpload(bmp_arr, "profile>" + usr, ".png");
                             if (res_code == HttpURLConnection.HTTP_OK)
                             {
                                 Log.d(TAG, "Image upload successful");
-                                Toast.makeText(getApplicationContext(), "Image upload successful", Toast.LENGTH_LONG).show();
+                                Toast.makeText(Edit_ProfileActivity.this, "Image upload successful", Toast.LENGTH_LONG).show();
                             } else
                             {
                                 Log.wtf(TAG, "Image upload unsuccessful: " + res_code);
-                                Toast.makeText(getApplicationContext(), "Image upload successful: " + res_code, Toast.LENGTH_LONG).show();
+                                Toast.makeText(Edit_ProfileActivity.this, "Image upload successful: " + res_code, Toast.LENGTH_LONG).show();
                             }
-                        } catch (IOException e)
+                        }catch (IOException e)
                         {
                             LocalComms.hideProgressBar(progress);
                             Log.wtf(TAG, e.getMessage(), e);
@@ -280,8 +301,20 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
 
     }
 
+    private Handler toastHandler(final String text)
+    {
+        Handler toastHandler = new Handler(Looper.getMainLooper())
+        {
+            public void handleMessage(Message msg)
+            {
+                super.handleMessage(msg);
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+            }
+        };
+        return toastHandler;
+    }
 
-    public void updateProfile(final String username,final String firstname, final String lastname, final String age,final String occupation, final String bio, final String catchphrase,final String gender)
+    public void updateProfile(final User user)//final String username,final String firstname, final String lastname, final String age,final String occupation, final String bio, final String catchphrase,final String gender)
     {
         Thread thread = new Thread(new Runnable()
         {
@@ -289,80 +322,66 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
             public void run()
             {
                 Looper.prepare();
-                String msg="";
                 try
                 {
-                    Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-                    System.out.println("Connection established");
-                    PrintWriter out = new PrintWriter(soc.getOutputStream());
-                    System.out.println("Sending request");
-
-                    String data = URLEncoder.encode("fname", "UTF-8") + "=" + URLEncoder.encode(firstname, "UTF-8") + "&"
-                            + URLEncoder.encode("lname", "UTF-8") + "=" + URLEncoder.encode(lastname, "UTF-8") + "&"
-                            + URLEncoder.encode("age", "UTF-8") + "=" + URLEncoder.encode(age, "UTF-8") + "&"
-                            + URLEncoder.encode("bio", "UTF-8") + "=" + URLEncoder.encode(bio, "UTF-8") + "&"
-                            + URLEncoder.encode("gender", "UTF-8") + "=" + URLEncoder.encode(gender, "UTF-8") + "&"
-                            + URLEncoder.encode("occupation", "UTF-8") + "=" + URLEncoder.encode(occupation, "UTF-8") + "&"
-                            + URLEncoder.encode("catchphrase", "UTF-8") + "=" + URLEncoder.encode(catchphrase, "UTF-8");
-
-                    out.print("POST /IBUserRequestService.svc/userUpdate/"+username+" HTTP/1.1\r\n"
-                            + "Host: icebreak.azurewebsites.net\r\n"
-                            + "Content-Type: text/plain; charset=utf-8\r\n"
-                            + "Content-Length: " + data.length() + "\r\n\r\n"
-                            + data);
-                    out.flush();
-
-                    BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-                    String resp;
-                    boolean found = false;
-                    while((resp = in.readLine())!=null)
+                    if(user!=null)
                     {
-                        if(resp.toUpperCase().contains("HTTP/1.1 200 OK"))
+                        String resp = RemoteComms.postData("userUpdate/"+user.getUsername(), user.toString());
+
+                        Message message;
+
+                        if(resp.contains("200"))
                         {
-                            Log.d(TAG,"Found HTTP attr");
-                            found = true;
-                            break;
-                        }
-                    }
-                    out.close();
-                    in.close();
+                            message = toastHandler("Successfully updated your account.").obtainMessage();
+                            message.sendToTarget();
 
-                    if(found)
+                            //Update user locally
+                            LocalComms.updateContact(Edit_ProfileActivity.this,user);
+
+                            if(resp.toLowerCase().contains("exists=true"))
+                            {
+                                //message = toastHandler("Username already exists on remote server.").obtainMessage();
+                                //message.sendToTarget();
+                                Log.d(TAG,"Username already exists on remote server.");
+                            }
+                        }
+                        else
+                        {
+                            if(resp.toLowerCase().contains("exists=true"))
+                            {
+                                //Toast.makeText(SignUpActivity.this, "Username already exists, please try again.", Toast.LENGTH_LONG).show();
+                                message = toastHandler("Username already exists, please try again.").obtainMessage();
+                                message.sendToTarget();
+                            }
+                            else
+                            {
+                                //Toast.makeText(SignUpActivity.this, "Username already exists, please try again.", Toast.LENGTH_LONG).show();
+                                message = toastHandler("Could not update your account:"+resp).obtainMessage();
+                                message.sendToTarget();
+                                Log.d(TAG,resp);
+                            }
+                        }
+                    } else
                     {
-                        //TODO: Figure out how to go back to profile fragment
-                        Log.d(TAG,"Successfully updated user info on server.");
-                        //alrt = LocalComms.showAlertDialog(getBaseContext(),"Success","Successfully updated your info.");
-                        msg = "Successfully updated your details.";
-                        /*Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-                        intent.putExtra("Tab","2");
-                        startActivity(intent);*/
-                    }
-                    else
-                    {
-                        Log.d(TAG,"Couldn't update user details on server.");
-                        //alrt = LocalComms.showAlertDialog(Edit_ProfileActivity.this,"Failure","Couldn't update user details on server..");
-                        msg = "Couldn't update your details.";
-                        //TODO: send message that editing was unsucessful try again
-                        /*finish();
-                        startActivity(getIntent());*/
+                        Log.wtf(TAG,"User update payload is empty.");
+                        Message message = toastHandler("Could not register your account, registration payload is empty.").obtainMessage();
+                        message.sendToTarget();
                     }
                 }
                 catch (UnknownHostException e)
                 {
-                    Log.d(TAG,"No Internet access.");
-                    msg = e.getMessage();
-                    //alrt = LocalComms.showAlertDialog(Edit_ProfileActivity.this,"No internet","You have no internet access.");
+                    Message message = toastHandler("No Internet Access..").obtainMessage();
+                    message.sendToTarget();
+                    Log.d(TAG,e.getMessage(),e);
                 }
                 catch (IOException e)
                 {
+                    Message message = toastHandler(e.getMessage()).obtainMessage();
+                    message.sendToTarget();
                     Log.d(TAG,e.getMessage(),e);
-                    msg = e.getMessage();
-                    //alrt = LocalComms.showAlertDialog(Edit_ProfileActivity.this,"Error",e.getMessage());
                 }
                 finally
                 {
-                    //LocalComms.hideAlertDialog(alrt);
-                    Toast.makeText(Edit_ProfileActivity.this, msg, Toast.LENGTH_LONG).show();
                     LocalComms.hideProgressBar(progress);
                 }
             }
@@ -414,7 +433,8 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
     }
     private boolean isEmpty(String check)
     {
-        if(check.isEmpty()) {
+        if(check.isEmpty())
+        {
             return true;
         }
         return false;

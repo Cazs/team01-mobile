@@ -30,6 +30,9 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.hardware.Camera;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CaptureRequest;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -226,20 +229,23 @@ public final class BarcodeCaptureActivity extends Activity
     // Creates and starts the camera.  Note that this uses a higher resolution in comparison
     // to other detection examples to enable the barcode detector to detect small barcodes
     // at long distances.
-  mCameraSource = new CameraSource.Builder(getApplicationContext(), barcodeDetector)
+
+  CameraSource.Builder builder = new CameraSource.Builder(getApplicationContext(), barcodeDetector)
             .setFacing(CameraSource.CAMERA_FACING_BACK)
             .setRequestedPreviewSize(1600, 1024)
-            .setRequestedFps(15.0f)
-            .build();
+            .setRequestedFps(15.0f);
+
+
+    //TODO: Update deprecated code
     // make sure that auto focus is an available option
-    /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+    {
       builder = builder.setFocusMode(
               autoFocus ? Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE : null);
     }
+    //builder.setFlashMode(useFlash ? Camera.Parameters.FLASH_MODE_TORCH : null);
 
-    mCameraSource = builder
-            .setFlashMode(useFlash ? Camera.Parameters.FLASH_MODE_TORCH : null)
-            .build();*/
+    mCameraSource = builder.build();
   }
 
   /**

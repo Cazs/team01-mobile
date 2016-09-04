@@ -27,4 +27,9 @@ public class UserHelper extends SQLiteOpenHelper
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
 
     }
+
+    public void dropTable(SQLiteDatabase db)
+    {
+        db.execSQL(UserContract.SQL_DELETE_tblMSG);
+    }
 }

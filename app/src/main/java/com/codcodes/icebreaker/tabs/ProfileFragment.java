@@ -29,9 +29,11 @@ import com.codcodes.icebreaker.screens.Edit_ProfileActivity;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.screens.InitialActivity;
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.screens.MainActivity;
 import com.codcodes.icebreaker.screens.RewardsActivity;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.User;
+import com.facebook.login.LoginManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -277,6 +279,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                 intent.putExtra("Catchphrase",Catchphrase);
                 intent.putExtra("Gender",Gender);
                 intent.putExtra("Picture",profilePicture);
+                intent.putExtra("Username", MainActivity.uhandle);
                 startActivity(intent);
             }
         });
@@ -287,7 +290,14 @@ public class ProfileFragment extends android.support.v4.app.Fragment
             @Override
             public void onClick(View view)
             {
+                //Clean up
+                MainActivity.uhandle = "";
+                MainActivity.event_id = 0;
+                MainActivity.event = null;
+                MainActivity.users_at_event = null;
                 SharedPreference.logOut(view.getContext());
+                LoginManager.getInstance().logOut();
+                //Go to landing page
                 Intent intent = new Intent(view.getContext(), InitialActivity.class);
                 startActivity(intent);
             }

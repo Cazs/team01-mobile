@@ -4,6 +4,9 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -27,36 +30,53 @@ import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
+import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.User;
+import com.codcodes.icebreaker.model.UserHelper;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
 import com.facebook.Profile;
 import com.facebook.ProfileTracker;
 import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SignUpActivity extends AppCompatActivity {
+public class SignUpActivity extends AppCompatActivity
+{
 
     EditText email;
     EditText username;
@@ -80,7 +100,7 @@ public class SignUpActivity extends AppCompatActivity {
     {
         super.onCreate(savedInstanceState);
 
-        //Get Hash and set hash
+        //Get and set hash
         try
         {
             PackageInfo info = getPackageManager().getPackageInfo(
@@ -90,7 +110,7 @@ public class SignUpActivity extends AppCompatActivity {
             {
                 MessageDigest md = MessageDigest.getInstance("SHA");
                 md.update(signature.toByteArray());
-                Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+                //Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
             }
         } catch (PackageManager.NameNotFoundException e)
         {
@@ -102,17 +122,15 @@ public class SignUpActivity extends AppCompatActivity {
             Log.wtf(TAG,e.getMessage(),e);
         }
 
-        //Init Facebook
+        //Init Facebook stuffs
         FacebookSdk.sdkInitialize(getApplicationContext());
         AppEventsLogger.activateApp(getApplication());
 
         setContentView(R.layout.activity_sign_up);
 
-        //* Begin init Facebook login button
-
         callbackManager = CallbackManager.Factory.create();
         loginButton = (LoginButton) findViewById(R.id.login_button);
-        loginButton.setReadPermissions("email");
+        //loginButton.setReadPermissions(Arrays.asList("email","user_birthday","user_about_me"));
         accessTokenTracker = new AccessTokenTracker()
         {
             @Override
@@ -126,16 +144,39 @@ public class SignUpActivity extends AppCompatActivity {
         profileTracker = new ProfileTracker()
         {
             @Override
-            protected void onCurrentProfileChanged(
-                    Profile oldProfile,
-                    Profile currentProfile)
+            protected void onCurrentProfileChanged(Profile oldProfile, Profile currentProfile)
             {
+                startProgressBar();
+
                 profile = currentProfile;
-                if(profile!=null)//for cases like when they sign out
+                if(profile!=null && accessToken!=null)//for cases like when they sign out
                 {
-                    //Write Facebook profile image to local storage
-                    Uri prof_pic = currentProfile.getProfilePictureUri(400, 400);
-                    //Write Facebook profile image to remote storage
+                    final String usr = "user_" + accessToken.getUserId() + "_fb";
+
+                    //Write Facebook profile image to local and remote storage
+                    Thread tProfileReg = new Thread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            try
+                            {
+                                byte[] res = RemoteComms.getFBImage("https://graph.facebook.com","v2.7/"+ accessToken.getUserId()+"/picture?width=540&height=480&access_token="+accessToken.getToken());
+                                //Write image to local disk
+                                WritersAndReaders.saveImage(res,"profile/"+usr+".png");
+                                //Update remote Image
+                                int code = RemoteComms.imageUpload(res,"profile>"+usr,".png");
+                                if(code==HttpURLConnection.HTTP_OK)
+                                    Log.d(TAG,"Successfully uploaded new profile photo.");
+                                else
+                                    Log.wtf(TAG,"Couldn't upload new profile photo: " + code);
+                            } catch (IOException e)
+                            {
+                                Log.d(TAG,e.getMessage(),e);
+                            }
+                        }
+                    });
+                    tProfileReg.start();
 
                     //Create IceBreak account
                     if (accessToken == null)
@@ -143,30 +184,36 @@ public class SignUpActivity extends AppCompatActivity {
                         Log.wtf(TAG, "For some reason the Facebook access token is null.");
                         return;
                     }
-                    String usr = "";
-                    if (SharedPreference.getUsername(SignUpActivity.this).length() == 0)
-                        usr = "user_" + accessToken.getUserId() + "_fb";
-                    else
-                        usr = SharedPreference.getUsername(SignUpActivity.this);//Use existing username if available
 
-                    String pwd = accessToken.getUserId().substring(0, 6) + String.valueOf(new Date().getTime());
+                    /*LoginManager.getInstance().logInWithReadPermissions(
+                            SignUpActivity.this,
+                            Arrays.asList("email","user_birthday","user_about_me"));*/
+
+                    String a_piece_of_time = String.valueOf(new Date().getTime());
+                    String pwd = accessToken.getUserId().substring(0, 6) + '_' + a_piece_of_time;
+
+                    //LoginManager.getInstance().logOut();
+                    SharedPreference.setUsername(SignUpActivity.this,usr);//set new username if empty
 
                     User new_user = new User();
                     new_user.setFirstname(profile.getFirstName());
                     new_user.setLastname(profile.getLastName());
-                    new_user.setUsername(usr);
-                    new_user.setPassword(pwd);
                     new_user.setFbID(accessToken.getUserId());
                     new_user.setFbToken(accessToken.getToken());
-                    new_user.setEmail("NONE");
+                    new_user.setEmail("<No email>");
+                    new_user.setGender("Unspecified");
+                    new_user.setUsername(usr);
+                    new_user.setPassword(pwd);
+                    new_user.setCatchphrase("<No catchphrase>");
+                    new_user.setOccupation("<No occupation specified.>");
+                    new_user.setBio("<No bio>");
 
+                    Log.d(TAG, "Sending registration[new user] to server..");
 
-                    Log.d(TAG, "Sending registration to server..");
+                    restart(new_user);//drop users table and add first user - the local user
 
-                    startProgressBar();
-
-                    PostToDB(new_user.toString(), new_user.getUsername());
-                }else  Log.d(TAG,"Profile is null.");
+                    PostToDB("signup", new_user);
+                }else  Log.d(TAG,"FB Profile is null.");
             }
         };
         profileTracker.startTracking();
@@ -218,6 +265,7 @@ public class SignUpActivity extends AppCompatActivity {
                 final String p = password.getText().toString();
                 final String u = username.getText().toString();
                 final String cp = confirmPassword.getText().toString();
+
                 if (!isValidEmail(e))
                 {
                     stopProgressBar();
@@ -256,16 +304,21 @@ public class SignUpActivity extends AppCompatActivity {
                     new_user.setFirstname(" ");
                     new_user.setLastname(" ");
                 }
-                new_user.setUsername(u);
-                new_user.setPassword(cp);
+
                 if(accessToken!=null)
                 {
                     new_user.setFbID(accessToken.getUserId());
                     new_user.setFbToken(accessToken.getToken());
                 }
-                new_user.setEmail(e);
 
-                PostToDB(new_user.toString(),new_user.getUsername());
+                new_user.setUsername(u);
+                new_user.setPassword(cp);
+                new_user.setEmail(e);
+                new_user.setGender("Unspecified");
+
+                restart(new_user);//add first user - the registering user
+
+                PostToDB("signup",new_user);
             }
         });
 
@@ -284,6 +337,18 @@ public class SignUpActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public void restart(User u)
+    {
+        //Clear table
+        UserHelper dbHelper = new UserHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        dbHelper.dropTable(db);
+        if(db.isOpen())
+            db.close();
+        //Write user to disk
+        LocalComms.addContact(this,u);
     }
 
     public void stopProgressBar()
@@ -351,9 +416,19 @@ public class SignUpActivity extends AppCompatActivity {
         return toastHandler;
     }
 
-    private void showEditProfile()
+    private void showEditProfile(User u)
     {
         Intent editScreen = new Intent(this,Edit_ProfileActivity.class);
+
+        editScreen.putExtra("First Name",u.getFirstname());
+        editScreen.putExtra("Last Name",u.getLastname());
+        editScreen.putExtra("Age",String.valueOf(u.getAge()));
+        editScreen.putExtra("Occupation",u.getOccupation());
+        editScreen.putExtra("Catchphrase",u.getCatchphrase());
+        editScreen.putExtra("Bio",u.getBio());
+        editScreen.putExtra("Gender",u.getGender());
+        editScreen.putExtra("Username",u.getUsername());
+
         startActivity(editScreen);
     }
 
@@ -396,7 +471,7 @@ public class SignUpActivity extends AppCompatActivity {
 
     }
 
-    private void PostToDB(final String data, final String username)
+    private void PostToDB(final String function, final User user)
     {
         Thread thread = new Thread(new Runnable()
         {
@@ -407,47 +482,60 @@ public class SignUpActivity extends AppCompatActivity {
                 startProgressBar();
                 try
                 {
-                    if(data.length()>0)
+                    if(user!=null)
                     {
-                        String resp = RemoteComms.postData("signup", data);
+                        String resp = RemoteComms.postData(function, user.toString());
+
+                        Message message;
+
                         if(resp.contains("200"))
                         {
-                            Message messaage = toastHandler("Registered your account.").obtainMessage();
-                            messaage.sendToTarget();
+                            message = toastHandler("Successfully registered your account.").obtainMessage();
+                            message.sendToTarget();
 
-                            SharedPreference.setUsername(getApplicationContext(), username);
-                            //Toast.makeText(getBaseContext(), "Successful sign up", Toast.LENGTH_LONG).show();
-                            //findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
-                            showEditProfile();
+                            SharedPreference.setUsername(getApplicationContext(), user.getUsername());
+                            showEditProfile(user);
+
+                            if(resp.toLowerCase().contains("exists=true"))
+                            {
+                                message = toastHandler("Username already exists on remote server.").obtainMessage();
+                                message.sendToTarget();
+                                Log.d(TAG,"Username already exists on remote server.");
+                            }
                         }
                         else
                         {
                             if(resp.toLowerCase().contains("exists=true"))
                             {
-                                Toast.makeText(getApplicationContext(), "Username already exists, please try again.", Toast.LENGTH_LONG).show();
-                                Message messaage = toastHandler("Username already exists, please try again.").obtainMessage();
-                                messaage.sendToTarget();
+                                //Toast.makeText(SignUpActivity.this, "Username already exists, please try again.", Toast.LENGTH_LONG).show();
+                                message = toastHandler("Username already exists, please try again.").obtainMessage();
+                                message.sendToTarget();
                             }
                             else
                             {
-                                Message messaage = toastHandler("Could not register your account.").obtainMessage();
-                                messaage.sendToTarget();
+                                //Toast.makeText(SignUpActivity.this, "Username already exists, please try again.", Toast.LENGTH_LONG).show();
+                                message = toastHandler("Could not register your account.").obtainMessage();
+                                message.sendToTarget();
                             }
                         }
+                    } else
+                    {
+                        Log.wtf(TAG,"User registration payload is empty.");
+                        Message message = toastHandler("Could not register your account, registration payload is empty.").obtainMessage();
+                        message.sendToTarget();
                     }
                 }
                 catch (UnknownHostException e)
                 {
-                    Message messaage = toastHandler("No Internet Access..").obtainMessage();
-                    messaage.sendToTarget();
-                    e.printStackTrace();
-
+                    Message message = toastHandler("No Internet Access..").obtainMessage();
+                    message.sendToTarget();
+                    Log.d(TAG,e.getMessage(),e);
                 }
                 catch (IOException e)
                 {
-                    Message messaage = toastHandler(e.getMessage()).obtainMessage();
-                    messaage.sendToTarget();
-                    e.printStackTrace();
+                    Message message = toastHandler(e.getMessage()).obtainMessage();
+                    message.sendToTarget();
+                    Log.d(TAG,e.getMessage(),e);
                 }
                 finally
                 {

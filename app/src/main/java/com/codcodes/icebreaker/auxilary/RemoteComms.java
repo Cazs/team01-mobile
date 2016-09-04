@@ -19,9 +19,13 @@ import com.codcodes.icebreaker.screens.MainActivity;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -36,6 +40,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Created by Casper on 2016/08/08.
@@ -62,6 +68,30 @@ public class RemoteComms
             return response;
         }else
             return  "";
+    }
+
+    public static byte[] getFBImage(String host, String resource) throws IOException
+    {
+        Log.d(TAG,"Opening connection to " + host);
+        URL urlConn = new URL(host+'/'+resource);
+        HttpsURLConnection httpConn =  (HttpsURLConnection)urlConn.openConnection();
+        httpConn.setRequestMethod("GET");
+        //httpConn.setDoOutput(true);
+        //httpConn.setDoInput(true);
+        //httpConn.setChunkedStreamingMode(1024);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        DataInputStream is = new DataInputStream(httpConn.getInputStream());
+
+        int len;
+        while ((len=is.read(buffer,0,buffer.length))>0)
+        {
+            baos.write(buffer,0,len);
+            baos.flush();
+        }
+        is.close();
+        //if(httpConn.getResponseCode() == HttpURLConnection.HTTP_OK)
+        return baos.toByteArray();
     }
 
     public static User getUser(Context context, String username) throws IOException

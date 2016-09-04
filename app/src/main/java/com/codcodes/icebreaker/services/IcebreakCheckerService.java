@@ -121,10 +121,10 @@ public class IcebreakCheckerService extends IntentService
                     //Check for cases where local user is sender
                     if(out_messages.size()>0)
                     {
+                        Log.d(TAG+"/OBC>", "IBDialog active: " + IBDialog.active);
                         for(Message m: out_messages)
                         {
                             //TODO: send messages to server if they haven't been sent
-                            Log.d(TAG+"/OBC>", "IBDialog active: " + IBDialog.active);
                             //always wait for pending message status changes to complete
                             if (!IBDialog.active && !IBDialog.status_changing)
                             {

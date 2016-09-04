@@ -15,9 +15,10 @@ public final class UserContract
             UserEntry.COL_USER_FNAME + " " + TYPE_TEXT + " NULL," +
             UserEntry.COL_USER_LNAME + " " + TYPE_TEXT + " NULL," +
             UserEntry.COL_USER_AGE + " " + TYPE_INT + "," +
-            UserEntry.COL_USER_BIO + " " + TYPE_TEXT + " NOT NULL," +
-            UserEntry.COL_USER_CATCHPHRASE + " " + TYPE_TEXT + " NOT NULL," +
-            UserEntry.COL_USER_OCCUPATION + " " + TYPE_TEXT + " NOT NULL," +
+            UserEntry.COL_USER_BIO + " " + TYPE_TEXT + " NULL," +
+            UserEntry.COL_USER_CATCHPHRASE + " " + TYPE_TEXT + " NULL," +
+            UserEntry.COL_USER_OCCUPATION + " " + TYPE_TEXT + " NULL," +
+            UserEntry.COL_USER_EMAIL + " " + TYPE_TEXT + " NULL," +
             UserEntry.COL_USER_GENDER + " " + TYPE_TEXT + " NOT NULL"
             + ")";
     public static final String SQL_DELETE_tblMSG = "DROP TABLE IF EXISTS " + UserEntry.TABLE_NAME;
@@ -35,6 +36,7 @@ public final class UserContract
         public static final String COL_USER_CATCHPHRASE = "Catchphrase";
         public static final String COL_USER_OCCUPATION = "Occupation";
         public static final String COL_USER_GENDER = "Gender";
+        public static final String COL_USER_EMAIL = "Email";
 
         public static final String  COL_MESSAGE_NULLABLE = "Nulls";
     }

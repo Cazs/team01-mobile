@@ -2,6 +2,9 @@ package com.codcodes.icebreaker.screens;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.graphics.Typeface;
 import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
@@ -14,6 +17,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -40,8 +44,12 @@ import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.tabs.EventsFragment;
 import com.codcodes.icebreaker.tabs.ProfileFragment;
 import com.codcodes.icebreaker.tabs.UserContactsFragment;
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
 
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
@@ -82,15 +90,41 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
     private int[] viewPagerIcons =
             {
-                R.drawable.ic_location_on_white_24dp,
-                R.drawable.ic_people_white_24dp,
-                R.drawable.ic_person_white_24dp
+                    R.drawable.ic_location_on_white_24dp,
+                    R.drawable.ic_people_white_24dp,
+                    R.drawable.ic_person_white_24dp
             };
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        //Get and set hash
+        try
+        {
+            PackageInfo info = getPackageManager().getPackageInfo(
+                    getPackageName(),
+                    PackageManager.GET_SIGNATURES);
+            for (Signature signature : info.signatures)
+            {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                //Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+            }
+        } catch (PackageManager.NameNotFoundException e)
+        {
+            //TODO: Better logging
+            Log.wtf(TAG,e.getMessage(),e);
+        } catch (NoSuchAlgorithmException e)
+        {
+            //TODO: Better logging
+            Log.wtf(TAG,e.getMessage(),e);
+        }
+
+        //Init Facebook
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(getApplication());
+
         setContentView(R.layout.activity_main);
         //LinearLayout action_bar = (LinearLayout)MainActivity.this.findViewById(R.id.actionBar);
 
@@ -99,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         //Try to get local user from DB
         lcl = LocalComms.getContact(this,SharedPreference.getUsername(this).toString());
         uhandle = SharedPreference.getUsername(this).toString();
-        if(lcl==null)//not in local DB
+        if(lcl==null)//not in local DB, get from remote DB
         {
             Thread tLocalUserLoader = new Thread(new Runnable()
             {
@@ -109,10 +143,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                     try
                     {
                         lcl = RemoteComms.getUser(getApplicationContext(), SharedPreference.getUsername(getBaseContext()).toString());
-                        if(lcl!=null)
-                            LocalComms.addContact(getBaseContext(), lcl);
-                        else
-                            Log.d(TAG,"Couldn't add local user to local DB");
+                        Log.d(TAG,"Added local user to local DB.");
                     } catch (IOException e)
                     {
                         Log.d(TAG,"Couldn't add local user to local DB: " + e.getMessage());

@@ -382,12 +382,58 @@ public class LocalComms
             kv_pairs.put(UserContract.UserEntry.COL_USER_CATCHPHRASE, new_contact.getCatchphrase());
             kv_pairs.put(UserContract.UserEntry.COL_USER_OCCUPATION, new_contact.getOccupation());
             kv_pairs.put(UserContract.UserEntry.COL_USER_GENDER, new_contact.getGender());
+            kv_pairs.put(UserContract.UserEntry.COL_USER_EMAIL, new_contact.getEmail());
 
             long newRowId = -1;
             if (!userExistsInDB(context, new_contact.getUsername()))
             {
                 newRowId = db.insert(UserContract.UserEntry.TABLE_NAME, null, kv_pairs);
                 Log.d(TAG,"*New contact ==> " + newRowId);
+            } else
+            {
+                updateContact(context,new_contact);
+                Log.d(TAG, "User exists in local DB");
+            }
+        }
+        catch (SQLiteCantOpenDatabaseException e)
+        {
+            Log.wtf(TAG,e.getMessage(),e);
+            //TODO: Better logging
+        }
+        finally
+        {
+            closeDB(db);
+        }
+    }
+
+    public static void updateContact(Context context, User contact)
+    {
+        SQLiteDatabase db = null;
+        try
+        {
+            UserHelper dbHelper = new UserHelper(context);//getBaseContext());
+            db = dbHelper.getWritableDatabase();
+            dbHelper.onCreate(db);//Create Contacts table in DB if it doesn't exist
+
+            ContentValues kv_pairs = new ContentValues();
+
+            kv_pairs.put(UserContract.UserEntry.COL_USER_USERNAME, contact.getUsername());
+            kv_pairs.put(UserContract.UserEntry.COL_USER_FNAME, contact.getFirstname());
+            kv_pairs.put(UserContract.UserEntry.COL_USER_LNAME, contact.getLastname());
+            kv_pairs.put(UserContract.UserEntry.COL_USER_AGE, contact.getAge());
+            kv_pairs.put(UserContract.UserEntry.COL_USER_BIO, contact.getBio());
+            kv_pairs.put(UserContract.UserEntry.COL_USER_CATCHPHRASE, contact.getCatchphrase());
+            kv_pairs.put(UserContract.UserEntry.COL_USER_OCCUPATION, contact.getOccupation());
+            kv_pairs.put(UserContract.UserEntry.COL_USER_GENDER, contact.getGender());
+            kv_pairs.put(UserContract.UserEntry.COL_USER_EMAIL, contact.getEmail());
+
+            if (userExistsInDB(context, contact.getUsername()))
+            {
+                String where = UserContract.UserEntry.COL_USER_USERNAME + " = ?";
+                String[] where_args = {contact.getUsername()};
+
+                db.update(UserContract.UserEntry.TABLE_NAME, kv_pairs,where,where_args);
+                Log.d(TAG,"*Updated contact '" + LocalComms.getValidatedName(contact)+"'");
             } else
                 Log.d(TAG, "User exists in local DB");
         }
@@ -446,7 +492,8 @@ public class LocalComms
                     String occ = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_OCCUPATION));
                     String gend = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_GENDER));
                     String bio = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_BIO));
-                    //String eml = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_EMAIL));
+                    String eml = c.getString(c.getColumnIndex(UserContract.UserEntry.COL_USER_EMAIL));
+
                     u.setUsername(username);
                     u.setFirstname(fname);
                     u.setLastname(lname);

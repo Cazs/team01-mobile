@@ -292,7 +292,8 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
 
     public void runOnUI(Runnable r)
     {
-        UserContactsFragment.this.getActivity().runOnUiThread(r);
+        if(getActivity()!=null)
+            getActivity().runOnUiThread(r);
     }
 
     @Override

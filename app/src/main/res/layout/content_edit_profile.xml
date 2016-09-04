@@ -74,7 +74,7 @@
                 android:layout_centerHorizontal="true"
                 android:fontFamily="monospace"
                 android:drawableLeft="@drawable/ic_date_range_black_24dp"
-                android:inputType="text"
+                android:inputType="number"
                 />
             <EditText
                 android:layout_width="@dimen/text_box_size"
@@ -86,7 +86,7 @@
                 android:layout_centerHorizontal="true"
                 android:fontFamily="monospace"
                 android:maxLines="1"
-                android:inputType="number"
+                android:inputType="text"
                 android:drawableLeft="@drawable/ic_local_library_black_24dp"
                 />
             <Spinner

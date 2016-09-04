@@ -9,6 +9,9 @@ import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -27,6 +30,7 @@ import android.widget.ViewFlipper;
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.JSON;
+import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.LocationDetector;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
@@ -36,6 +40,7 @@ import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
@@ -175,12 +180,24 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
 
     }
 
+    private Handler toastHandler(final String text)
+    {
+        Handler toastHandler = new Handler(Looper.getMainLooper())
+        {
+            public void handleMessage(Message msg)
+            {
+                super.handleMessage(msg);
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG).show();
+            }
+        };
+        return toastHandler;
+    }
+
     private void validateEventLogin(int code)
     {
         if(matchAccessCode(code,location,locationDetector.getLocation(),event_Radius))
         {
-            //Set global variables
-            //MainActivity.event = RemoteComms.getEvent();
+            progress = LocalComms.showProgressBar(EventDetailActivity.this,"Signing in to event...");
             Thread tEventDataLoader = new Thread(new Runnable()
             {
                 @Override
@@ -188,12 +205,48 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                 {
                     try
                     {
-                        MainActivity.event_id = Eventid;
-                        MainActivity.event = RemoteComms.getEvent(Eventid);
-                        String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + Eventid);
-                        JSON.<User>getJsonableObjectsFromJson(contactsJson, MainActivity.users_at_event, User.class);
-                        Log.d(TAG,"Set event ID and Event object.");
-                        EventDetailActivity.this.finish();
+                        User user = LocalComms.getContact(EventDetailActivity.this,SharedPreference.getUsername(getApplicationContext()));
+                        if(user==null)
+                            user = RemoteComms.getUser(EventDetailActivity.this,SharedPreference.getUsername(getApplicationContext()));
+                        if(user!=null)
+                        {
+                            MainActivity.event_id = Eventid;
+                            MainActivity.event = RemoteComms.getEvent(Eventid);
+
+                            user.setEvent(MainActivity.event);
+                            String resp = RemoteComms.postData("userUpdate/"+user.getUsername(), user.toString());
+
+                            Message message;
+
+                            if(resp.contains("200"))
+                            {
+                                String ev_title = "<No Title>";
+                                if(MainActivity.event!=null)
+                                    ev_title = MainActivity.event.getTitle();
+
+                                message = toastHandler("Signed in to event \""+ev_title+"\"").obtainMessage();
+                                message.sendToTarget();
+
+                                String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + Eventid);
+                                JSON.<User>getJsonableObjectsFromJson(contactsJson, MainActivity.users_at_event, User.class);
+                                Log.d(TAG,"Signed in to event \""+ev_title+"\".");
+
+                                LocalComms.hideProgressBar(progress);
+
+                                EventDetailActivity.this.finish();
+                            }
+                            else
+                            {
+                                message = toastHandler("Could not login to event, server response: "+resp).obtainMessage();
+                                message.sendToTarget();
+                                Log.d(TAG,resp);
+                            }
+                        } else
+                        {
+                            Log.wtf(TAG,"User object is null.");
+                            Message message = toastHandler("Could not sign in to event, User object is null.").obtainMessage();
+                            message.sendToTarget();
+                        }
                     }
                     catch (IllegalAccessException e)
                     {
@@ -205,12 +258,18 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                         //TODO: better logging
                         Log.wtf(TAG,e.getMessage(),e);
                     }
+                    catch (UnknownHostException e)
+                    {
+                        Message message = toastHandler("No Internet Access..").obtainMessage();
+                        message.sendToTarget();
+                        Log.d(TAG,e.getMessage(),e);
+                    }
                     catch (IOException e)
                     {
                         //TODO: better logging
                         Log.wtf(TAG,e.getMessage(),e);
                     }
-                    hideProgressBar();
+                    LocalComms.hideProgressBar(progress);
                 }
             });
             tEventDataLoader.start();
