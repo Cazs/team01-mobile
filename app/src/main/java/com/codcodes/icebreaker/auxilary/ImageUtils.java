@@ -234,7 +234,10 @@ public class ImageUtils
         return inSamplesize;
     }
 
-    private String getRealPathFromURI(String contentURI, Context c) {
+    private String getRealPathFromURI(String contentURI, Context c)
+    {
+        if(c.getContentResolver()==null)
+            return null;
         Uri contentUri = Uri.parse(contentURI);
         Cursor cursor = c.getContentResolver().query(contentUri, null, null, null, null);
         if (cursor == null) {

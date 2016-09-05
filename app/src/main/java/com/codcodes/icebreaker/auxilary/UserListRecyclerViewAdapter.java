@@ -37,7 +37,7 @@ public class UserListRecyclerViewAdapter extends RecyclerView.Adapter<UserListRe
     @Override
     public ContactViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_usercontact, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.ib_list_item_1, parent, false);
         return new ContactViewHolder(view);
     }
 

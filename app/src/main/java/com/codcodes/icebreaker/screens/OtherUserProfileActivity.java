@@ -10,7 +10,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -170,7 +172,7 @@ public class OtherUserProfileActivity extends AppCompatActivity
                         String[] values = {msgId,};*/
                         ContentValues msg_data = new ContentValues();
                         msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE_ID,msgId);
-                        msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE,"ICEBREAK");
+                        msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE,"<ICEBREAK>");
                         msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS,String.valueOf(MESSAGE_STATUSES.ICEBREAK.getStatus()));
                         msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER,SharedPreference.getUsername(getBaseContext()).toString());
                         msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER,username);
@@ -194,22 +196,19 @@ public class OtherUserProfileActivity extends AppCompatActivity
                             final int response_code = RemoteComms.postData("addMessage", msg_details);
                             //Update UI
                             //progress.hide();
+                            Message message;
                             if(response_code != HttpURLConnection.HTTP_OK)
                             {
-                                Toast.makeText(getBaseContext(),"Could not send Icebreak request: " + response_code, Toast.LENGTH_LONG).show();
+                                message = toastHandler("Could not send Icebreak request: " + response_code).obtainMessage();
+                                message.sendToTarget();
                                 Log.d(TAG,"Could not send Icebreak request: " + response_code);
                             }
                             else
                             {
                                 Log.d(TAG,"Icebreak Sent");
-                                Toast.makeText(getBaseContext(), "Icebreak Sent", Toast.LENGTH_LONG).show();
+                                message = toastHandler("Icebreak sent").obtainMessage();
+                                message.sendToTarget();
                             }
-                            /*runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                }
-                            });*/
                         }
                         catch (IOException e)
                         {
@@ -224,6 +223,19 @@ public class OtherUserProfileActivity extends AppCompatActivity
                 tSender.start();
             }
         });
+    }
+
+    private Handler toastHandler(final String text)
+    {
+        Handler toastHandler = new Handler(Looper.getMainLooper())
+        {
+            public void handleMessage(Message msg)
+            {
+                super.handleMessage(msg);
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG).show();
+            }
+        };
+        return toastHandler;
     }
 
     public void hideProgressBar()

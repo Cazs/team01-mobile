@@ -149,7 +149,15 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
             @Override
             public void run()
             {
-                refreshUsersAtEvent();
+                try
+                {
+                    refreshUsersAtEvent();
+                }
+                catch (ConcurrentModificationException e)
+                {
+                    //TODO: Better logging.
+                    Log.wtf(TAG,e.getMessage(),e);
+                }
             }
         });
         t.start();
@@ -200,7 +208,13 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                             }
                         }*/
                     } else Log.d(TAG,"User not at an event.");
-                } catch (java.lang.InstantiationException e)
+                }
+                catch (ConcurrentModificationException e)
+                {
+                    //TODO: Better logging.
+                    Log.wtf(TAG,e.getMessage(),e);
+                }
+                catch (java.lang.InstantiationException e)
                 {
                     //TODO: Better logging.
                     Log.wtf(TAG,e.getMessage(),e);
@@ -228,6 +242,8 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
         else//Load local contacts
             contacts = LocalComms.getContacts(UserContactsFragment.this.getActivity());
 
+        if(contacts==null)
+            return;
         //Attempt to load images into memory and set the list adapter
         bitmaps = new ArrayList<Bitmap>();
         Bitmap circularbitmap = null;
@@ -328,7 +344,15 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
             @Override
             public void run()
             {
-                refreshUsersAtEvent();
+                try
+                {
+                    refreshUsersAtEvent();
+                }
+                catch (ConcurrentModificationException e)
+                {
+                    //TODO: Better logging.
+                    Log.wtf(TAG,e.getMessage(),e);
+                }
             }
         });
         t.start();

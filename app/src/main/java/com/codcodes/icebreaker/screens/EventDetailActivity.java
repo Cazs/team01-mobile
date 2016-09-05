@@ -43,9 +43,8 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-public class EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
+public class EventDetailActivity extends AppCompatActivity
 {
-    private static final boolean DEBUG = true;
     private final String TAG = "IB/EventDetailActivity";
 
     private long Eventid;
@@ -60,9 +59,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
     private int AccessCode;
     private int event_Radius;
 
-    private IOnListFragmentInteractionListener mListener;
     private RecyclerView usersAtEventList;
-    private ViewFlipper vf;
     private TextView eventDetails;
     private ProgressDialog progress;
 
@@ -75,17 +72,15 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
         locationDetector = new LocationDetector(this);
        // getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Name = new ArrayList<String>();
         Catchphrase= new ArrayList<String>();
         //userIcon = new ArrayList<String>();
-
-        mListener = (IOnListFragmentInteractionListener) this;
 
         final String username = SharedPreference.getUsername(getApplicationContext());
 
@@ -163,7 +158,6 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
             @Override
             public boolean onEditorAction(TextView v, int actionID, KeyEvent event)
             {
-                showProgressBar();
                 if (actionID== EditorInfo.IME_ACTION_DONE)
                 {
                     validateEventLogin(Integer.parseInt(accessCode.getText().toString()));
@@ -227,6 +221,8 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                                 message = toastHandler("Signed in to event \""+ev_title+"\"").obtainMessage();
                                 message.sendToTarget();
 
+                                if(MainActivity.users_at_event==null)
+                                    MainActivity.users_at_event = new ArrayList<>();
                                 String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + Eventid);
                                 JSON.<User>getJsonableObjectsFromJson(contactsJson, MainActivity.users_at_event, User.class);
                                 Log.d(TAG,"Signed in to event \""+ev_title+"\".");
@@ -322,26 +318,6 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
         }
     }
 
-    public void hideProgressBar()
-    {
-        if(progress!=null)
-            if(progress.isShowing())
-                progress.dismiss();
-    }
-
-    public void showProgressBar()
-    {
-        if(progress==null)
-            progress = new ProgressDialog(this);
-        if(!progress.isShowing()) {
-            progress.setMessage("Loading List");
-            progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            progress.setIndeterminate(true);
-            progress.setProgress(10);
-            progress.show();
-        }
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
@@ -403,73 +379,6 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
         return false;
     }
 
-    /*public void listPeople(final Activity context) {
-        Thread tContactsLoader = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Looper.prepare();
-                if (Eventid > 0) {
-                    try {
-                        String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + Eventid);
-                        final ArrayList<User> contacts = new ArrayList<>();
-                        JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
-                        System.err.println("Contacts at event: " + Eventid + " " + contacts.size() + " people");
-
-                        final ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
-                        Bitmap circularbitmap = null;
-                        Bitmap bitmap = null;
-                        BitmapFactory.Options options = new BitmapFactory.Options();
-                        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                        //Attempt to load images into memory and set the list adapter
-                        for (User u : contacts) {
-                            bitmap = LocalComms.getImage(context, u.getUsername(), ".png", "/profile", options);
-                            if (bitmap == null)
-                                bitmap = RemoteComms.getImage(context, u.getUsername(), ".png", "/profile", options);
-
-                            circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                            if (bitmap == null || circularbitmap == null) {
-                                System.err.println("Bitmap is null");
-                            } else {
-                                bitmaps.add(circularbitmap);
-                                bitmap.recycle();
-                            }
-                        }
-                        //Update UI
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (usersAtEventList != null) {
-                                    usersAtEventList.setLayoutManager(new LinearLayoutManager(context));
-                                    usersAtEventList.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
-                                    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-
-                                    hideProgressBar();
-                                    vf = (ViewFlipper) findViewById(R.id.viewFlipper);
-                                    eventDetails.setText("List Of People");
-                                    vf.showNext();
-                                    Log.d(TAG, "Set users at event list");
-                                }
-                            }
-                        });
-                    } catch (IOException e) {
-                        //TODO: Error Logging
-                        e.printStackTrace();
-                    } catch (java.lang.InstantiationException e) {
-                        //TODO: Error Logging
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        //TODO: Error Logging
-                        e.printStackTrace();
-                    }
-                } else {
-                    Toast.makeText(getBaseContext(), "Invalid Event ID", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-        tContactsLoader.start();
-    }*/
-
     @Override
     public void onBackPressed()
     {
@@ -481,20 +390,4 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
         startActivity(i);
         finish();
     }
-
-    @Override
-    public void onListFragmentInteraction(User user)
-    {
-        Intent intent = new Intent(this,OtherUserProfileActivity.class);
-        intent.putExtra("Firstname",user.getFirstname());
-        intent.putExtra("Lastname",user.getLastname());
-        intent.putExtra("Username",user.getUsername());
-        intent.putExtra("Age",user.getAge());
-        intent.putExtra("Gender",user.getGender());
-        intent.putExtra("Occupation",user.getOccupation());
-        intent.putExtra("Bio",user.getBio());
-
-        startActivity(intent);
-    }
-
 }

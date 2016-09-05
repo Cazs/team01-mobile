@@ -17,5 +17,5 @@
         android:layout_marginRight="2dp"
         app:layoutManager="LinearLayoutManager"
         tools:context=".tabs.UserContactsFragment"
-        tools:listitem="@layout/fragment_usercontact" />
+        tools:listitem="@layout/ib_list_item_1" />
 </android.support.v4.widget.SwipeRefreshLayout>

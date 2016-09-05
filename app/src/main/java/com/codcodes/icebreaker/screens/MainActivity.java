@@ -35,6 +35,7 @@ import com.codcodes.icebreaker.auxilary.ContactListSwitches;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.model.Event;
+import com.codcodes.icebreaker.model.IJsonable;
 import com.codcodes.icebreaker.services.IbTokenRegistrationService;
 import com.codcodes.icebreaker.services.IcebreakCheckerService;
 import com.codcodes.icebreaker.services.MessageFcmService;
@@ -281,26 +282,52 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     }
 
     @Override
-    public void onListFragmentInteraction(User item)
+    public void onListFragmentInteraction(IJsonable item)
     {
         if(item!=null)
         {
-            if (!item.getFirstname().equals(getString(R.string.msg_not_in_event)))
+            if(item instanceof User)
             {
-                Intent intent = new Intent(this, OtherUserProfileActivity.class);
-                intent.putExtra("Firstname", item.getFirstname());
-                intent.putExtra("Lastname", item.getLastname());
-                intent.putExtra("Username", item.getUsername());
-                intent.putExtra("Age", item.getAge());
-                intent.putExtra("Gender", item.getGender());
-                intent.putExtra("Occupation", item.getOccupation());
-                intent.putExtra("Bio", item.getBio());
-                startActivity(intent);
+                if (!((User) item).getFirstname().equals(getString(R.string.msg_not_in_event)))
+                {
+                    Intent intent = new Intent(this, OtherUserProfileActivity.class);
+                    intent.putExtra("Firstname", ((User) item).getFirstname());
+                    intent.putExtra("Lastname", ((User) item).getLastname());
+                    intent.putExtra("Username", ((User) item).getUsername());
+                    intent.putExtra("Age", ((User) item).getAge());
+                    intent.putExtra("Gender", ((User) item).getGender());
+                    intent.putExtra("Occupation", ((User) item).getOccupation());
+                    intent.putExtra("Bio", ((User) item).getBio());
+                    startActivity(intent);
 
-                Log.d(TAG, "Loaded other User.");
-            } else {
-                Log.d(TAG, "Either there are no IceBreak users at this event or you don't have an internet connection or you don't have any contacts.");
-                Toast.makeText(this, "Either there are no IceBreak users at this event or you don't have an internet connection or you don't have any contacts.", Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "Loaded other User.");
+                } else
+                {
+                    Log.d(TAG, "Either there are no IceBreak users at this event or you don't have an internet connection or you don't have any contacts.");
+                    Toast.makeText(this, "Either there are no IceBreak users at this event or you don't have an internet connection or you don't have any contacts.", Toast.LENGTH_LONG).show();
+                }
+            }
+            if(item instanceof Event)
+            {
+                if (!((Event) item).getTitle().equals(getString(R.string.msg_no_events)))
+                {
+                    Intent intent = new Intent(this,EventDetailActivity.class);
+                    intent.putExtra("Event Name",((Event) item).getTitle());
+                    intent.putExtra("Event Description",((Event) item).getDescription());
+                    String img_id = "/Icebreak/events/event_icons-"+((Event) item).getId()+".png";
+                    intent.putExtra("Image ID",img_id);
+                    intent.putExtra("Event ID",((Event) item).getId());
+                    intent.putExtra("Access ID",((Event) item).getAccessID());
+                    intent.putExtra("Event Location", ((Event) item).getGPS());
+                    intent.putExtra("Event Radius",((Event) item).getRadius());
+
+                    startActivity(intent);
+                    Log.d(TAG, "Loaded other Event.");
+                } else
+                {
+                    Log.d(TAG, "Either there are no IceBreak events or you don't have an internet connection or you don't have any contacts.");
+                    Toast.makeText(this, "Either there are no IceBreak events or you don't have an internet connection or you don't have any contacts.", Toast.LENGTH_LONG).show();
+                }
             }
         }
         else

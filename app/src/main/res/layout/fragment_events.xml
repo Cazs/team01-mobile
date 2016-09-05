@@ -1,38 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:id="@+id/main_page"
+<android.support.v4.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swipe_refresh_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <android.support.v7.widget.RecyclerView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/eventsList"
+        android:name="com.codcodes.icebreaker.tabs.dummy.EventsFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_gravity="center_horizontal"
-        android:gravity="center">
-
-        <pl.bclogic.pulsator4droid.library.PulsatorLayout
-            android:id="@+id/pulsator"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:pulse_count="4"
-            app:pulse_duration="3000"
-            app:pulse_repeat="1"
-            app:pulse_color="@color/colorAccent"
-            app:pulse_startFromScratch="true"
-
-            >
-        </pl.bclogic.pulsator4droid.library.PulsatorLayout>
-
-         <ListView
-             android:id="@+id/list"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             android:visibility="gone"
-             />
-     </LinearLayout>
- </LinearLayout>
-
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="2dp"
+        app:layoutManager="LinearLayoutManager"
+        tools:context=".tabs.EventsFragment"
+        tools:listitem="@layout/ib_list_item_1" />
+</android.support.v4.widget.SwipeRefreshLayout>

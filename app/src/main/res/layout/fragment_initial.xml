@@ -2,7 +2,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".screens.InitialActivity$PlaceholderFragment">
 
     <LinearLayout
@@ -12,15 +11,12 @@
         android:weightSum="100">
 
         <RelativeLayout
+            android:id="@+id/image1"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="100"
+            android:paddingBottom="@dimen/dp_size_20dp"
             android:background="@android:color/white">
-
-            <ImageView
-                android:id="@+id/image1"
-                android:layout_height="match_parent"
-                android:layout_width="match_parent" />
 
         </RelativeLayout>
 

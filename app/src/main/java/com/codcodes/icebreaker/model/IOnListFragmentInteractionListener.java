@@ -16,5 +16,5 @@ package com.codcodes.icebreaker.model;
 public interface IOnListFragmentInteractionListener
 {
     // TODO: Update argument type and name
-    void onListFragmentInteraction(User item);
+    void onListFragmentInteraction(IJsonable item);
 }

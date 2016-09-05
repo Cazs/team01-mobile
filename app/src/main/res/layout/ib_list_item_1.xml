@@ -2,24 +2,28 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/contact_list_item_height"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:weightSum="100"
+    android:background="@drawable/list_divider">
 
     <ImageView
         android:id="@+id/contactProfileImage"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:padding="3dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="20"
+        android:padding="1dp"
         />
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="80"
         android:orientation="vertical">
 
 
         <TextView
             android:id="@+id/contactName"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="@dimen/contact_name_text_size"
             android:fontFamily="monospace"
@@ -31,7 +35,7 @@
 
         <TextView
             android:id="@+id/contactBio"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/grey"
             android:textSize="@dimen/contact_bio_text_size"

@@ -18,8 +18,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             android:paddingLeft="@dimen/dp_size_10"
-            app:popupTheme="@style/AppTheme.PopupOverlay"
-            >
+            app:popupTheme="@style/AppTheme.AppBarOverlay">
         <TextView
             android:id="@+id/Event_Heading"
             android:layout_width="wrap_content"

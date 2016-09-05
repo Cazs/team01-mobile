@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.support.v7.app.AppCompatActivity;
 
@@ -21,9 +23,11 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 
@@ -55,7 +59,7 @@ public class InitialActivity extends AppCompatActivity
      * may be best to switch to a
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
-    private ImageView iv;
+    private RelativeLayout iv;
     private static final String TAG = "IB/InitialActivity";
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
@@ -80,7 +84,7 @@ public class InitialActivity extends AppCompatActivity
         //Check for storage permissions
         LocalComms.validateStoragePermissions(this);
 
-        iv = (ImageView) findViewById(R.id.image1) ;
+        iv = (RelativeLayout) findViewById(R.id.image1) ;
 
 
         //Toolbar toolbar = (Toolbar) findViewByIsetSupportActionBar(toolbar);
@@ -206,21 +210,21 @@ public class InitialActivity extends AppCompatActivity
             int v= getArguments().getInt(ARG_SECTION_NUMBER);
 
             View rootView = inflater.inflate(R.layout.fragment_initial, container, false);
-            ImageView temp = (ImageView) rootView.findViewById(R.id.image1);
+            RelativeLayout temp = (RelativeLayout) rootView.findViewById(R.id.image1);
 
             if (v==1)
             {
-                temp.setImageResource(R.drawable.image1);
+                temp.setBackgroundResource(R.drawable.landing_page_1);
             }
 
             if (v==2)
             {
-                temp.setImageResource(R.drawable.image2);
+                temp.setBackgroundResource(R.drawable.image2);
             }
 
             if (v==3)
             {
-                temp.setImageResource(R.drawable.image3);
+                temp.setBackgroundResource(R.drawable.image3);
             }
 
            // textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
