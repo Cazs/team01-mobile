@@ -9,9 +9,6 @@ import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -37,6 +34,7 @@ import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.User;
 import com.google.android.gms.common.api.CommonStatusCodes;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.vision.barcode.Barcode;
 
 import java.io.IOException;
@@ -56,7 +54,11 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
     private ArrayList<String> Name;
     private ArrayList<String> Catchphrase;
 
-    private Location location;
+
+    private ArrayList<LatLng> polygon;
+    private LatLng me;
+    private LocationDetector locationChecker;
+
     private int AccessCode;
     private int event_Radius;
 
@@ -77,7 +79,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
         setContentView(R.layout.activity_event_detail);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        locationDetector = new LocationDetector(this);
+
        // getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -91,7 +93,19 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
 
         Bundle extras = getIntent().getExtras();
         final Activity act =this;
-        location = new Location("");
+
+        polygon = new ArrayList<>();
+        polygon.add(new LatLng(-26.182944, 27.997387));
+        polygon.add(new LatLng(-26.183185, 27.996846));
+        polygon.add(new LatLng(-26.183816, 27.996964));
+        polygon.add(new LatLng(-26.184235, 27.997307));
+        polygon.add(new LatLng(-26.184312, 27.997704));
+        polygon.add(new LatLng(-26.184201, 27.997913));
+        polygon.add(new LatLng(-26.184008, 27.998251));
+        polygon.add(new LatLng(-26.183815, 27.998380));
+        polygon.add(new LatLng(-26.183517, 27.998471));
+        me = new LatLng(-26.182944, 27.997387);
+        locationChecker = new LocationDetector();
 
         /*
         //If there's a cached eventID use that
@@ -129,9 +143,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
             //location.setLatitude(Double.valueOf(part[0]));
             //location.setLongitude(Double.valueOf(part[1]));
 
-            location.setLatitude(-26.180908900266168);
-            location.setLongitude(27.98675119404803);
-            Log.d("Testing", String.valueOf(location.getLongitude()) + ":" + String.valueOf(location.getLatitude()));
+
             TextView eventDescription = (TextView)findViewById(R.id.event_description);
             eventDescription.setText(extras.getString("Event Description"));
 
@@ -193,9 +205,10 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
         return toastHandler;
     }
 
-    private void validateEventLogin(int code)
+
+    private void validateEventLogin(int code,boolean inRange)
     {
-        if(matchAccessCode(code,location,locationDetector.getLocation(),event_Radius))
+        if(matchAccessCode(code,inRange))
         {
             progress = LocalComms.showProgressBar(EventDetailActivity.this,"Signing in to event...");
             Thread tEventDataLoader = new Thread(new Runnable()
@@ -301,7 +314,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                 if (data != null)
                 {
                     Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
-                    validateEventLogin(Integer.valueOf(barcode.displayValue));
+                    validateEventLogin(Integer.valueOf(barcode.displayValue),locationChecker.containsLocation(me,polygon,true));
                     Log.d(TAG, "Barcode read: " + barcode.displayValue);
                 }
                 else
@@ -380,26 +393,16 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
         return false;
     }
 
-    public boolean matchAccessCode(int code,Location loc1, Location loc2 ,int radius)
+    public boolean matchAccessCode(int code, boolean inRange)
     {
-        if(loc1 != null || loc2 != null)
+
+        Log.d("Testing", "not null");
+        if(code == AccessCode && inRange)
         {
-            if(code == AccessCode)// && inLocation(loc1,loc2,radius))TODO:Aaron's location code
-            {
-                return true;
-            }
+            SharedPreference.setEventId(this,Eventid);
+            return true;
         }
-        else
-        {
-            if(loc1 == null)
-            {
-                Log.d("Testing", "loc1");
-            }
-            else
-            {
-                Log.d("Testing", "loc2");
-            }
-        }
+
         return false;
     }
 
