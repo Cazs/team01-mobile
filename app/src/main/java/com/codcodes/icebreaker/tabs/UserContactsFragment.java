@@ -182,6 +182,10 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                         String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + MainActivity.event_id);
                         JSON.<User>getJsonableObjectsFromJson(contactsJson, users, User.class);
                         int i=0;
+                        if(MainActivity.users_at_event==null)
+                            MainActivity.users_at_event = new ArrayList<User>();
+                        if(users==null)
+                            return;
                         if(users.size()!=MainActivity.users_at_event.size())//then number of users has changed
                         {
                             MainActivity.users_at_event = new ArrayList<User>();

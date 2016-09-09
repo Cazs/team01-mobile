@@ -57,25 +57,31 @@ public class LocalComms
         //Look for image locally
         if (!new File(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext).exists())
         {
-            Log.d(TAG,path+ filename + ext + " does not exist. returning default.");
+            Log.d(TAG,MainActivity.rootDir + "/Icebreak" + path+ '/' + filename + ext + " does not exist.");
             //bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak"+path+"/default.png", options);
             return null;
         }
         else//exists
-            return BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
+        {
+            Log.d(TAG,filename + ext+" exists.");
+            //Bitmap bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
+            Bitmap compressed = ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext,context);
+            //bitmap.recycle();
+            return compressed;
+        }
     }
 
-    public static ProgressDialog showProgressBar(Context context, String msg)
+    public static ProgressDialog showProgressDialog(Context context, String msg)
     {
         ProgressDialog progress = new ProgressDialog(context);
         progress.setCanceledOnTouchOutside(false);
 
-        if(!progress.isShowing())
+        //if(!progress.isShowing())
         {
             progress.setMessage(msg);
             progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progress.setCancelable(false);
             progress.setIndeterminate(true);
-            progress.setProgress(0);
             progress.show();
         }
 
@@ -200,7 +206,8 @@ public class LocalComms
 
             //Update local and remote statuses on DB
             //Check for Icebreaks
-            if (m.getStatus() == MESSAGE_STATUSES.ICEBREAK_SERV_RECEIVED.getStatus()) {
+            if (m.getStatus() == MESSAGE_STATUSES.ICEBREAK_SERV_RECEIVED.getStatus())
+            {
                 Log.d(TAG, "New IceBreak request from " + m.getSender());
                 //showNotification(context, "New IceBreak request from " + m.getSender(), NOTIFICATION_ID.NOTIF_REQUEST.getId());
                 m.setStatus(MESSAGE_STATUSES.ICEBREAK_DELIVERED.getStatus());//set message to delivered in temp memory

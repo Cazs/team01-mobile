@@ -57,9 +57,9 @@ public class ProfileFragment extends android.support.v4.app.Fragment
     private String Catchphrase;
     private String Gender;
     private ImageView circularImageView;
+    private Bitmap circularbitmap = null;
     private User user;
     private View v;
-    private Bitmap circularbitmap = null;
     private FloatingActionButton editButton;
     private static final boolean DEBUG = false;
     private static final String TAG = "IB/ProfileFragment";
@@ -69,7 +69,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
     {
         v = inflater.inflate(R.layout.fragment_profile, container, false);
         mgr = getActivity().getAssets();
-        //TODO: Use this information to send to database to see whch user it is.
+        //TODO: Use this information to send to database to see which user it is.
         final String username = SharedPreference.getUsername(v.getContext()).toLowerCase();
 
         pb_profile  = (ProgressBar) v.findViewById(R.id.pb_profile_pic);
@@ -113,14 +113,15 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                 } catch (IOException e)
                 {
                     Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_LONG).show();
-                    Log.d(TAG,e.getMessage());
+                    Log.d(TAG,"IOE: "+e.getMessage(),e);
                     //TODO: Error Logging
                     try
                     {
                         Thread.sleep(3000);
                     } catch (InterruptedException e1)
                     {
-                        e1.printStackTrace();
+                        Toast.makeText(getActivity(),e1.getMessage(),Toast.LENGTH_LONG).show();
+                        Log.d(TAG,"IOE: "+e1.getMessage(),e1);
                     }
                     System.exit(-1);
                 } catch (java.lang.InstantiationException e)
@@ -158,13 +159,19 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                     Name = user.getFirstname() + " " + user.getLastname();
                     Age = String.valueOf(user.getAge());
                     Occupation = user.getOccupation();
-
                     Bio = user.getBio();
                     Catchphrase = user.getCatchphrase();
                     Gender = user.getGender();
                     profilePicture = "/Icebreak/profile/" + username + ".png";
+
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+                    bitmap = LocalComms.getImage(getActivity(),username, ".png", "/profile", options);
+                    if(bitmap==null)
+                        bitmap = RemoteComms.getImage(getActivity(),username, ".png", "/profile", options);
+                    circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                     //Look for user profile image
-                    if (!new File(Environment.getExternalStorageDirectory().getPath()
+                    /*if (!new File(Environment.getExternalStorageDirectory().getPath()
                             + profilePicture).exists())
                     {
                         //if (imageDownload(u.getUsername() + ".png", "/profile")) {
@@ -173,22 +180,22 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                         Bitmap b = RemoteComms.getImage(getActivity(),username, ".png", "/profile", options);
                         if (b!=null)
                         {
-                            bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
+                            bitmap = ImageUtils.getInstance().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
                                     + profilePicture, getActivity());
                             circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                         } else //user has no profile yet - attempt to load default profile image
                         {
                             if (!new File(Environment.getExternalStorageDirectory().getPath().toString()
-                                    + "/Icebreak/profile/profile_default.png").exists())
+                                    + "/Icebreak/profile/default.png").exists())
                             {
                                 //Attempt to download default profile image
                                 options = new BitmapFactory.Options();
                                 options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                                b = RemoteComms.getImage(getActivity(),"profile_default", ".png", "/profile", options);
+                                b = RemoteComms.getImage(getActivity(),"default", ".png", "/profile", options);
                                 if(b!=null)
                                 {
-                                    bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                            + "/Icebreak/profile/profile_default.png", getActivity());
+                                    bitmap = ImageUtils.getInstance().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
+                                            + "/Icebreak/profile/default.png", getActivity());
                                     circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                                 } else //Couldn't download default profile image
                                 {
@@ -197,17 +204,17 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                                 }
                             } else//default profile image exists
                             {
-                                bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                        + "/Icebreak/profile/profile_default.png", getActivity());
+                                bitmap = ImageUtils.getInstance().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
+                                        + "/Icebreak/profile/default.png", getActivity());
                                 circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                             }
                         }
                     } else//user profile image exists
                     {
-                        bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
+                        bitmap = ImageUtils.getInstance().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
                                 + profilePicture, getActivity());
                         circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                    }
+                    }*/
                 }
 
                 Runnable r = new Runnable()

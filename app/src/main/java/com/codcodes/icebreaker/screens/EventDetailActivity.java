@@ -9,6 +9,9 @@ import android.graphics.Typeface;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -31,6 +34,7 @@ import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.LocationDetector;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
+import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.User;
 import com.google.android.gms.common.api.CommonStatusCodes;
@@ -48,11 +52,6 @@ public class EventDetailActivity extends AppCompatActivity
     private long Eventid;
     private String eventLoc;
     private int eventRadius;
-
-    private ArrayList<User> users;
-    private ArrayList<String> Name;
-    private ArrayList<String> Catchphrase;
-
 
     private ArrayList<LatLng> polygon;
     private LatLng me;
@@ -74,26 +73,12 @@ public class EventDetailActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
-<<<<<<< HEAD
         //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
-        locationDetector = new LocationDetector(this);
-=======
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
->>>>>>> 1963dbba5bff941fe3d92a0849755ac9bffc37b9
+        //cationDetector = new LocationDetector();
        // getSupportActionBar().setDisplayShowHomeEnabled(true);
         //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        Name = new ArrayList<String>();
-        Catchphrase= new ArrayList<String>();
-        //userIcon = new ArrayList<String>();
-
-        final String username = SharedPreference.getUsername(getApplicationContext());
-
         Bundle extras = getIntent().getExtras();
-        final Activity act =this;
 
         polygon = new ArrayList<>();
         polygon.add(new LatLng(-26.182944, 27.997387));
@@ -105,7 +90,7 @@ public class EventDetailActivity extends AppCompatActivity
         polygon.add(new LatLng(-26.184008, 27.998251));
         polygon.add(new LatLng(-26.183815, 27.998380));
         polygon.add(new LatLng(-26.183517, 27.998471));
-        me = new LatLng(-26.182944, 27.997387);
+        me = new LatLng(-26.182944,27.997387); //-26.183297, 27.995006
         locationChecker = new LocationDetector();
 
         /*
@@ -131,15 +116,15 @@ public class EventDetailActivity extends AppCompatActivity
             TextView eventName = (TextView)findViewById(R.id.event_name);
             eventName.setText(evtName);
 
-            Eventid = extras.getInt("Event ID");
-            AccessCode = extras.getInt("Access ID");
+            Eventid = extras.getLong("Event ID");
+            AccessCode = extras.getInt("Access Code");
             event_Radius = extras.getInt("Event Radius");
 
             eventLoc = extras.getString("Event Location");
             eventRadius = extras.getInt("Event Radius");
 
             //location = (Location) extras.get("Access Location");
-            String[] part = eventLoc.split(":");
+            //String[] part = eventLoc.split(":");
 
             //location.setLatitude(Double.valueOf(part[0]));
             //location.setLongitude(Double.valueOf(part[1]));
@@ -162,12 +147,11 @@ public class EventDetailActivity extends AppCompatActivity
                 eventImage.setImageBitmap(circularbitmap);
                 bitmap.recycle();
             }
-        }
+        }else this.finish();
 
         eventDetails = (TextView)findViewById(R.id.Event_Heading);
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         eventDetails.setTypeface(heading);
-        //lv= (ListView) findViewById(R.id.contactList);
         usersAtEventList = (RecyclerView) findViewById(R.id.users_at_event_list);
         final EditText accessCode = (EditText) findViewById(R.id.AccessCode);
 
@@ -178,12 +162,13 @@ public class EventDetailActivity extends AppCompatActivity
             {
                 if (actionID== EditorInfo.IME_ACTION_DONE)
                 {
+                    //Event e = RemoteComms.getEvent(Eventid);
                     validateEventLogin(Integer.parseInt(accessCode.getText().toString()));
                 }
                 return false;
             }
         });
-        Location loc;
+        //Location loc;
        /* if((loc = locationDetector.getLocation()) != null)
         {
 
@@ -206,89 +191,95 @@ public class EventDetailActivity extends AppCompatActivity
     }
 
 
-    private void validateEventLogin(int code,boolean inRange)
+    private void validateEventLogin(int code)
     {
-        if(matchAccessCode(code,inRange))
+        if(matchAccessCode(code))
         {
-            progress = LocalComms.showProgressBar(EventDetailActivity.this,"Signing in to event...");
-            Thread tEventDataLoader = new Thread(new Runnable()
+            if(locationChecker.containsLocation(me,polygon,true))
             {
-                @Override
-                public void run()
+                progress = LocalComms.showProgressDialog(EventDetailActivity.this, "Signing in to event...");
+                Thread tEventDataLoader = new Thread(new Runnable()
                 {
-                    try
+                    @Override
+                    public void run()
                     {
-                        User user = LocalComms.getContact(EventDetailActivity.this,SharedPreference.getUsername(getApplicationContext()));
-                        if(user==null)
-                            user = RemoteComms.getUser(EventDetailActivity.this,SharedPreference.getUsername(getApplicationContext()));
-                        if(user!=null)
+                        try
                         {
-                            MainActivity.event_id = Eventid;
-                            MainActivity.event = RemoteComms.getEvent(Eventid);
-
-                            user.setEvent(MainActivity.event);
-                            String resp = RemoteComms.postData("userUpdate/"+user.getUsername(), user.toString());
-
-                            Message message;
-
-                            if(resp.contains("200"))
+                            User user = LocalComms.getContact(EventDetailActivity.this, SharedPreference.getUsername(EventDetailActivity.this));
+                            if (user == null)
+                                user = RemoteComms.getUser(EventDetailActivity.this, SharedPreference.getUsername(EventDetailActivity.this));
+                            if (user != null)
                             {
-                                String ev_title = "<No Title>";
-                                if(MainActivity.event!=null)
-                                    ev_title = MainActivity.event.getTitle();
+                                user.setUsername(SharedPreference.getUsername(EventDetailActivity.this));//for some reason the username is not being set by preceding methods
+                                MainActivity.event_id = Eventid;
+                                MainActivity.event = RemoteComms.getEvent(Eventid);
 
-                                message = toastHandler("Signed in to event \""+ev_title+"\"").obtainMessage();
-                                message.sendToTarget();
+                                if (MainActivity.event != null && MainActivity.event_id>0)
+                                {
+                                    user.setEvent(MainActivity.event);
+                                    String resp = RemoteComms.postData("userUpdate/" + user.getUsername(), user.toString());
 
-                                if(MainActivity.users_at_event==null)
-                                    MainActivity.users_at_event = new ArrayList<>();
-                                String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + Eventid);
-                                JSON.<User>getJsonableObjectsFromJson(contactsJson, MainActivity.users_at_event, User.class);
-                                Log.d(TAG,"Signed in to event \""+ev_title+"\".");
+                                    Message message;
 
-                                LocalComms.hideProgressBar(progress);
+                                    if (resp.contains("200"))
+                                    {
+                                        String ev_title = MainActivity.event.getTitle();
 
-                                EventDetailActivity.this.finish();
-                            }
-                            else
+                                        SharedPreference.setEventId(EventDetailActivity.this, MainActivity.event_id);
+                                        message = toastHandler("Signed in to event \"" + ev_title + "\"").obtainMessage();
+                                        message.sendToTarget();
+
+                                        if (MainActivity.users_at_event == null)
+                                            MainActivity.users_at_event = new ArrayList<>();
+                                        String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + Eventid);
+                                        JSON.<User>getJsonableObjectsFromJson(contactsJson, MainActivity.users_at_event, User.class);
+                                        Log.d(TAG, "Signed in to event \"" + ev_title + "\".");
+
+                                        EventDetailActivity.this.finish();
+                                    } else
+                                    {
+                                        message = toastHandler("Could not login to event, server response: " + resp).obtainMessage();
+                                        message.sendToTarget();
+                                        Log.d(TAG, resp);
+                                    }
+                                } else Log.wtf(TAG, "Event is null for some reason.");
+                            } else
                             {
-                                message = toastHandler("Could not login to event, server response: "+resp).obtainMessage();
+                                Log.wtf(TAG, "User object is null.");
+                                Message message = toastHandler("Could not sign in to event, User object is null.").obtainMessage();
                                 message.sendToTarget();
-                                Log.d(TAG,resp);
                             }
-                        } else
+                        } catch (IllegalAccessException e)
                         {
-                            Log.wtf(TAG,"User object is null.");
-                            Message message = toastHandler("Could not sign in to event, User object is null.").obtainMessage();
+                            //TODO: better logging
+                            Log.wtf(TAG, e.getMessage(), e);
+                        } catch (InstantiationException e)
+                        {
+                            //TODO: better logging
+                            Log.wtf(TAG, e.getMessage(), e);
+                        } catch (UnknownHostException e)
+                        {
+                            Message message = toastHandler("No Internet Access..").obtainMessage();
                             message.sendToTarget();
+                            Log.d(TAG, e.getMessage(), e);
+                        } catch (IOException e)
+                        {
+                            //TODO: better logging
+                            Log.wtf(TAG, e.getMessage(), e);
+                        } finally
+                        {
+                            LocalComms.hideProgressBar(progress);
                         }
                     }
-                    catch (IllegalAccessException e)
-                    {
-                        //TODO: better logging
-                        Log.wtf(TAG,e.getMessage(),e);
-                    }
-                    catch (InstantiationException e)
-                    {
-                        //TODO: better logging
-                        Log.wtf(TAG,e.getMessage(),e);
-                    }
-                    catch (UnknownHostException e)
-                    {
-                        Message message = toastHandler("No Internet Access..").obtainMessage();
-                        message.sendToTarget();
-                        Log.d(TAG,e.getMessage(),e);
-                    }
-                    catch (IOException e)
-                    {
-                        //TODO: better logging
-                        Log.wtf(TAG,e.getMessage(),e);
-                    }
-                    LocalComms.hideProgressBar(progress);
-                }
-            });
-            tEventDataLoader.start();
-            //TODO: Go to UserContactsFragment
+                });
+                tEventDataLoader.start();
+                //TODO: Go to UserContactsFragment
+            }
+            else
+            {
+                Toast.makeText(this,"Your location reading says that you're not at this event. \nPlease check that your GPS is on and you have an Internet connection.", Toast.LENGTH_LONG).show();
+                Log.d(TAG,"User is not actually at the Event.");
+            }
         }
         else
         {
@@ -316,7 +307,7 @@ public class EventDetailActivity extends AppCompatActivity
                 if (data != null)
                 {
                     Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
-                    validateEventLogin(Integer.valueOf(barcode.displayValue),locationChecker.containsLocation(me,polygon,true));
+                    validateEventLogin(Integer.valueOf(barcode.displayValue));
                     Log.d(TAG, "Barcode read: " + barcode.displayValue);
                 }
                 else
@@ -375,13 +366,10 @@ public class EventDetailActivity extends AppCompatActivity
         return false;
     }
 
-    public boolean matchAccessCode(int code, boolean inRange)
+    public boolean matchAccessCode(int code)
     {
-
-        Log.d("Testing", "not null");
-        if(code == AccessCode && inRange)
+        if(code == AccessCode)
         {
-            SharedPreference.setEventId(this,Eventid);
             return true;
         }
 

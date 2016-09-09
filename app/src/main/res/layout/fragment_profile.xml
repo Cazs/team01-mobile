@@ -1,40 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
+    android:id="@+id/profile_upper"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="100"
+    android:background="@drawable/profile_gradient">
 
-        <RelativeLayout
-            android:id="@+id/profile_upper"
+        <TextView
+            android:id="@+id/profile_name"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/profile_gradient">
-
-            <TextView
-                android:id="@+id/profile_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/black"
-                android:textSize="20pt"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="@dimen/dp_size_30"
-                />
+            android:layout_height="0dp"
+            android:layout_weight="10"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:textSize="30dp"
+            android:layout_marginTop="@dimen/dp_size_10"/>
 
             <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_gravity="center_horizontal">
+                android:id="@+id/profile_image_container"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="44"
+                android:layout_marginTop="@dimen/dp_size_10">
 
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:layout_width="@dimen/dp_size_200"
-                    android:layout_height="@dimen/dp_size_200"
-                    android:layout_marginTop="@dimen/dp_size_70"
-                    android:layout_centerHorizontal="true"
-                    android:id="@+id/circleview"
-                    />
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/circleview"
+                        android:layout_width="@dimen/dp_size_200"
+                        android:layout_height="match_parent"
+                        android:layout_centerInParent="true"/>
+
+                    <android.support.design.widget.FloatingActionButton
+                        android:id="@+id/EditButton"
+                        android:layout_width="@dimen/fab_width"
+                        android:layout_height="@dimen/fab_height"
+                        android:layout_marginRight="@dimen/dp_size_20"
+                        android:layout_alignBottom="@+id/circleview"
+                        android:layout_alignRight="@+id/circleview"
+                        android:background="@color/iceblue"
+                        android:src="@drawable/ic_mode_edit_white_24dp"
+                        app:fabSize="mini"
+                        android:visibility="invisible"/>
+                </RelativeLayout>
 
                 <ProgressBar
                     android:id="@+id/pb_profile_pic"
@@ -46,117 +59,98 @@
 
             </FrameLayout>
 
-            <android.support.design.widget.FloatingActionButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp_size_230"
-                android:layout_marginTop="@dimen/dp_size_210"
-                android:background="@color/iceblue"
-                android:src="@drawable/ic_mode_edit_white_24dp"
-                app:fabSize="mini"
-                android:id="@+id/EditButton"
-                android:visibility="invisible"
-                />
+        <TextView
+            android:id="@+id/profile_age"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="10"
+            android:textColor="@color/black"
+            android:textSize="14pt"
+            android:gravity="center"/>
+
+        <TextView
+            android:id="@+id/profile_occupation"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="10"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            android:gravity="center"
+            android:maxLines="1"
+            android:maxLength="50"
+            android:ellipsize="end"/>
+
+        <LinearLayout
+            android:id="@+id/link_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:gravity="center"
+            android:layout_marginTop="@dimen/dp_size_10"
+            android:layout_weight="10">
+
+            <ImageView
+                android:id="@+id/rewards_icon"
+                android:layout_width="@dimen/dp_size_20"
+                android:layout_height="@dimen/dp_size_20"
+                android:layout_marginLeft="@dimen/profile_links_margin"
+                android:layout_marginRight="@dimen/profile_links_margin"
+                android:src="@drawable/ic_grade_white_24dp"/>
 
             <TextView
-                android:id="@+id/profile_age"
+                android:id="@+id/profile_Rewards"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/black"
+                android:textColor="@color/iceblue"
+                android:layout_marginLeft="@dimen/profile_links_margin"
+                android:layout_marginRight="@dimen/profile_links_margin"
+                android:textSize="14pt"/>
+
+            <View
+                android:layout_width="@dimen/dp_size_1"
+                android:layout_height="@dimen/dp_size_30"
+                android:layout_marginLeft="@dimen/profile_links_margin"
+                android:layout_marginRight="@dimen/profile_links_margin"
+                android:background="@color/iceblue"/>
+
+            <ImageView
+                android:id="@+id/setting_icon"
+                android:layout_width="@dimen/dp_size_20"
+                android:layout_height="@dimen/dp_size_20"
+                android:layout_marginLeft="@dimen/profile_links_margin"
+                android:layout_marginRight="@dimen/profile_links_margin"
+                android:src="@drawable/ic_settings_white_24dp"/>
+
+            <TextView
+                android:id="@+id/profile_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/profile_links_margin"
+                android:layout_marginRight="@dimen/profile_links_margin"
+                android:textColor="@color/iceblue"
                 android:textSize="14pt"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="@dimen/dp_size_275"
-                />
+                android:textColorHint="@color/red"/>
 
-            <TextView
-                android:id="@+id/profile_occupation"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/black"
-                android:textSize="13pt"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="@dimen/dp_size_300"
-                android:maxLines="1"
-                android:maxLength="30"
-                android:ellipsize="end"
-                />
+        </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/link_container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="15"
+            android:layout_marginTop="@dimen/dp_size_10"
+            android:orientation="vertical">
 
-                <ImageView
-                    android:layout_width="@dimen/dp_size_20"
-                    android:layout_height="@dimen/dp_size_20"
-                    android:id="@+id/rewards_icon"
-                    android:src="@drawable/ic_grade_white_24dp"
-                    android:layout_marginLeft="@dimen/dp_size_30"
-                    android:layout_marginTop="@dimen/dp_size_360"
+            <Button
+                android:id="@+id/logOut"
+                android:layout_width="200dp"
+                android:layout_height="50dp"
+                android:textColor="#000"
+                android:textSize="@dimen/dp_size_15"
+                android:shadowRadius="5"
+                android:background="@drawable/buttonshape"
+                android:text="Sign Out"
+                android:fontFamily="monospace"
+                android:onClick="ShowSignUp"
+                android:layout_gravity="center"/>
 
-                    />
-                <TextView
-                    android:id="@+id/profile_Rewards"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/iceblue"
-                    android:textSize="14pt"
-                    android:layout_marginLeft="@dimen/dp_size_15"
-                    android:layout_marginTop="355dp"
-
-                    />
-
-                <View
-                    android:layout_width="@dimen/dp_size_1"
-                    android:layout_height="@dimen/dp_size_30"
-                    android:background="@color/iceblue"
-                    android:layout_marginLeft="@dimen/dp_size_20"
-                    android:layout_marginTop="@dimen/dp_size_355"/>
-
-                <ImageView
-                    android:layout_width="@dimen/dp_size_20"
-                    android:layout_height="@dimen/dp_size_20"
-                    android:id="@+id/setting_icon"
-                    android:src="@drawable/ic_settings_white_24dp"
-                    android:layout_marginLeft="@dimen/dp_size_23"
-                    android:layout_marginTop="@dimen/dp_size_360"
-
-                    />
-                <TextView
-                    android:id="@+id/profile_settings"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/iceblue"
-                    android:textSize="14pt"
-                    android:layout_marginLeft="@dimen/dp_size_15"
-                    android:layout_marginTop="@dimen/dp_size_355"
-                    android:textColorHint="@color/red"
-                    />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_below="@+id/link_container"
-                android:layout_marginTop="10dp">
-
-                <Button
-                    android:id="@+id/logOut"
-                    android:layout_width="200dp"
-                    android:layout_height="50dp"
-                    android:textColor="#000"
-                    android:textSize="@dimen/dp_size_15"
-                    android:shadowRadius="5"
-                    android:background="@drawable/buttonshape"
-                    android:text="Sign Out"
-                    android:fontFamily="monospace"
-                    android:onClick="ShowSignUp"
-                    android:layout_gravity="center"/>
-
-            </LinearLayout>
-
-        </RelativeLayout>
-
-</RelativeLayout>
+        </LinearLayout>
+    </LinearLayout>

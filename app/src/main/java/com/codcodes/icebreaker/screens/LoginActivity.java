@@ -16,7 +16,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.LocalComms;
+import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
+import com.codcodes.icebreaker.model.User;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,6 +27,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.util.regex.Matcher;
@@ -35,6 +39,8 @@ public class LoginActivity extends AppCompatActivity {
     EditText password;
     Button btnLogin;
     ProgressBar loginbar;
+
+    private final String TAG = "IB/LoginActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,112 +67,92 @@ public class LoginActivity extends AppCompatActivity {
                 final String u = username.getText().toString();
 
 
-                if (!isValidUsername(u))
+                /*if (!isValidUsername(u))
                 {
+                    username.requestFocus();
                     username.setError("Invalid Username");
                     return;
                 }
 
                 if (!isValidPassword(p))
                 {
+                    password.requestFocus();
                     password.setError("Invalid Password");
                     return;
-                }
+                }*/
 
-                if(isValidUsername(u)||isValidPassword(p))
+                Thread thread = new Thread(new Runnable()
                 {
-                    loginbar.setVisibility(View.VISIBLE);
-                }
-
-
-                Thread thread = new Thread(new Runnable() {
                     @Override
-                    public void run() {
+                    public void run()
+                    {
+                        Message message;
                         try
-                        {
-
-                            Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
-                            System.out.println("Connection established");
-                            PrintWriter out = new PrintWriter(soc.getOutputStream());
-                            System.out.println("Sending request");
-
-                            String data = URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(u, "UTF-8") + "&"
-                                    + URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(p, "UTF-8");
-
-                            out.print("POST /IBUserRequestService.svc/signin HTTP/1.1\r\n"
-                                    + "Host: icebreak.azurewebsites.net\r\n"
-                                    //+ "Content-Type: application/x-www-form-urlencoded\r\n"
-                                    + "Content-Type: text/plain; charset=utf-8\r\n"
-                                    + "Content-Length: " + data.length() + "\r\n\r\n"
-                                    + data);
-                            out.flush();
-
-                            BufferedReader in = new BufferedReader(new InputStreamReader(soc.getInputStream()));
-                            String resp;
-                            boolean found = false;
-                            while((resp = in.readLine())!=null)
-                            {
-                                if(resp.contains("HTTP/1.1 200 OK"))
-                                {
-                                    found = true;
-                                    Log.d("ICEBREAKER","USer found");
-                                    break;
-                                }
-                            }
-                            if(found) {
-
-                                SharedPreference.setUsername(getApplicationContext(),u);
-                                //Toast.makeText(getApplicationContext(), "User credentials are correct", Toast.LENGTH_LONG).show();
-                                Intent mainscreen = new Intent(getApplicationContext(),MainActivity.class);
-                                startActivity(mainscreen);
-                            }
-                            else {
-                                if (!isValidUsername(u))
-                                {
-                                    runOnUiThread(new Runnable()
-                                    {
-                                        @Override
-                                        public void run()
-                                        {
-                                            username.setError("Invalid Username");
-                                        }
-                                    });
-                                    return;
-                                }
-
-                                if (!isValidPassword(p))
-                                {
-                                    runOnUiThread(new Runnable()
-                                    {
-                                        @Override
-                                        public void run()
-                                        {
-                                            password.setError("Invalid Password");
-                                        }
-                                    });
-                                    return;
-                                }
-                                finish();
-                                startActivity(getIntent());
-                            }
-                            out.close();
-                            in.close();
-                        }
-                        catch (UnknownHostException e)
                         {
                             runOnUiThread(new Runnable()
                             {
                                 @Override
                                 public void run()
                                 {
-                                    loginbar.setVisibility(View.GONE);
+                                    loginbar.setVisibility(View.VISIBLE);
                                 }
                             });
-                            Message messaage = toastHandler("No Internet Access").obtainMessage();
-                            messaage.sendToTarget();
-                            e.printStackTrace();
+
+                            User new_user = new User();
+                            new_user.setUsername(u);
+                            new_user.setPassword(p);
+                            String response = RemoteComms.postData("signin",new_user.toString());
+                            //System.err.println(response);
+
+                            boolean found = false;
+
+                            if(response.contains("200"))
+                                found = true;
+                            if(response.contains("404"))
+                                found = false;
+
+                            if(found)
+                            {
+                                SharedPreference.setUsername(LoginActivity.this,u);
+                                message = toastHandler("Successfully Logged In.").obtainMessage();
+                                message.sendToTarget();
+                                //Toast.makeText(getApplicationContext(), "User credentials are correct", Toast.LENGTH_LONG).show();
+                                Intent mainscreen = new Intent(LoginActivity.this,MainActivity.class);
+                                startActivity(mainscreen);
+                            }
+                            else
+                            {
+                                message = toastHandler("Invalid Credentials.").obtainMessage();
+                                message.sendToTarget();
+                                LoginActivity.this.runOnUiThread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        username.setError("Invalid password and/or username.");
+                                        password.setError("Invalid password and/or username.");
+                                        username.clearFocus();
+                                        password.clearFocus();
+                                    }
+                                });
+                            }
+                        }
+                        catch (UnknownHostException e)
+                        {
+                            message = toastHandler("No Internet Access").obtainMessage();
+                            message.sendToTarget();
+                            Log.d(TAG,e.getMessage(),e);
                         }
                         catch (IOException e)
+                        {
+                            if(e instanceof SocketTimeoutException)
+                                message = toastHandler("Connection Timed Out.").obtainMessage();
+                            else
+                                message = toastHandler("IOException: " + e.getMessage()).obtainMessage();
+                            message.sendToTarget();
+                            Log.d(TAG,e.getMessage(),e);
+                        }
+                        finally
                         {
                             runOnUiThread(new Runnable()
                             {
@@ -183,9 +169,6 @@ public class LoginActivity extends AppCompatActivity {
                                     });
                                 }
                             });
-                            Message messaage = toastHandler("Couldn't refreash feeds").obtainMessage();
-                            messaage.sendToTarget();
-                            e.printStackTrace();
                         }
                     }
                 });
@@ -207,7 +190,9 @@ public class LoginActivity extends AppCompatActivity {
     }
     private boolean isValidUsername(String username)
     {
-        String Username_pattern = "^(?=.{5,15}$)(?![-.])[a-zA-Z0-9._]+(?<![_.])$";
+        //String Username_pattern = "^(?=.{5,15}$)(?![-.])[a-zA-Z0-9._]+(?<![_.])$";
+        String not_allowed_specials = "&\\)\\(\\+=\\}\\{\\]\\[:;\"\',\\?/\\|\\\\";
+        String Username_pattern  = "^(?!.*\\s)^(?=.*[A-Z]{1,})^(?=.*[a-z]{1,})^(?=.*[0-9]{1,})^(?!.*["+not_allowed_specials+"]).+$";
 
         Pattern pattern = Pattern.compile(Username_pattern);
         Matcher matcher = pattern.matcher(username);
@@ -216,7 +201,10 @@ public class LoginActivity extends AppCompatActivity {
 
     private boolean isValidPassword(String password)
     {
-        String password_pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[$@#!%*?&])[A-Za-z\\d$@#!%*?&]{6,}";
+        //String password_pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[$@#!%*?&])[A-Za-z\\d$@#!%*?&]{6,}";
+        String specials = "~`!@#\\$%_\\^\\*\\-\\.><";
+        String not_allowed_specials = "&\\)\\(\\+=\\}\\{\\]\\[:;\"\',\\?/\\|\\\\";
+        String password_pattern  = "^(?!.*\\s)^(?=.*[A-Z]{1,})^(?=.*[a-z]{1,})^(?=.*[0-9]{1,})^(?=.*["+specials+"]{1,})^(?!.*[\"+not_allowed_specials+\"]).+$";
 
         Pattern pattern = Pattern.compile(password_pattern);
         Matcher matcher = pattern.matcher(password);

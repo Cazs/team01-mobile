@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.media.ExifInterface;
@@ -21,15 +22,15 @@ import java.io.IOException;
  */
 public class ImageUtils
 {
-    public static ImageUtils mInstant;
+    public static ImageUtils mInstance;
 
-    public static ImageUtils getInstant()
+    public static ImageUtils getInstance()
     {
-        if (mInstant == null)
+        if (mInstance == null)
         {
-            mInstant = new ImageUtils();
+            mInstance = new ImageUtils();
         }
-        return mInstant;
+        return mInstance;
 
     }
 
@@ -41,7 +42,7 @@ public class ImageUtils
 
         Bitmap scaledBitmap = null;
         BitmapFactory.Options options = new BitmapFactory.Options();
-
+        //options.inPreferredConfig = Bitmap.Config.ALPHA_8;
         options.inJustDecodeBounds = true;
 
         Bitmap bmp = BitmapFactory.decodeFile(filePath, options);
@@ -85,7 +86,7 @@ public class ImageUtils
         }
         try {
             scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.ARGB_8888);
-
+            scaledBitmap.eraseColor(Color.WHITE);
         } catch (OutOfMemoryError e) {
             e.printStackTrace();
         }
@@ -236,6 +237,8 @@ public class ImageUtils
 
     private String getRealPathFromURI(String contentURI, Context c)
     {
+        if(c==null)
+            return null;
         if(c.getContentResolver()==null)
             return null;
         Uri contentUri = Uri.parse(contentURI);
@@ -250,5 +253,3 @@ public class ImageUtils
 
     }
 }
-
-

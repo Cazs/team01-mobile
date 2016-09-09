@@ -57,17 +57,25 @@ public class RemoteComms
         Log.d(TAG,"Opening connection to IceBreak_domain/Service/" + url);
         URL urlConn = new URL("http://icebreak.azurewebsites.net/IBUserRequestService.svc/" + url);
         HttpURLConnection httpConn =  (HttpURLConnection)urlConn.openConnection();
-        Scanner s = new Scanner(httpConn.getInputStream());
-        String response = "";
 
-        while (s.hasNextLine())
-            response += s.nextLine();
-
+        String response = null;
         if(httpConn.getResponseCode() == HttpURLConnection.HTTP_OK)
         {
-            return response;
+            Scanner s = new Scanner(httpConn.getInputStream());
+
+            while (s.hasNextLine())
+                response += s.nextLine();
+            //Log.d(TAG,response);
         }else
-            return  "";
+        {
+            Scanner s = new Scanner(httpConn.getErrorStream());
+            response = null;//"Error: ";
+
+            while (s.hasNextLine())
+                response += s.nextLine();
+            //Log.d(TAG,response);
+        }
+        return response;
     }
 
     public static byte[] getFBImage(String host, String resource) throws IOException
@@ -118,7 +126,7 @@ public class RemoteComms
 
     public static int imageUpload(byte[] bitmap, String remote_filename,String ext) throws IOException
     {
-        String payload = bytearrayToBase64(bitmap);
+        //String payload = bytearrayToBase64(bitmap);
 
         /*ArrayList<AbstractMap.SimpleEntry<String,String>> params = new ArrayList<>();
         params.add(new AbstractMap.SimpleEntry<String,String>
@@ -177,8 +185,14 @@ public class RemoteComms
         for(int i=0;i<params.size();i++)
         {
             AbstractMap.SimpleEntry<String,String> entry = params.get(i);
-            result.append(URLEncoder.encode(entry.getKey(),"UTF-8") + "=");
-            result.append(URLEncoder.encode(entry.getValue(),"UTF-8") + (i!=params.size()-1?"&":""));
+            if(entry!=null)
+            {
+                if(entry.getKey()!=null && entry.getValue()!=null)
+                {
+                    result.append(URLEncoder.encode(entry.getKey(), "UTF-8") + "=");
+                    result.append(URLEncoder.encode(entry.getValue(), "UTF-8") + (i != params.size() - 1 ? "&" : ""));
+                }else return -1;
+            }else return -1;
         }
 
         //Write to server
@@ -205,8 +219,8 @@ public class RemoteComms
         function = function.charAt(0)=='/'||function.charAt(0)=='\\'?function.substring(1):function;//Remove first slash if it exists
         URL urlConn = new URL("http://icebreak.azurewebsites.net/IBUserRequestService.svc/" + function);
         HttpURLConnection httpConn = (HttpURLConnection)urlConn.openConnection();
-        httpConn.setReadTimeout(10000);
-        httpConn.setConnectTimeout(15000);
+        httpConn.setReadTimeout(20000);
+        httpConn.setConnectTimeout(20000);
         httpConn.setRequestMethod("POST");
         httpConn.setDoInput(true);
         httpConn.setDoOutput(true);
@@ -226,10 +240,12 @@ public class RemoteComms
              scn = new Scanner(new InputStreamReader(httpConn.getInputStream()));
         else
             scn = new Scanner(new InputStreamReader(httpConn.getErrorStream()));
+
         String resp = "";
-        if(scn!=null)
-            while(scn.hasNext())
-                resp+=scn.nextLine();
+
+        if (scn != null)
+            while (scn.hasNextLine())
+                resp += scn.nextLine();
         //System.err.println(resp);
 
         return httpConn.getResponseCode() + ":" + resp;
@@ -332,7 +348,7 @@ public class RemoteComms
         }
         catch (IOException e)
         {
-            Log.d(TAG,e.getMessage(),e);
+            Log.d(TAG,"IOE: " + e.getMessage(),e);
             return  false;
         }
     }
@@ -363,7 +379,7 @@ public class RemoteComms
         return bitmap;
     }
 
-    public static boolean sendMessage(Context context, Message m)
+    public static boolean sendMessage(Context context, Message m) throws IOException
     {
         ArrayList<AbstractMap.SimpleEntry<String, String>> msg_details = new ArrayList<AbstractMap.SimpleEntry<String, String>>();
         msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_id", m.getId()));
@@ -374,25 +390,17 @@ public class RemoteComms
         msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_receiver", m.getReceiver()));
 
         //Send to server
-        try
+        final int response_code = RemoteComms.postData("addMessage", msg_details);
+        if(response_code != HttpURLConnection.HTTP_OK)
         {
-            final int response_code = RemoteComms.postData("addMessage", msg_details);
-            if(response_code != HttpURLConnection.HTTP_OK)
-            {
-                Log.d(TAG,"Could not send request: " + response_code);
-                //TODO: Better logging
-                return false;
-            }
-            else
-            {
-                Log.d(TAG,"Message Sent");
-                return true;
-            }
-        } catch (IOException e)
-        {
-            Log.wtf(TAG, e.getMessage(),e);
+            Log.d(TAG,"Could not send request: " + response_code);
             //TODO: Better logging
+            return false;
         }
-        return false;
+        else
+        {
+            Log.d(TAG,"Message Sent");
+            return true;
+        }
     }
 }

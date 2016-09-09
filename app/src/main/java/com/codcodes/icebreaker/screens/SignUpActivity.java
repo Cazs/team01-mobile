@@ -5,17 +5,13 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -39,38 +35,18 @@ import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
-import com.facebook.HttpMethod;
 import com.facebook.Profile;
 import com.facebook.ProfileTracker;
 import com.facebook.appevents.AppEventsLogger;
-import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -81,7 +57,6 @@ public class SignUpActivity extends AppCompatActivity
     EditText email;
     EditText username;
     EditText password;
-    EditText confirmPassword;
     Button btnSignUp;
     ProgressBar bar;
     CheckBox checkBox;
@@ -146,7 +121,6 @@ public class SignUpActivity extends AppCompatActivity
             @Override
             protected void onCurrentProfileChanged(Profile oldProfile, Profile currentProfile)
             {
-                startProgressBar();
 
                 profile = currentProfile;
                 if(profile!=null && accessToken!=null)//for cases like when they sign out
@@ -265,7 +239,8 @@ public class SignUpActivity extends AppCompatActivity
                 final String e = email.getText().toString();
                 final String p = password.getText().toString();
                 final String u = username.getText().toString();
-                final String cp = confirmPassword.getText().toString();
+
+                String specials = "!@`.-$>_<#~^%*";
 
                 if (!isValidEmail(e))
                 {
@@ -273,26 +248,31 @@ public class SignUpActivity extends AppCompatActivity
                     email.setError("Invalid Email");
                     return;
                 }
-                if (!isValidPassword(p))
-                {
-                    stopProgressBar();
-                    password.setError("Password must include:" +
-                            " \n • A minimum of 6 characters" +
-                            " \n • At least one uppercase alphabet" +
-                            " \n • One lowercase alphabet" +
-                            " \n • One number and one" +
-                            " \n • Special case character");
-                    return;
-                }
+
                 if(!isValidUsername(u))
                 {
                     stopProgressBar();
-                    username.setError("Username must not include:" +
-                            "\n • White spaces" +
-                            "\n • Special characters");
+                    username.setError("Username must:" +
+                            "\n • Not include spaces" +
+                            "\n • Have at least one\n\tUppercase character" +
+                            "\n • Have at least one\n\tLowercase character" +
+                            "\n • Have at least one\n\tspecial characters, i.e.\n "+specials+
+                            "\n • Have 5-15 characters");
                     return;
                 }
 
+                if (!isValidPassword(p))
+                {
+                    stopProgressBar();
+                    password.requestFocus();
+                    password.setError("Password must include:" +
+                            " \n • 6-50 characters" +
+                            " \n • At least one uppercase\n\tAlphabet" +
+                            " \n • At least one lowercase\n\tAlphabet" +
+                            " \n • At least one number and" +
+                            " \n • At least one special\n\tCharacter, i.e\n\t" +specials);
+                    return;
+                }
 
                 User new_user = new User();
                 if(profile!=null)
@@ -313,7 +293,7 @@ public class SignUpActivity extends AppCompatActivity
                 }
 
                 new_user.setUsername(u);
-                new_user.setPassword(cp);
+                new_user.setPassword(p);
                 new_user.setEmail(e);
                 new_user.setGender("Unspecified");
 
@@ -342,12 +322,23 @@ public class SignUpActivity extends AppCompatActivity
 
     public void restart(User u)
     {
+        if(u.getEmail()==null)
+            u.setEmail("<No email specified>");
         if(u.getEmail().isEmpty())
             u.setEmail("<No email specified>");
+
+        if(u.getCatchphrase()==null)
+            u.setCatchphrase("<No catchphrase specified>");
         if(u.getCatchphrase().isEmpty())
             u.setCatchphrase("<No catchphrase specified>");
+
+        if(u.getOccupation()==null)
+            u.setOccupation("<No occupation specified>");
         if(u.getOccupation().isEmpty())
             u.setOccupation("<No occupation specified>");
+
+        if(u.getBio()==null)
+            u.setBio("<No bio specified>");
         if(u.getBio().isEmpty())
             u.setBio("<No bio specified>");
         //Clear table
@@ -365,6 +356,7 @@ public class SignUpActivity extends AppCompatActivity
         SignUpActivity.this.runOnUiThread(new Runnable()
         {
             @Override
+
             public void run()
             {
                 if(bar!=null)
@@ -457,20 +449,80 @@ public class SignUpActivity extends AppCompatActivity
 
     private boolean isValidUsername(String username)
     {
+        String specials = "~`!@#\\$%\\^&\\*\\)\\(_\\+\\-=\\}\\{\\]\\[:;'\"<>,./\\?\\|\\\\";
+        String not_allowed_specials = "&\\)\\(\\+=\\}\\{\\]\\[:;\"\',\\?/\\|\\\\";
+        /*//String Username_pattern  = "^(?!.*\\s)^(?=.*[A-Z]{1,})^(?=.*[a-z]{1,})^(?=.*[0-9]{1,})^(?!.*["+not_allowed_specials+"]).+$";
         String Username_pattern = "^(?=.{5,15}$)(?![-.])[a-zA-Z0-9._]+(?<![_.])$";
 
         Pattern pattern = Pattern.compile(Username_pattern);
         Matcher matcher = pattern.matcher(username);
-        return matcher.matches();
+        return matcher.matches();*/
+        String ppat_spaces = "^(?!.*\\s+).*$";
+        String ppat_upper = "^(?=.*[A-Z]+).*$";
+        String ppat_lower = "^(?=.*[a-z]+).*$";
+        String ppat_digit = "^(?=.*[0-9]+).*$";
+        String ppat_spec = "^(?=.*["+specials+"]*).*$";
+        String ppat_nspec = "^(?!.*["+not_allowed_specials+"]+).*$";
+        if(username==null)
+            return false;
+        if(username.isEmpty())
+            return false;
+        if(username.length()>5)
+            if(Pattern.compile(ppat_spaces).matcher(username).matches())//if(!username.contains(" "))
+                if(Pattern.compile(ppat_upper).matcher(username).matches())
+                    if(Pattern.compile(ppat_lower).matcher(username).matches())
+                        if(Pattern.compile(ppat_digit).matcher(username).matches())
+                            if(Pattern.compile(ppat_spec).matcher(username).matches())
+                                if(Pattern.compile(ppat_nspec).matcher(username).matches())
+                                    return true;
+                                else Log.d(TAG,"Has illegal chars.");
+                            else Log.d(TAG,"Doesn't have special char.");
+                        else Log.d(TAG,"Doesn't have digits.");
+                    else Log.d(TAG,"Doesn't lowercase chars.");
+                else Log.d(TAG,"Doesn't have uppercase chars.");
+            else Log.d(TAG,"Has spaces.");
+        else Log.d(TAG,"Is too short.");
+
+        return false;
     }
 
     private boolean isValidPassword(String password)
     {
-        String password_pattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[$@#!%*?&])[A-Za-z\\d$@#!%*?&]{6,}";
-
+        //String specials = "~`!@#\\$%\\^&\\*\\)\\(_\\+\\-=\\}\\{\\]\\[:;'\"<>,./\\?\\|\\\\";
+        String specials = "~`!@#\\$%_\\^\\*\\-\\.><";
+        String not_allowed_specials = "&\\)\\(\\+=\\}\\{\\]\\[:;\"\',\\?/\\|\\\\";
+        /*String password_pattern  = "^(?!.*\\s)^(?=.*[A-Z]{1,})^(?=.*[a-z]{1,})^(?=.*[0-9]{1,})^(?=.*["+specials+"]{1,})^(?!.*[\"+not_allowed_specials+\"]).+$";
+         /String password_pattern = "[A-Z]{1,}[a-z]{1,}\\d+"+specials+"]{6,50}";//"^(?=.*[a-z])(?=.*[A-Z])(?=.*[$@#!%*?&])";
         Pattern pattern = Pattern.compile(password_pattern);
         Matcher matcher = pattern.matcher(password);
-        return matcher.matches();
+        return matcher.matches();*/
+        String ppat_spaces = "^(?!.*\\s+).*$";
+        String ppat_upper = "^(?=.*[A-Z]+).*$";
+        String ppat_lower = "^(?=.*[a-z]+).*$";
+        String ppat_digit = "^(?=.*[0-9]+).*$";
+        String ppat_spec = "^(?=.*["+specials+"]*).*$";
+        String ppat_nspec = "^(?!.*["+not_allowed_specials+"]+).*$";
+        if(password==null)
+            return false;
+        if(password.isEmpty())
+            return false;
+        if(password.length()>5)
+            if(Pattern.compile(ppat_spaces).matcher(password).matches())
+                if(Pattern.compile(ppat_upper).matcher(password).matches())
+                    if(Pattern.compile(ppat_lower).matcher(password).matches())
+                        if(Pattern.compile(ppat_digit).matcher(password).matches())
+                            if(Pattern.compile(ppat_spec).matcher(password).matches())
+                                if(Pattern.compile(ppat_nspec).matcher(password).matches())
+                                    return true;
+                                else Log.d(TAG,"Has illegal chars.");
+                            else Log.d(TAG,"Doesn't have special char.");
+                        else Log.d(TAG,"Doesn't have digits.");
+                    else Log.d(TAG,"Doesn't lowercase chars.");
+                else Log.d(TAG,"Doesn't have uppercase chars.");
+            else Log.d(TAG,"Has spaces.");
+        else Log.d(TAG,"Is too short.");
+
+        return false;
     }
 
     private boolean Compare(String confirmPassword,String password)
@@ -543,9 +595,15 @@ public class SignUpActivity extends AppCompatActivity
                     message.sendToTarget();
                     Log.d(TAG,e.getMessage(),e);
                 }
+                catch (SocketTimeoutException e)
+                {
+                    Message message = toastHandler("Connection Timed Out").obtainMessage();
+                    message.sendToTarget();
+                    Log.d(TAG,e.getMessage(),e);
+                }
                 catch (IOException e)
                 {
-                    Message message = toastHandler(e.getMessage()).obtainMessage();
+                    Message message = toastHandler("IOException: " + e.getMessage()).obtainMessage();
                     message.sendToTarget();
                     Log.d(TAG,e.getMessage(),e);
                 }

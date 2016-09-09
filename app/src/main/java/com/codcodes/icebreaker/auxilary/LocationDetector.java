@@ -15,8 +15,8 @@ import java.util.List;
 /**
  * Created by MrSekati on 8/31/2016.
  */
-public class LocationDetector {
-
+public class LocationDetector
+{
     private static final double PI = 3.141592653589793;
 
     public static boolean containsLocation(LatLng point, List<LatLng> polygon, boolean geodesic)

@@ -132,17 +132,17 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
             Bio.setText(extras.getString("Bio"));
             Gender = extras.getString("Gender");
             profilePicture = extras.getString("Username");
-
+            Gender = Gender.toLowerCase();
             int gender = 0;
             switch(Gender)
             {
-                case "Male":
+                case "male":
                     gender = 0;
                     break;
-                case "Female":
+                case "female":
                     gender = 1;
                     break;
-                case "Unspecified":
+                case "unspecified":
                     gender = 2;
                     break;
             }
@@ -211,7 +211,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         if(isEmpty(catchphrase))
             catchphrase = "<No catchphrase>";
 
-        progress = LocalComms.showProgressBar(this,"Updating your information...");
+        progress = LocalComms.showProgressDialog(this,"Updating your information...");
 
         User new_user = new User();
         new_user.setFirstname(fname);
@@ -233,7 +233,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         super.onActivityResult(requstCode,resltCode,data);
         if(data!=null)
         {
-            progress = LocalComms.showProgressBar(this,"Updating image...");
+            progress = LocalComms.showProgressDialog(this,"Updating image...");
 
             Uri targetUri = data.getData();
 

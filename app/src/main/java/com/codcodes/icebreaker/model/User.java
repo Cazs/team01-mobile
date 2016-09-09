@@ -113,7 +113,8 @@ public class User implements IJsonable, Parcelable
         return gender;
     }
 
-    public void setGender(String gender) {
+    public void setGender(String gender)
+    {
         this.gender = gender;
     }
 
@@ -221,7 +222,7 @@ public class User implements IJsonable, Parcelable
                 setEmail(value);
                 break;
             case "Gender":
-                setGender(value);
+                setGender(value.toLowerCase());
                 break;
             case "Occupation":
                 setOccupation(value);

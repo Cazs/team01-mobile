@@ -48,12 +48,18 @@ public class IbTokenRegistrationService extends FirebaseInstanceIdService
         // Update Instance ID token on server.
         ArrayList<AbstractMap.SimpleEntry<String,String>> params = new ArrayList<>();
         String usr;
-        if(MainActivity.uhandle.length()>0)
+        if(SharedPreference.getUsername(getBaseContext()).toString().length()>0)//MainActivity.uhandle.length()
         {
-            //usr = SharedPreference.getUsername(getApplication());
+            usr = SharedPreference.getUsername(getBaseContext());
             //User lcl = ;
-            params.add(new AbstractMap.SimpleEntry<String, String>("username", MainActivity.uhandle));
+            if(usr==null)
+                return;
+            if(usr.isEmpty())
+                return;
+
+            params.add(new AbstractMap.SimpleEntry<String, String>("username", usr));
             params.add(new AbstractMap.SimpleEntry<String, String>("token", refreshedToken));
+            //System.err.println(">>>>>>>"+usr+":"+refreshedToken);
             try
             {
                 int res_code=RemoteComms.postData("setUniqueUserToken", params);

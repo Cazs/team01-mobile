@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.graphics.Typeface;
 import android.os.Environment;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 
@@ -17,15 +16,10 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,7 +31,7 @@ import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.model.IJsonable;
 import com.codcodes.icebreaker.services.IbTokenRegistrationService;
-import com.codcodes.icebreaker.services.IcebreakCheckerService;
+import com.codcodes.icebreaker.services.IcebreakService;
 import com.codcodes.icebreaker.services.MessageFcmService;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
@@ -144,7 +138,10 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                     try
                     {
                         lcl = RemoteComms.getUser(getApplicationContext(), SharedPreference.getUsername(getBaseContext()).toString());
-                        Log.d(TAG,"Added local user to local DB.");
+                        if(lcl==null)
+                            Log.d(TAG,"Could not get user from remote DB.");
+                        else
+                            Log.d(TAG,"Added a user to local DB.");
                     } catch (IOException e)
                     {
                         Log.d(TAG,"Couldn't add local user to local DB: " + e.getMessage());
@@ -159,9 +156,9 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         ttfAilerons = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
 
         //Start Icebreak checker service that checks the local DB for Icebreaks
-        Intent icebreakChecker = new Intent(this,IcebreakCheckerService.class);
+        Intent icebreakChecker = new Intent(this,IcebreakService.class);
         startService(icebreakChecker);
-        Log.d(TAG,"Started IcebreakCheckerService");
+        Log.d(TAG,"Started IcebreakService");
 
         //Start Message listener service
         Intent intMsgService = new Intent(this, MessageFcmService.class);
@@ -317,8 +314,8 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                     String img_id = "/Icebreak/events/event_icons-"+((Event) item).getId()+".png";
                     intent.putExtra("Image ID",img_id);
                     intent.putExtra("Event ID",((Event) item).getId());
-                    intent.putExtra("Access ID",((Event) item).getAccessID());
-                    intent.putExtra("Event Location", ((Event) item).getGPS());
+                    intent.putExtra("Access Code",((Event) item).getAccessCode());
+                    intent.putExtra("Event Location", ((Event) item).getBoundary());
                     intent.putExtra("Event Radius",((Event) item).getRadius());
 
                     startActivity(intent);

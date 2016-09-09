@@ -88,7 +88,7 @@ public class RewardsActivity extends AppCompatActivity
         ImageView circularImageView = (ImageView) findViewById(R.id.circleviewrewards);
 
 
-        bitmap = ImageUtils.getInstant().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
+        bitmap = ImageUtils.getInstance().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
                 + profilepic, getApplicationContext());
         circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
         circularImageView.setImageBitmap(circularbitmap);

@@ -67,10 +67,6 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
 {
     private static AssetManager mgr;
     private static ArrayList<Event> events;
-    private ArrayList<String> eventNames;
-    private ArrayList<String> eventDescriptions;
-    private ArrayList<String> eventIcons;
-    private static final boolean DEBUG = false;
     private SwipeRefreshLayout swipeRefreshLayout;
     public static final String TAG = "IB/EventsFragment";
 
@@ -104,10 +100,6 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
         }
-
-        eventNames = new ArrayList<>();
-        eventDescriptions = new ArrayList<>();
-        eventIcons = new ArrayList<>();
 
         reloadEvents();
 
@@ -187,14 +179,13 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                     final ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
                     try
                     {
+                        String iconName = "";
+                        BitmapFactory.Options options = null;
                         for (Event e : events)
                         {
-                            eventNames.add(e.getTitle());
-                            eventDescriptions.add(e.getDescription());
-                            String iconName = "event_icons-" + e.getId();
-                            eventIcons.add("/Icebreak/events/" + iconName + ".png");
+                            iconName = "event_icons-" + e.getId();
                             //Download the file only if it has not been cached
-                            BitmapFactory.Options options = new BitmapFactory.Options();
+                            options = new BitmapFactory.Options();
                             options.inPreferredConfig = Bitmap.Config.ALPHA_8;
 
                             Bitmap bitmap = LocalComms.getImage(getContext(),iconName,".png","/events",options);
@@ -203,15 +194,6 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
 
                             bitmaps.add(bitmap);
                         }
-                        String[] eventNamesArr = new String[events.size()];
-                        String[] eventIconsArr = new String[events.size()];
-                        String[] eventDescriptionsArr = new String[events.size()];
-                        eventNamesArr = eventNames.toArray(eventNamesArr);
-                        eventDescriptionsArr = eventDescriptions.toArray(eventDescriptionsArr);
-                        eventIconsArr = eventIcons.toArray(eventIconsArr);
-
-                        if(eventNamesArr==null)
-                            eventNamesArr=new String[]{"<No Events>"};
 
                         Runnable runnable = new Runnable()
                         {
@@ -226,7 +208,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                                     if(events.isEmpty())
                                     {
                                         Event temp = new Event();
-                                        temp.setTitle(getString(R.string.msg_no_events));;
+                                        temp.setTitle(getString(R.string.msg_no_events));
                                         ArrayList<Event> temp_lst = new ArrayList<Event>();
                                         temp_lst.add(temp);
                                         recyclerView.setAdapter(new EventsRecyclerViewAdapter(temp_lst, bitmaps, mListener));
@@ -278,7 +260,9 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
 
     public void runOnUI(Runnable r)
     {
-        EventsFragment.this.getActivity().runOnUiThread(r);
+        if(EventsFragment.this!=null)
+            if(EventsFragment.this.getActivity()!=null)
+                EventsFragment.this.getActivity().runOnUiThread(r);
     }
 
     public static EventsFragment newInstance(Context context, Bundle b)
