@@ -593,7 +593,6 @@ public class IBDialog extends Activity
             setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
             dialog.show();
         }else return;//else it's showing - do nothing to it.
-        //SharedPreference.setDialogStatus(this,true);
 
         TextView txtUnsuccess = (TextView)dialog.findViewById(R.id.ib_res_unsuccess);
         TextView txtMotivational = (TextView)dialog.findViewById(R.id.txt_motivational_message);
@@ -722,7 +721,7 @@ public class IBDialog extends Activity
         //IcebreakService.active = false;
         //changeDlgStatus(false);
         //SharedPreference.setDialogStatus(this,false);
-        setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
+        //setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
     }
 
     @Override
