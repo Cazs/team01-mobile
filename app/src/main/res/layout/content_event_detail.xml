@@ -69,24 +69,34 @@
                 android:fontFamily="monospace"
                 android:background="@drawable/textbox"/>
 
-            <Button
-                android:id="@+id/btnQr"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:background="@drawable/qr_code_scanner_btn_bg"
-                android:layout_below="@+id/AccessCode"
-                android:onClick="startQRscanner"
-                android:layout_centerHorizontal="true"/>
+                android:orientation="horizontal">
 
-            <Button
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/ic_gps_fixed_black_24dp"
-                android:layout_below="@+id/btnQr"
-                android:onClick="viewPosition"
-                android:layout_centerHorizontal="true"/>
+                <Button
+                    android:id="@+id/btnQr"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/qr_code_scanner_btn_bg"
+                    android:onClick="startQRscanner"
+                    android:layout_centerHorizontal="true"/>
+
+                <Button
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/ic_gps_fixed_black_24dp"
+                    android:onClick="viewPosition"
+                    android:layout_centerHorizontal="true"/>
+
+                <Button
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/ic_bug_report_black_24dp"
+                    android:layout_centerHorizontal="true"/>
+
+            </LinearLayout>
 
             </RelativeLayout>
     </ScrollView>

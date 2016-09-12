@@ -115,6 +115,8 @@ public class IBDialog extends Activity
                 drawRejectionUI();
             }
         }
+
+        setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
         //dialog.show();
         //LocalComms.setDlgStatus(false);
         //if(dialog==null)
@@ -256,25 +258,14 @@ public class IBDialog extends Activity
 
     private void populateIcebreakRequestUI()
     {
-        if(dialog!=null)
+        if(!LocalComms.getDlgStatus())
         {
-            if(!dialog.isShowing())
-            {
-                dialog.setContentView(R.layout.popup_icebreak);
-                setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
-                dialog.show();
-            }else return;//else it's showing - do nothing to it.
-        }
-        else// is null
-        {
-            if(!LocalComms.getDlgStatus())
-            {
+            if(dialog==null)
                 dialog = new Dialog(this);
-                dialog.setContentView(R.layout.popup_icebreak);
-                setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
-                dialog.show();
-            }else return;//else it's showing - do nothing to it.
-        }
+            dialog.setContentView(R.layout.popup_icebreak);
+            setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
+            dialog.show();
+        }else return;//else it's showing - do nothing to it.
 
         txtIBReqPopup_name = (TextView) dialog.findViewById(R.id.ib_req_username);
         txtIBReqPopup_age = (TextView) dialog.findViewById((R.id.ib_req_user_age));
@@ -366,6 +357,7 @@ public class IBDialog extends Activity
                             }
                             hideProgressBar();
 
+                            setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
                             runOnUiThread(new Runnable()
                             {
                                 @Override
@@ -443,23 +435,14 @@ public class IBDialog extends Activity
 
     private void drawAcceptanceUI()
     {
-        if(dialog!=null)
+        if(!LocalComms.getDlgStatus())
         {
-            if(!dialog.isShowing())
-            {
-                dialog.setContentView(R.layout.popup_accepted);
-                setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
-                dialog.show();
-            }else return;//else it's showing - do nothing to it.
-        }
-        else// is null
-        {
-            dialog = new Dialog(this);
+            if(dialog==null)
+                dialog = new Dialog(this);
             dialog.setContentView(R.layout.popup_accepted);
             setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
             dialog.show();
-        }
-        //SharedPreference.setDialogStatus(this,true);
+        }else return;//else it's showing - do nothing to it.
 
         TextView txtSuccessfulMatch = (TextView)dialog.findViewById(R.id.SuccessfulMatch);
         ImageView imgLocalUser = (ImageView)dialog.findViewById(R.id.other_pic1);
@@ -602,22 +585,14 @@ public class IBDialog extends Activity
 
     private void drawRejectionUI()
     {
-        if(dialog!=null)
+        if(!LocalComms.getDlgStatus())
         {
-            if(!dialog.isShowing())
-            {
-                dialog.setContentView(R.layout.popup_rejected);
-                setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
-                dialog.show();
-            }else return;//else it's showing - do nothing to it.
-        }
-        else// is null
-        {
-            dialog = new Dialog(this);
+            if(dialog==null)
+                dialog = new Dialog(this);
             dialog.setContentView(R.layout.popup_rejected);
             setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
             dialog.show();
-        }
+        }else return;//else it's showing - do nothing to it.
         //SharedPreference.setDialogStatus(this,true);
 
         TextView txtUnsuccess = (TextView)dialog.findViewById(R.id.ib_res_unsuccess);

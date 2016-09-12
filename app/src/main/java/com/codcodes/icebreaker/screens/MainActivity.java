@@ -34,9 +34,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.Config;
 import com.codcodes.icebreaker.auxilary.ContactListSwitches;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
+import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.model.IJsonable;
 import com.codcodes.icebreaker.services.IbTokenRegistrationService;
@@ -466,10 +468,43 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         }
     }
 
+    private void setDlgStatus(String val)
+    {
+        try
+        {
+            WritersAndReaders.writeAttributeToConfig(Config.DLG_ACTIVE.getValue(),val);
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void onPause()
     {
         super.onPause();
+        //setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
+    }
+
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+        //setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        //setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
+    }
+
+    @Override
+    public void onDetachedFromWindow()
+    {
+        super.onDetachedFromWindow();
+        //setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
     }
 
     @Override
