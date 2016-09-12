@@ -12,6 +12,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -85,7 +86,8 @@ public class SignUpActivity extends AppCompatActivity
             {
                 MessageDigest md = MessageDigest.getInstance("SHA");
                 md.update(signature.toByteArray());
-                //Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+                String hashCode = Base64.encodeToString(md.digest(), Base64.DEFAULT);
+                Log.d("KeyHash:", hashCode);
             }
         } catch (PackageManager.NameNotFoundException e)
         {

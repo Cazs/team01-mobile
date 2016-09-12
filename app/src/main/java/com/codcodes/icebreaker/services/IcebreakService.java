@@ -3,20 +3,23 @@ package com.codcodes.icebreaker.services;
 import android.app.IntentService;
 import android.content.Intent;
 import android.location.Location;
+import android.location.LocationListener;
+import android.os.Bundle;
 import android.util.Log;
 
+import com.codcodes.icebreaker.auxilary.Config;
 import com.codcodes.icebreaker.auxilary.INTERVALS;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.LocationDetector;
 import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
+import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.model.Message;
 import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.screens.IBDialog;
 import com.codcodes.icebreaker.screens.MainActivity;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
@@ -31,9 +34,15 @@ public class IcebreakService extends IntentService implements LocationListener
     private static Message icebreak_msg = new Message();
     private static User requesting_user = new User();
     private static User receiving_user = new User();
-    private static Location lastKnownLoc = null;
-
-    private final String TAG = "IB/ListenerService";
+    private boolean active = false;
+    public static boolean status_changing = false;
+    //private Dialog dialog;
+    //public static Location lastKnownLoc = null;
+    private double lat = 0;
+    private double lng = 0;
+    private static LatLng me = null;
+    private final String TAG = "IB/IcebreakService";
+    public  static int semaphore = 0;
     //private Handler mHandler;
 
     public IcebreakService()
@@ -45,12 +54,38 @@ public class IcebreakService extends IntentService implements LocationListener
     public int onStartCommand(Intent intent, int flags, int startId)
     {
         //mHandler = new Handler();//Bind to main/UI thread
-        return super.onStartCommand(intent,flags,startId);
+        //validatePermissions();
+        return super.onStartCommand(intent, flags, startId);
     }
+
+    public static LatLng getMe()
+    {
+        return me;
+    }
+
+    /*private void validatePermissions()
+    {
+        LocationManager locationMgr;
+        locationMgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        if (AppCompatActivity.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            // TODO: Consider calling
+            //    Activity#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for Activity#requestPermissions for more details.
+            return;
+        }
+        locationMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+    }*/
 
     @Override
     protected void onHandleIntent(Intent intent)
     {
+        //validatePermissions();
         if(intent!=null)// && mHandler!=null
         {
             try
@@ -58,9 +93,12 @@ public class IcebreakService extends IntentService implements LocationListener
                 //Check for IceBreaks indefinitely
                 while (true)
                 {
+                    String stat = WritersAndReaders.readAttributeFromConfig(Config.DLG_ACTIVE.getValue());
+                    if(stat!=null)
+                        active = stat.toLowerCase().equals("true");
                     //Verify User location if at an Event as often as you update IceBreaks.
                     long ev_id = SharedPreference.getEventId(IcebreakService.this);
-                    if(ev_id>1)
+                    if(ev_id>0)
                     {
                         //is at Event
                         Event e = RemoteComms.getEvent(ev_id);
@@ -68,12 +106,15 @@ public class IcebreakService extends IntentService implements LocationListener
                         {
                             if(e.getBoundary()!=null)
                             {
-                                LatLng curr = new LatLng(lastKnownLoc.getLatitude(), lastKnownLoc.getLongitude());
-                                if (!LocationDetector.containsLocation(curr, e.getBoundary(), true))
+                                //if(lastKnownLoc!=null)
                                 {
-                                    System.out.println("Logging out of Event.");
-                                    //logOutUserFromEvent();
-                                }else Log.d(TAG,"User location valid.");
+                                    me = new LatLng(lat, lng);
+                                    if (!LocationDetector.containsLocation(me, e.getBoundary(), true))
+                                    {
+                                        System.out.println("Logging out of Event.");
+                                        logOutUserFromEvent();
+                                    } else Log.d(TAG, "**User location valid.");
+                                } //else Log.d(TAG, "Last known User location is null.");
                             }else Log.d(TAG,"Boundary for Event: "+ev_id+" is null.");
                         }else Log.d(TAG,"Event: "+ev_id+" is null,");
                     }else Log.d(TAG,"User not at a valid Event.");
@@ -81,7 +122,7 @@ public class IcebreakService extends IntentService implements LocationListener
                     ArrayList<Message> messages = LocalComms.getInboundMessages(this,
                             SharedPreference.getUsername(this).toString());
 
-                    //If there are Icebreaks
+                    //If there are IceBreaks
                     if (messages.size() > 0)
                     {
                         Log.d(TAG, "Found IceBreak/s.");
@@ -97,21 +138,25 @@ public class IcebreakService extends IntentService implements LocationListener
                         if (requesting_user == null)//attempt to download user details
                             requesting_user = RemoteComms.getUser(this,icebreak_msg.getSender());
 
-                        Log.d(TAG+"/IBC", "IBDialog active: " + IBDialog.active);
+                        Log.d(TAG+"/IBC", "IBDialog active: " + active);//SharedPreference.isDialogActive(this));
 
                         //Always wait for pending message status changes to complete
-                        while (IBDialog.status_changing){System.err.println("IBDialog says> The status of an object is changing.");}
-                        if (!IBDialog.active)
+                        //while (IBDialog.status_changing){System.err.println("IBDialog says> The status of an object is changing.");}
+                        //if (!SharedPreference.isDialogActive(this))
+                        //if(!LocalComms.getDlgStatus())
+                        if(!active)
                         {
                             //Show IceBreak Dialog
                             Intent dlgIntent = new Intent(getApplicationContext(), IBDialog.class);
                             dlgIntent.putExtra("Message", icebreak_msg);
                             dlgIntent.putExtra("Receiver", receiving_user);
                             dlgIntent.putExtra("Sender", requesting_user);
-                            IBDialog.request_code = IBDialog.INCOMING_REQUEST;
+                            dlgIntent.putExtra("Request_Code", String.valueOf(IBDialog.INCOMING_REQUEST));
 
                             dlgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            //if(!LocalComms.getDlgStatus())
                             startActivity(dlgIntent);
+                            //active=true;
                         }
                     }
                     else Log.d(TAG,"<No local inbound IceBreaks>");
@@ -121,13 +166,15 @@ public class IcebreakService extends IntentService implements LocationListener
                     //Check for cases where local user is sender
                     if(out_messages.size()>0)
                     {
-                        Log.d(TAG+"/OBC", "IBDialog active: " + IBDialog.active);
+                        Log.d(TAG+"/OBC", "IBDialog active: " + active);//SharedPreference.isDialogActive(this));
                         for(Message m: out_messages)
                         {
                             //TODO: send messages to server if they haven't been sent
                             //Always wait for pending message status changes to complete
-                            while (IBDialog.status_changing){System.err.println("IBDialog says> The status of an object is changing.");}
-                            if (!IBDialog.active)
+                            //while (status_changing){System.err.println("IBDialog says> The status of an object is changing.");}
+                            //if (!SharedPreference.isDialogActive(this))
+                            //if(!LocalComms.getDlgStatus())
+                            if(!active)
                             {
                                 //If local user has been accepted or rejected, show appropriate dialog
                                 if (m.getStatus() == MESSAGE_STATUSES.ICEBREAK_ACCEPTED.getStatus() ||
@@ -145,10 +192,11 @@ public class IcebreakService extends IntentService implements LocationListener
                                     dlgIntent.putExtra("Message", m);
                                     dlgIntent.putExtra("Receiver", receiving_user);
                                     dlgIntent.putExtra("Sender", requesting_user);
+
                                     if(m.getStatus()==MESSAGE_STATUSES.ICEBREAK_ACCEPTED.getStatus())
-                                        IBDialog.request_code = IBDialog.RESP_ACCEPTED;
+                                        dlgIntent.putExtra("Request_Code", String.valueOf(IBDialog.RESP_ACCEPTED));
                                     if(m.getStatus()==MESSAGE_STATUSES.ICEBREAK_REJECTED.getStatus())
-                                        IBDialog.request_code = IBDialog.RESP_REJECTED;
+                                        dlgIntent.putExtra("Request_Code", String.valueOf(IBDialog.RESP_REJECTED));
 
                                     dlgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                     startActivity(dlgIntent);
@@ -160,27 +208,23 @@ public class IcebreakService extends IntentService implements LocationListener
                     {
                         Log.d(TAG,"<No local outbound IceBreaks>");
                     }
-                        /*mHandler.post(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-
-                            }
-                        });*/
                     //Take a break, take a KatKit
                     Thread.sleep(INTERVALS.IB_CHECK_DELAY.getValue());
                 }
             }
             catch (IOException e)
             {
-                e.printStackTrace();
-                Log.d(TAG,e.getMessage());
+                if(e.getMessage()!=null)
+                    Log.d(TAG,e.getMessage());
+                else
+                    e.printStackTrace();
             }
             catch (InterruptedException e)
             {
-                e.printStackTrace();
-                Log.d(TAG,e.getMessage());
+                if(e.getMessage()!=null)
+                    Log.d(TAG,e.getMessage());
+                else
+                    e.printStackTrace();
             }
         }
         else
@@ -209,6 +253,26 @@ public class IcebreakService extends IntentService implements LocationListener
     @Override
     public void onLocationChanged(Location location)
     {
-        this.lastKnownLoc = location;
+        //IcebreakService.lastKnownLoc = location;
+        lat = location.getLatitude();
+        lng = location.getLongitude();
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle)
+    {
+        Log.d(TAG,"onStatusChanged Status: " + s + " >" + i);
+    }
+
+    @Override
+    public void onProviderEnabled(String s)
+    {
+        Log.d(TAG,"onProviderEnabled Status: " + s);
+    }
+
+    @Override
+    public void onProviderDisabled(String s)
+    {
+        Log.d(TAG,"onProviderDisabled Status: " + s);
     }
 }

@@ -50,7 +50,7 @@ public class EventsRecyclerViewAdapter extends RecyclerView.Adapter<EventsRecycl
         if(mEventIcons!=null)
         {
             if (position < mEventIcons.size())
-                holder.getEventIcon().setImageBitmap(mEventIcons.get(position));
+                holder.getEventIcon().setImageBitmap(ImageConverter.getRoundedCornerBitMap(mEventIcons.get(position),300));
             else
                 Log.d(TAG, "Bitmap ArrayList is empty.");
         }

@@ -241,13 +241,16 @@ public class ProfileFragment extends android.support.v4.app.Fragment
         {
             @Override
             public void onClick(View view) {
-                int link_color = Color.parseColor("#4665f0");
-                Intent intent = new Intent(view.getContext(), RewardsActivity.class);
-                intent.putExtra("Picture",profilePicture);
-                intent.putExtra("Name",user.getFirstname() + " "+user.getLastname());
-
-                // rewards.startAnimation();
-                startActivity(intent);
+                if(user!=null)
+                {
+                    Intent intent = new Intent(view.getContext(), RewardsActivity.class);
+                    intent.putExtra("Picture", profilePicture);
+                    intent.putExtra("Name", user.getFirstname() + " " + user.getLastname());
+                    startActivity(intent);
+                }else
+                {
+                    Toast.makeText(getActivity(),"Profile not yet loaded!",Toast.LENGTH_LONG).show();
+                }
             }
         });
 

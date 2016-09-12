@@ -19,6 +19,8 @@ public class JSON
 
     public static <T extends IJsonable> ArrayList<T> getJsonableObjectsFromJson(String json, ArrayList<T> jsonables, Class<T> cls) throws IllegalAccessException, InstantiationException {
         //ArrayList<IJsonable> jsonables = new ArrayList<IJsonable>();
+        if(json==null)
+            return null;
         //remove square brackets
         json = json.replaceAll("\\[", "");
         json = json.replaceAll("\\]", "");

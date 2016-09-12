@@ -127,7 +127,7 @@ public class InitialActivity extends AppCompatActivity
 
 
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
-        TextView headingTextView = (TextView) findViewById(R.id.heading);
+        TextView headingTextView = (TextView) findViewById(R.id.main_heading);
         headingTextView.setTypeface(heading);
         headingTextView.setTextSize(29);
 

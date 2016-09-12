@@ -228,7 +228,10 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                     }
                     catch(ConcurrentModificationException e)
                     {
-                        Log.d(TAG, e.getMessage());
+                        if(e.getMessage()!=null)
+                            Log.d(TAG, e.getMessage());
+                        else
+                            e.printStackTrace();
                     }
                 }
             }

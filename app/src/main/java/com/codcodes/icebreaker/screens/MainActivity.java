@@ -1,13 +1,22 @@
 package com.codcodes.icebreaker.screens;
 
+import android.Manifest;
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.graphics.Typeface;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 
 import android.support.v4.app.Fragment;
@@ -47,7 +56,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
+public class MainActivity extends AppCompatActivity implements IOnListFragmentInteractionListener, LocationListener
 {
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -94,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        validateLocationPermissions();
         //Get and set hash
         try
         {
@@ -109,10 +119,12 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         } catch (PackageManager.NameNotFoundException e)
         {
             //TODO: Better logging
+            toastHandler("PackageManager name not found.").obtainMessage().sendToTarget();
             Log.wtf(TAG,e.getMessage(),e);
         } catch (NoSuchAlgorithmException e)
         {
             //TODO: Better logging
+            toastHandler("No such algorithm.").obtainMessage().sendToTarget();
             Log.wtf(TAG,e.getMessage(),e);
         }
 
@@ -122,35 +134,8 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
         setContentView(R.layout.activity_main);
         //LinearLayout action_bar = (LinearLayout)MainActivity.this.findViewById(R.id.actionBar);
-
-        TextView title = (TextView)MainActivity.this.findViewById(R.id.main_heading);
-        title.setTextSize(29);
-        //Try to get local user from DB
-        lcl = LocalComms.getContact(this,SharedPreference.getUsername(this).toString());
-        uhandle = SharedPreference.getUsername(this).toString();
-        if(lcl==null)//not in local DB, get from remote DB
-        {
-            Thread tLocalUserLoader = new Thread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    try
-                    {
-                        lcl = RemoteComms.getUser(getApplicationContext(), SharedPreference.getUsername(getBaseContext()).toString());
-                        if(lcl==null)
-                            Log.d(TAG,"Could not get user from remote DB.");
-                        else
-                            Log.d(TAG,"Added a user to local DB.");
-                    } catch (IOException e)
-                    {
-                        Log.d(TAG,"Couldn't add local user to local DB: " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-            });
-            tLocalUserLoader.start();
-        }else Log.d(TAG,"Local user already in local DB.");
+        //Load User data.
+        loadUserData();
 
         ttfInfinity = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
         ttfAilerons = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
@@ -186,8 +171,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         tablayout.getTabAt(1).setIcon(viewPagerIcons[1]);
         tablayout.getTabAt(2).setIcon(viewPagerIcons[2]);
         headingTextView.setTypeface(ttfInfinity);
-
-
+        headingTextView.setTextSize(35);
         /*fabSwitch.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -234,9 +218,13 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 if(position == 2)
                 {
                     title.setText("Your Profile");
-                    title.setTextSize(29);
+                    title.setTextSize(30);
                 }
-                else title.setText("IceBreak");
+                else
+                {
+                    title.setTextSize(35);
+                    title.setText("IceBreak");
+                }
             }
 
             @Override
@@ -251,6 +239,75 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
             }
         });
+    }
+
+    private void loadUserData()
+    {
+        //Load last Event User was at if it exists.
+        event_id = SharedPreference.getEventId(this);
+        if(event_id>0)
+        {
+            Thread tEventLoader = new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        event = RemoteComms.getEvent(event_id);
+                    }
+                    catch (IOException e)
+                    {
+                        Log.wtf(TAG,"IOE (on event init): " + e.getMessage());
+                        toastHandler("Could not load your current Event.").obtainMessage().sendToTarget();
+                    }
+                }
+            });
+            tEventLoader.start();
+        }
+
+        //Try to get local user from DB
+        lcl = LocalComms.getContact(this,SharedPreference.getUsername(this).toString());
+        uhandle = SharedPreference.getUsername(this).toString();
+        if(lcl==null)//not in local DB, get from remote DB
+        {
+            Thread tLocalUserLoader = new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        lcl = RemoteComms.getUser(getApplicationContext(), SharedPreference.getUsername(getBaseContext()).toString());
+                        if(lcl==null)
+                        {
+                            Log.d(TAG, "Could not get user from remote DB.");
+                            toastHandler("Could not get user from remote DB. Check your Internet connection.").obtainMessage().sendToTarget();
+                        }
+                        else
+                            Log.d(TAG,"Added a user to local DB.");
+                    } catch (IOException e)
+                    {
+                        Log.d(TAG,"Couldn't add local user to local DB: " + e.getMessage());
+                        toastHandler("Couldn't add local user to local DB: " + e.getMessage()).obtainMessage().sendToTarget();
+                    }
+                }
+            });
+            tLocalUserLoader.start();
+        }else Log.d(TAG,"Local user already in local DB.");
+    }
+
+    private Handler toastHandler(final String text)
+    {
+        Handler toastHandler = new Handler(Looper.getMainLooper())
+        {
+            public void handleMessage(Message msg)
+            {
+                super.handleMessage(msg);
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG).show();
+            }
+        };
+        return toastHandler;
     }
 
     @Override
@@ -288,6 +345,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 if (!((User) item).getFirstname().equals(getString(R.string.msg_not_in_event)))
                 {
                     Intent intent = new Intent(this, OtherUserProfileActivity.class);
+                    //TODO: Parceable
                     intent.putExtra("Firstname", ((User) item).getFirstname());
                     intent.putExtra("Lastname", ((User) item).getLastname());
                     intent.putExtra("Username", ((User) item).getUsername());
@@ -309,14 +367,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 if (!((Event) item).getTitle().equals(getString(R.string.msg_no_events)))
                 {
                     Intent intent = new Intent(this,EventDetailActivity.class);
-                    intent.putExtra("Event Name",((Event) item).getTitle());
-                    intent.putExtra("Event Description",((Event) item).getDescription());
-                    String img_id = "/Icebreak/events/event_icons-"+((Event) item).getId()+".png";
-                    intent.putExtra("Image ID",img_id);
-                    intent.putExtra("Event ID",((Event) item).getId());
-                    intent.putExtra("Access Code",((Event) item).getAccessCode());
-                    intent.putExtra("Event Location", ((Event) item).getBoundary());
-                    intent.putExtra("Event Radius",((Event) item).getRadius());
+                    intent.putExtra("Event",((Event) item));
 
                     startActivity(intent);
                     Log.d(TAG, "Loaded other Event.");
@@ -332,6 +383,50 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             Log.d(TAG,"User object is null.");
             Toast.makeText(this, "User object is null.", Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void validateLocationPermissions()
+    {
+        LocationManager locationMgr;
+        locationMgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+
+        locationMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 10, this);
+    }
+
+    @Override
+    public void onLocationChanged(Location location)
+    {
+        Log.d(TAG,"["+location.getLatitude()+","+location.getLongitude()+"]");
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle)
+    {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s)
+    {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s)
+    {
+
     }
 
     public class FragmentAdapter extends FragmentPagerAdapter
@@ -381,11 +476,16 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     public void onResume()
     {
         super.onResume();
+        loadUserData();
     }
 
     @Override
     public void onBackPressed()
     {
+        /**Incomplete**
+         back_click_count++;
+         if(back_click_count>=3)
+         this.finish();**/
         Toast.makeText(this,"Clicked back from MainActivity, will close app when clicked twice in the future.",Toast.LENGTH_SHORT).show();
     }
 }

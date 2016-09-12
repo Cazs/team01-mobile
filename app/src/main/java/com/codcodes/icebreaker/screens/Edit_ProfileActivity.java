@@ -87,7 +87,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         Occupation = (EditText) findViewById(R.id.editOccupation);
         Bio = (EditText) findViewById(R.id.editbio);
         Catchphrase = (EditText) findViewById(R.id.CatchPhrase);
-        TextView name = (TextView) findViewById(R.id.Edit_Heading);
+        TextView name = (TextView) findViewById(R.id.main_heading);
         TextView edit_image_link = (TextView) findViewById(R.id.editphoto);
 
         Typeface h = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");

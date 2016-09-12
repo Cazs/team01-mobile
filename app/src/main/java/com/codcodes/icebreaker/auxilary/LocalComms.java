@@ -48,6 +48,7 @@ import java.util.ArrayList;
 public class LocalComms
 {
     private static final String TAG = "IB/LocalComms";
+    private static boolean ib_dlg_active = false;
 
     public static Bitmap getImage(Context context, String filename,String ext, String path, BitmapFactory.Options options)
     {
@@ -69,6 +70,16 @@ public class LocalComms
             //bitmap.recycle();
             return compressed;
         }
+    }
+
+    public static boolean getDlgStatus()
+    {
+        return LocalComms.ib_dlg_active;
+    }
+
+    public static void setDlgStatus(boolean status)
+    {
+        LocalComms.ib_dlg_active = status;
     }
 
     public static ProgressDialog showProgressDialog(Context context, String msg)
@@ -169,7 +180,7 @@ public class LocalComms
                 .setSmallIcon(R.drawable.ic_notification_icon)
                 .setContentTitle("IceBreak")
                 .setVibrate(new long[]{500})
-                .setContentText("New IceBreak Request")
+                .setContentText(msg)
                 .setSound(soundUri)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
                 .setContentIntent(resultPendingIntent)

@@ -13,23 +13,22 @@
     <LinearLayout
         android:id="@+id/actionBar"
         android:layout_width="match_parent"
-        android:layout_height="65dp"
-        android:background="@color/iceblue">
+        android:layout_height="@dimen/app_bar_h"
+        android:background="@drawable/action_bar_background">
 
         <ImageView
-            android:layout_width="@dimen/logo_h"
-            android:layout_height="@dimen/logo_w"
+            android:layout_width="@dimen/logo_w"
+            android:layout_height="match_parent"
             android:layout_gravity="center_vertical"
-            android:layout_marginLeft="@dimen/dp_size_20"
             android:src="@mipmap/ic_launcher" />
 
         <TextView
-            android:id="@+id/txtTitle"
+            android:id="@+id/main_heading"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:text="Event Sign In"
-            android:textSize="22pt"
+            android:text="@string/app_name"
+            android:textSize="29pt"
             android:textColor="@color/white" />
 
     </LinearLayout>
@@ -37,7 +36,8 @@
     <com.codcodes.icebreaker.auxilary.camera.CameraSourcePreview
         android:id="@+id/preview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginTop="-4dp">
 
         <com.codcodes.icebreaker.auxilary.camera.GraphicOverlay
             android:id="@+id/graphicOverlay"

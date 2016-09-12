@@ -100,6 +100,16 @@
             android:label="@string/app_name" />
 
         <activity
+            android:name=".screens.ExtendedEventInfoActivity"
+            android:theme="@style/IBTheme"
+            android:parentActivityName=".screens.EventDetailActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.codcodes.icebreaker.screens.EventDetailActivity" />
+        </activity>
+
+
+        <activity
             android:name=".screens.BarcodeCaptureActivity"
             android:parentActivityName=".screens.EventDetailActivity"
             android:theme="@style/AppTheme.FullScreen">
@@ -127,10 +137,10 @@
         </activity>
         <activity
             android:name=".screens.IceBreakActivity"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"></activity>
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
         <activity
             android:name=".screens.IBDialog"
-            android:parentActivityName=".screens.MainActivity"></activity>
+            android:parentActivityName=".screens.MainActivity"/>
         <activity
             android:name=".screens.ChatActivity"
             android:label="Chat"

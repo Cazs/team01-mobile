@@ -6,15 +6,20 @@ import android.util.Log;
 
 import com.codcodes.icebreaker.screens.MainActivity;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 
 public class WritersAndReaders 
@@ -65,6 +70,59 @@ public class WritersAndReaders
             e.printStackTrace();
 		}
 	}
+
+    public static void writeAttributeToConfig(String key, String value) throws IOException
+    {
+        File f = new File(MainActivity.rootDir + "/Icebreak/config.cfg");
+        StringBuilder result = new StringBuilder();
+        if(f.exists())
+        {
+            String s = "";
+            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
+            while ((s = in.readLine())!=null)
+            {
+                if(s.contains("="))
+                {
+                    String var = s.split("=")[0];
+                    String val = s.split("=")[1];
+                    if(var.equals(key))
+                        val = value;
+                    result.append(var+"="+val);
+                }
+            }
+            in.close();
+        }
+        else
+        {
+            result.append(key+"="+value);
+        }
+        PrintWriter out = new PrintWriter(f);
+        out.print(result.toString());
+        out.flush();
+        out.close();
+    }
+
+    public static String readAttributeFromConfig(String key) throws IOException
+    {
+        File f = new File(MainActivity.rootDir + "/Icebreak/config.cfg");
+        if(f.exists())
+        {
+            String s = "";
+            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
+            while ((s = in.readLine())!=null)
+            {
+                if(s.contains("="))
+                {
+                    String var = s.split("=")[0];
+                    String val = s.split("=")[1];
+                    if(var.equals(key))
+                        return val;
+                }
+            }
+            in.close();
+        }
+        return null;
+    }
 
     public static String getRandomIdStr(int length)
     {

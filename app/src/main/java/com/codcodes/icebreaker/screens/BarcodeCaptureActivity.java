@@ -101,7 +101,7 @@ public final class BarcodeCaptureActivity extends Activity
       super.onCreate(icicle);
       setContentView(R.layout.barcode_capture);
 
-      TextView title = (TextView)findViewById(R.id.txtTitle);
+      TextView title = (TextView)findViewById(R.id.main_heading);
       Typeface ttfAilerons = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
       title.setTypeface(ttfAilerons);
       title.setTextSize(29);

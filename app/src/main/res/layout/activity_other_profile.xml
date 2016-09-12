@@ -8,29 +8,28 @@
     android:fitsSystemWindows="true"
     tools:context=".screens.OtherUserProfileActivity">
 
-        <LinearLayout
-            android:id="@+id/actionBar"
-            android:layout_width="match_parent"
-            android:layout_height="65dp"
-            android:background="@drawable/appbar_bg">
+    <LinearLayout
+        android:id="@+id/actionBar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_h"
+        android:background="@drawable/action_bar_background">
 
-            <ImageView
-                android:layout_width="@dimen/logo_h"
-                android:layout_height="@dimen/logo_w"
-                android:layout_marginTop="10dp"
-                android:layout_marginLeft="@dimen/dp_size_20"
-                android:src="@mipmap/ic_launcher" />
+        <ImageView
+            android:layout_width="@dimen/logo_w"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:src="@mipmap/ic_launcher" />
 
-            <TextView
-                android:id="@+id/Profile"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/appbar_title_mtop"
-                android:text="User Profile"
-                android:textSize="22pt"
-                android:textColor="@color/white" />
+        <TextView
+            android:id="@+id/main_heading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="@string/app_name"
+            android:textSize="29pt"
+            android:textColor="@color/white" />
 
-        </LinearLayout>
+    </LinearLayout>
 
         <include layout="@layout/content_other_profile" />
 

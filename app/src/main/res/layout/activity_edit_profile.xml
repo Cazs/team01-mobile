@@ -12,37 +12,29 @@
     <LinearLayout
         android:id="@+id/actionBar"
         android:layout_width="match_parent"
-        android:layout_height="65dp"
-        android:background="@drawable/appbar_bg"
-        android:orientation="horizontal"
-        android:weightSum="100">
+        android:layout_height="@dimen/app_bar_h"
+        android:background="@drawable/action_bar_background"
+        android:orientation="horizontal">
 
         <ImageView
-            android:layout_width="0dp"
-            android:layout_height="@dimen/logo_w"
-            android:layout_weight="20"
-            android:layout_marginTop="10dp"
-            android:layout_marginLeft="@dimen/dp_size_20"
+            android:layout_width="@dimen/logo_w"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
             android:src="@mipmap/ic_launcher" />
 
         <TextView
-            android:id="@+id/Edit_Heading"
-            android:layout_width="0dp"
-            android:layout_weight="60"
+            android:id="@+id/main_heading"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/appbar_title_mtop"
+            android:layout_gravity="center_vertical"
             android:text="Edit Profile"
-            android:textSize="25dp"
-            android:elegantTextHeight="true"
-            android:maxLines="1"
+            android:textSize="29pt"
             android:textColor="@color/white" />
 
         <Button
             android:id="@+id/edit_profile_done"
-            android:layout_width="0dp"
-            android:layout_height="55dp"
-            android:layout_weight="18"
-            android:layout_gravity="center_vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:background="@drawable/ic_done_white_24dp"/>
 
     </LinearLayout>

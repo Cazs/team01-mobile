@@ -111,20 +111,24 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
 
             } catch (IOException e)
             {
-                Log.d(TAG,e.getMessage());//TODO: better logging
-                e.printStackTrace();
+                if(e.getMessage()!=null)
+                    Log.d(TAG,e.getMessage());//TODO: better logging
+                else
+                    e.printStackTrace();
             }catch (InstantiationException e)
             {
-                Log.d(TAG,e.getMessage());//TODO: better logging
-                e.printStackTrace();
+                if(e.getMessage()!=null)
+                    Log.d(TAG,e.getMessage());//TODO: better logging
+                else
+                    e.printStackTrace();
             }catch (IllegalAccessException e)
             {
-                Log.d(TAG,e.getMessage());//TODO: better logging
-                e.printStackTrace();
+                if(e.getMessage()!=null)
+                    Log.d(TAG,e.getMessage());//TODO: better logging
+                else
+                    e.printStackTrace();
             }
         }
-        /*Log.d(TAG, "FCM Notification Message: " +
-                .getNotification().getBody());*/
     }
 
 }

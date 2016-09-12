@@ -1,5 +1,7 @@
 package com.codcodes.icebreaker.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -9,7 +11,7 @@ import java.util.ArrayList;
 /**
  * Created by tevin on 2016/07/25.
  */
-public class Event implements IJsonable
+public class Event implements IJsonable, Parcelable
 {
     private long id;
     private String title;
@@ -50,26 +52,28 @@ public class Event implements IJsonable
     public void setDescription(String description){this.description = description;}
     public void setAddress(String address){this.address = address;}
     public void setRadius(int radius){this.radius = radius;}
+    public void setBoundary(ArrayList<LatLng> boundary) {this.boundary = boundary;}
+
     public void setBoundary(String bounds)
     {
         if(bounds.contains(";"))
         {
-
+            bounds = bounds.replaceAll(" ","");//remove spaces
             boundary = new ArrayList<>();
             String[] coords = bounds.split(";");
             for(String coord: coords)
             {
-                if(!coord.contains(":"))
+                if(!coord.contains(","))
                 {
-                    Log.wtf(TAG,"Invalid lat:lng format.");
+                    Log.wtf(TAG,"Invalid 'lat,lng' format.");
                     boundary = null;
                     return;
                 }
-                double lat = Double.valueOf(coord.split(":")[0]);
-                double lng = Double.valueOf(coord.split(":")[1]);
+                double lat = Double.valueOf(coord.split(",")[0]);
+                double lng = Double.valueOf(coord.split(",")[1]);
                 boundary.add(new LatLng( lat, lng));
             }
-        }else Log.wtf(TAG,"Invalid lat:lng;lat:lng;lat:lng format.");
+        }else Log.wtf(TAG,"Invalid 'lat,lng;lat,lng;lat,lng;...' format.");
     }
 
     @Override
@@ -95,7 +99,7 @@ public class Event implements IJsonable
             case "Title":
                 setTitle(value);
                 break;
-            case "AccessID"://TODO: AccessCode
+            case "AccessCode":
                 setAccessCode(Integer.valueOf(value));
                 break;
             default:
@@ -103,4 +107,45 @@ public class Event implements IJsonable
                 break;
         }
     }
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i)
+    {
+        parcel.writeLong(getId());
+        parcel.writeString(getTitle());
+        parcel.writeString(getDescription());
+        parcel.writeString(getAddress());
+        parcel.writeInt(getAccessCode());
+        parcel.writeList(getBoundary());
+        parcel.writeInt(getRadius());
+    }
+
+    //Used to regenerate Event object.
+    public static final Parcelable.Creator<Event> CREATOR = new Parcelable.Creator<Event>()
+    {
+        public Event createFromParcel(Parcel in)
+        {
+            Event e = new Event();
+            e.setId(in.readLong());
+            e.setTitle(in.readString());
+            e.setDescription(in.readString());
+            e.setAddress(in.readString());
+            e.setAccessCode(in.readInt());
+            e.setBoundary(in.readArrayList(Event.class.getClassLoader()));
+            e.setRadius(in.readInt());
+
+            return e;
+        }
+
+        public Event[] newArray(int size)
+        {
+            return new Event[size];
+        }
+    };
 }

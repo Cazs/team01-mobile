@@ -87,7 +87,7 @@ public class OtherUserProfileActivity extends AppCompatActivity
             startActivity(intentMainAct);
         }
 
-        profile = (TextView) findViewById(R.id.Profile);
+        profile = (TextView) findViewById(R.id.main_heading);
         Typeface heading = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
         profile.setTypeface(heading);
 

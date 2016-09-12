@@ -50,11 +50,16 @@ public class ImageUtils
         int actualHeight = options.outHeight;
         int actualWidth = options.outWidth;
 
+        if(actualHeight<=0 || maxHeight<=0)
+            return null;
+
         float imgRatio = actualWidth / actualHeight;
         float maxRatio = maxWidth / maxHeight;
 
-        if (actualHeight > maxHeight || actualWidth > maxWidth) {
-            if (imgRatio < maxRatio) {
+        if (actualHeight > maxHeight || actualWidth > maxWidth)
+        {
+            if (imgRatio < maxRatio)
+            {
                 imgRatio = maxHeight / actualHeight;
                 actualWidth = (int) (imgRatio * actualWidth);
                 actualHeight = (int) maxHeight;
@@ -87,9 +92,13 @@ public class ImageUtils
         try {
             scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.ARGB_8888);
             scaledBitmap.eraseColor(Color.WHITE);
-        } catch (OutOfMemoryError e) {
+        } catch (OutOfMemoryError e)
+        {
             e.printStackTrace();
         }
+
+        if(bmp==null||scaledBitmap==null)
+            return null;
 
         float ratioX = actualWidth / (float) options.outWidth;
         float ratioY = actualHeight / (float) options.outHeight;
@@ -149,6 +158,9 @@ public class ImageUtils
 
         int actualHeight = options.outHeight;
         int actualWidth = options.outWidth;
+
+        if(actualHeight<=0 || maxHeight<=0)
+            return null;
 
         float imgRatio = actualWidth / actualHeight;
         float maxRatio = maxWidth / maxHeight;

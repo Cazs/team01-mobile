@@ -1,27 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".screens.EventDetailActivity">
+    tools:context="com.codcodes.icebreaker.screens.ExtendedEventInfoActivity"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:weightSum="100">
 
     <LinearLayout
         android:id="@+id/actionBar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/app_bar_h"
-        android:background="@drawable/action_bar_background">
+        android:layout_height="0dp"
+        android:layout_weight="13"
+        android:background="@drawable/action_bar_bg"
+        android:layout_marginBottom="-5dp">
 
         <ImageView
             android:layout_width="@dimen/logo_w"
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical"
+            android:layout_marginLeft="@dimen/dp_size_20"
             android:src="@mipmap/ic_launcher" />
 
         <TextView
-            android:id="@+id/Event_Heading"
+            android:id="@+id/main_heading"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -31,6 +36,10 @@
 
     </LinearLayout>
 
-    <include layout="@layout/content_event_detail" />
+    <RelativeLayout
+        android:id="@+id/imgGpsLoc"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="100"/>
 
-</android.support.design.widget.CoordinatorLayout>
+</LinearLayout>

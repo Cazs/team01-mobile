@@ -1,17 +1,23 @@
 package com.codcodes.icebreaker.screens;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -20,6 +26,7 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
@@ -45,26 +52,20 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
-public class EventDetailActivity extends AppCompatActivity
+public class EventDetailActivity extends AppCompatActivity implements LocationListener
 {
     private final String TAG = "IB/EventDetailActivity";
 
-    private long Eventid;
-    private String eventLoc;
-    private int eventRadius;
+    private Event selected_event;
 
-    private ArrayList<LatLng> polygon;
     private LatLng me;
     private LocationDetector locationChecker;
 
-    private int AccessCode;
-    private int event_Radius;
-
-    private RecyclerView usersAtEventList;
     private TextView eventDetails;
     private ProgressDialog progress;
 
-    private LocationDetector locationDetector;
+    private double lat = 0;
+    private double lng = 0;
 
     private static final int RC_BARCODE_CAPTURE = 9001;
 
@@ -73,14 +74,15 @@ public class EventDetailActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
+        validatePermissions();
         //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
         //cationDetector = new LocationDetector();
-       // getSupportActionBar().setDisplayShowHomeEnabled(true);
+        // getSupportActionBar().setDisplayShowHomeEnabled(true);
         //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         Bundle extras = getIntent().getExtras();
 
-        polygon = new ArrayList<>();
+        /*polygon = new ArrayList<>();
         polygon.add(new LatLng(-26.182944, 27.997387));
         polygon.add(new LatLng(-26.183185, 27.996846));
         polygon.add(new LatLng(-26.183816, 27.996964));
@@ -89,57 +91,28 @@ public class EventDetailActivity extends AppCompatActivity
         polygon.add(new LatLng(-26.184201, 27.997913));
         polygon.add(new LatLng(-26.184008, 27.998251));
         polygon.add(new LatLng(-26.183815, 27.998380));
-        polygon.add(new LatLng(-26.183517, 27.998471));
-        me = new LatLng(-26.182944,27.997387); //-26.183297, 27.995006
-        locationChecker = new LocationDetector();
+        polygon.add(new LatLng(-26.183517, 27.998471));*/
+        //-26.183297, 27.995006
+        //-26.182944,27.997387
+        //me = new LatLng(-27.133954, 27.931488);
 
-        /*
-        //If there's a cached eventID use that
-        String strEvId = SharedPreference.getEventId(this);
-        if(strEvId!=null)
-        {
-            if(!strEvId.isEmpty())
-            {
-                if(Long.valueOf(strEvId)>0)
-                {
-                    Eventid = Long.valueOf(SharedPreference.getEventId(this));
-                    showProgressBar();
-                    //updateProfile(Eventid,username);
-                    listPeople(act);
-                }
-            }
-        }*/
+        locationChecker = new LocationDetector();
 
         if(extras != null)
         {
-            String evtName = extras.getString("Event Name");
+            selected_event = extras.getParcelable("Event");
             TextView eventName = (TextView)findViewById(R.id.event_name);
-            eventName.setText(evtName);
-
-            Eventid = extras.getLong("Event ID");
-            AccessCode = extras.getInt("Access Code");
-            event_Radius = extras.getInt("Event Radius");
-
-            eventLoc = extras.getString("Event Location");
-            eventRadius = extras.getInt("Event Radius");
-
-            //location = (Location) extras.get("Access Location");
-            //String[] part = eventLoc.split(":");
-
-            //location.setLatitude(Double.valueOf(part[0]));
-            //location.setLongitude(Double.valueOf(part[1]));
-
+            eventName.setText(selected_event.getTitle());
 
             TextView eventDescription = (TextView)findViewById(R.id.event_description);
-            eventDescription.setText(extras.getString("Event Description"));
-
-            String imagePath = Environment.getExternalStorageDirectory().getPath().toString()
-                    + extras.getString("Image ID");
+            eventDescription.setText(selected_event.getDescription());
 
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-            Bitmap bitmap = BitmapFactory.decodeFile(imagePath, options);
-            //Bitmap bitmap = BitmapFactory.decodeResource(getResources(), imagePath);
+            Bitmap bitmap = LocalComms.getImage(this, "event_icons-"+selected_event.getId(), ".png", "/events", options);
+            if(bitmap==null)
+                bitmap = RemoteComms.getImage(this, "event_icons-"+selected_event.getId(), ".png", "/events", options);
+
             if(bitmap!=null)
             {
                 Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
@@ -152,7 +125,7 @@ public class EventDetailActivity extends AppCompatActivity
         eventDetails = (TextView)findViewById(R.id.Event_Heading);
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         eventDetails.setTypeface(heading);
-        usersAtEventList = (RecyclerView) findViewById(R.id.users_at_event_list);
+
         final EditText accessCode = (EditText) findViewById(R.id.AccessCode);
 
         accessCode.setOnEditorActionListener(new TextView.OnEditorActionListener()
@@ -160,6 +133,7 @@ public class EventDetailActivity extends AppCompatActivity
             @Override
             public boolean onEditorAction(TextView v, int actionID, KeyEvent event)
             {
+                validatePermissions();
                 if (actionID== EditorInfo.IME_ACTION_DONE)
                 {
                     //Event e = RemoteComms.getEvent(Eventid);
@@ -175,6 +149,34 @@ public class EventDetailActivity extends AppCompatActivity
             Log.d("Testing", String.valueOf(loc.getLongitude()) + " : " + String.valueOf(loc.getLatitude() ));
         }*/
 
+    }
+
+    public void viewPosition(View view)
+    {
+        Intent i = new Intent(this,ExtendedEventInfoActivity.class);
+        i.putExtra("Location_lat",String.valueOf(lat));
+        i.putExtra("Location_lng",String.valueOf(lng));
+        i.putExtra("Event",selected_event);
+        startActivity(i);
+    }
+
+    private void validatePermissions()
+    {
+        LocationManager locationMgr;
+        locationMgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 10, this);
     }
 
     private Handler toastHandler(final String text)
@@ -193,99 +195,111 @@ public class EventDetailActivity extends AppCompatActivity
 
     private void validateEventLogin(int code)
     {
-        if(matchAccessCode(code))
+        me = new LatLng(lat,lng);
+        if(me!=null)
         {
-            if(locationChecker.containsLocation(me,polygon,true))
+            if (matchAccessCode(code))
             {
-                progress = LocalComms.showProgressDialog(EventDetailActivity.this, "Signing in to event...");
-                Thread tEventDataLoader = new Thread(new Runnable()
+                Log.d(TAG,"##############ELoc"+selected_event.getBoundary());
+                if (locationChecker.containsLocation(me, selected_event.getBoundary(), true))
                 {
-                    @Override
-                    public void run()
+                    Log.d(TAG,"Valid code and location");
+                    progress = LocalComms.showProgressDialog(EventDetailActivity.this, "Signing in to event...");
+                    Thread tEventDataLoader = new Thread(new Runnable()
                     {
-                        try
+                        @Override
+                        public void run()
                         {
-                            User user = LocalComms.getContact(EventDetailActivity.this, SharedPreference.getUsername(EventDetailActivity.this));
-                            if (user == null)
-                                user = RemoteComms.getUser(EventDetailActivity.this, SharedPreference.getUsername(EventDetailActivity.this));
-                            if (user != null)
+                            try
                             {
-                                user.setUsername(SharedPreference.getUsername(EventDetailActivity.this));//for some reason the username is not being set by preceding methods
-                                MainActivity.event_id = Eventid;
-                                MainActivity.event = RemoteComms.getEvent(Eventid);
-
-                                if (MainActivity.event != null && MainActivity.event_id>0)
+                                User user = LocalComms.getContact(EventDetailActivity.this, SharedPreference.getUsername(EventDetailActivity.this));
+                                if (user == null)
+                                    user = RemoteComms.getUser(EventDetailActivity.this, SharedPreference.getUsername(EventDetailActivity.this));
+                                if (user != null)
                                 {
-                                    user.setEvent(MainActivity.event);
-                                    String resp = RemoteComms.postData("userUpdate/" + user.getUsername(), user.toString());
+                                    user.setUsername(SharedPreference.getUsername(EventDetailActivity.this));//for some reason the username is not being set by preceding methods
 
-                                    Message message;
-
-                                    if (resp.contains("200"))
+                                    if(selected_event==null)
+                                        return;
+                                    if (selected_event.getId() > 0)
                                     {
-                                        String ev_title = MainActivity.event.getTitle();
+                                        user.setEvent(selected_event);
+                                        String resp = RemoteComms.postData("userUpdate/" + user.getUsername(), user.toString());
 
-                                        SharedPreference.setEventId(EventDetailActivity.this, MainActivity.event_id);
-                                        message = toastHandler("Signed in to event \"" + ev_title + "\"").obtainMessage();
-                                        message.sendToTarget();
+                                        Message message;
 
-                                        if (MainActivity.users_at_event == null)
-                                            MainActivity.users_at_event = new ArrayList<>();
-                                        String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + Eventid);
-                                        JSON.<User>getJsonableObjectsFromJson(contactsJson, MainActivity.users_at_event, User.class);
-                                        Log.d(TAG, "Signed in to event \"" + ev_title + "\".");
+                                        if (resp.contains("200"))
+                                        {
+                                            String ev_title = selected_event.getTitle();
 
-                                        EventDetailActivity.this.finish();
+                                            MainActivity.event_id = selected_event.getId();
+                                            MainActivity.event = selected_event;
+                                            SharedPreference.setEventId(EventDetailActivity.this, selected_event.getId());
+                                            message = toastHandler("Signed in to event \"" + ev_title + "\"").obtainMessage();
+                                            message.sendToTarget();
+
+                                            if(MainActivity.users_at_event == null)
+                                                MainActivity.users_at_event = new ArrayList<>();
+                                            String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + selected_event.getId());
+                                            JSON.<User>getJsonableObjectsFromJson(contactsJson, MainActivity.users_at_event, User.class);
+                                            Log.d(TAG, "Signed in to event \"" + ev_title + "\".");
+
+                                            EventDetailActivity.this.finish();
+                                        } else
+                                        {
+                                            message = toastHandler("Could not login to event, server response: " + resp).obtainMessage();
+                                            message.sendToTarget();
+                                            Log.d(TAG, resp);
+                                        }
                                     } else
                                     {
-                                        message = toastHandler("Could not login to event, server response: " + resp).obtainMessage();
+                                        Message message = toastHandler("Event is null for some reason.").obtainMessage();
                                         message.sendToTarget();
-                                        Log.d(TAG, resp);
+                                        Log.wtf(TAG, "Event is null for some reason.");
                                     }
-                                } else Log.wtf(TAG, "Event is null for some reason.");
-                            } else
+                                } else
+                                {
+                                    Log.wtf(TAG, "User object is null.");
+                                    Message message = toastHandler("Could not sign in to event, User object is null.").obtainMessage();
+                                    message.sendToTarget();
+                                }
+                            } catch (IllegalAccessException e)
                             {
-                                Log.wtf(TAG, "User object is null.");
-                                Message message = toastHandler("Could not sign in to event, User object is null.").obtainMessage();
+                                //TODO: better logging
+                                Log.wtf(TAG, e.getMessage(), e);
+                            } catch (InstantiationException e)
+                            {
+                                //TODO: better logging
+                                Log.wtf(TAG, e.getMessage(), e);
+                            } catch (UnknownHostException e)
+                            {
+                                Message message = toastHandler("No Internet Access..").obtainMessage();
                                 message.sendToTarget();
+                                Log.d(TAG, e.getMessage(), e);
+                            } catch (IOException e)
+                            {
+                                //TODO: better logging
+                                Log.wtf(TAG, e.getMessage(), e);
+                            } finally
+                            {
+                                LocalComms.hideProgressBar(progress);
                             }
-                        } catch (IllegalAccessException e)
-                        {
-                            //TODO: better logging
-                            Log.wtf(TAG, e.getMessage(), e);
-                        } catch (InstantiationException e)
-                        {
-                            //TODO: better logging
-                            Log.wtf(TAG, e.getMessage(), e);
-                        } catch (UnknownHostException e)
-                        {
-                            Message message = toastHandler("No Internet Access..").obtainMessage();
-                            message.sendToTarget();
-                            Log.d(TAG, e.getMessage(), e);
-                        } catch (IOException e)
-                        {
-                            //TODO: better logging
-                            Log.wtf(TAG, e.getMessage(), e);
-                        } finally
-                        {
-                            LocalComms.hideProgressBar(progress);
                         }
-                    }
-                });
-                tEventDataLoader.start();
-                //TODO: Go to UserContactsFragment
-            }
-            else
+                    });
+                    tEventDataLoader.start();
+                    //TODO: Go to UserContactsFragment
+                } else
+                {
+                    Toast.makeText(this, "Your location reading says that you're not at this event. \nPlease check that your GPS is on and you have an Internet connection.", Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "User is not actually at the Event.");
+                }
+            } else
             {
-                Toast.makeText(this,"Your location reading says that you're not at this event. \nPlease check that your GPS is on and you have an Internet connection.", Toast.LENGTH_LONG).show();
-                Log.d(TAG,"User is not actually at the Event.");
+                Toast.makeText(this, "Invalid access code. Please try again.", Toast.LENGTH_LONG).show();
+                Log.d(TAG, "Invalid Access Code Entered");
             }
         }
-        else
-        {
-            Toast.makeText(this,"Invalid access code. Please try again.", Toast.LENGTH_LONG).show();
-            Log.d(TAG,"Invalid Access Code Entered");
-        }
+        else Log.d(TAG,"Location is null.");
     }
 
     public void startQRscanner(View v)
@@ -356,23 +370,19 @@ public class EventDetailActivity extends AppCompatActivity
                             Math.sin(dLng / 2) * Math.sin(dLng / 2);
             double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             float dist = (float) (earthRadius * c);
-            Log.d("Testing","Distance : " + String.valueOf(dist));
+            Log.d("Testing","Distance: " + String.valueOf(dist));
             if(dist<=4)
             {
                 return true;
             }
         }
-
         return false;
     }
 
     public boolean matchAccessCode(int code)
     {
-        if(code == AccessCode)
-        {
+        if(code == selected_event.getAccessCode())
             return true;
-        }
-
         return false;
     }
 
@@ -381,10 +391,34 @@ public class EventDetailActivity extends AppCompatActivity
     {
         super.onBackPressed();
         Intent i = new Intent(this,MainActivity.class);
-        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         i.putExtra("com.codcodes.icebreaker.Back",true);
         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(i);
         finish();
+    }
+
+    @Override
+    public void onLocationChanged(Location location)
+    {
+        lat = location.getLatitude();
+        lng = location.getLongitude();
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle)
+    {
+        Log.d(TAG,"onStatusChanged Status: " + s + "> " + i);
+    }
+
+    @Override
+    public void onProviderEnabled(String s)
+    {
+        Log.d(TAG,"onProviderEnabled Status: " + s);
+    }
+
+    @Override
+    public void onProviderDisabled(String s)
+    {
+        Log.d(TAG,"onProviderDisabled Status: " + s);
     }
 }

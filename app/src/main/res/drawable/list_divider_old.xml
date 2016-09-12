@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:top="75dp">
+    <item android:top="@dimen/contact_list_item_height">
         <shape android:shape="line">
             <stroke android:color="#737373" android:width="0.1dp" android:dashGap="4dp"/>
             <padding

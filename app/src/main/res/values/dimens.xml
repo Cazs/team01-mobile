@@ -40,8 +40,10 @@
     <dimen name="contact_name_text_size">18dp</dimen>
     <dimen name="contact_bio_text_size">14dp</dimen>
     <dimen name="contact_bio_tpadding">2dp</dimen>
-    <dimen name="contact_list_item_height">90dp</dimen>
+    <dimen name="contact_list_item_height">100dp</dimen>
     <dimen name="fab_border_width">3dp</dimen>
+    <dimen name="app_bar_h">75dp</dimen>
+    <dimen name="app_bar_bmargin">72dp</dimen>
 
     <dimen name="fab_width">40dp</dimen>
     <dimen name="fab_height">40dp</dimen>

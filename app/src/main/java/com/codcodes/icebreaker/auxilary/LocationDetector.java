@@ -21,6 +21,9 @@ public class LocationDetector
 
     public static boolean containsLocation(LatLng point, List<LatLng> polygon, boolean geodesic)
     {
+        if(polygon==null || point ==null)
+            return false;
+
         final int size = polygon.size();
         if (size == 0) {
             return false;

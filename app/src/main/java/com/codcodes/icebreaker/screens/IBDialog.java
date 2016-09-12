@@ -18,11 +18,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.Config;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
+import com.codcodes.icebreaker.auxilary.SharedPreference;
+import com.codcodes.icebreaker.auxilary.WritersAndReaders;
+import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.model.Message;
 import com.codcodes.icebreaker.model.User;
+import com.codcodes.icebreaker.services.IcebreakService;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -37,13 +42,12 @@ public class IBDialog extends Activity
     public static final int INCOMING_REQUEST = 0;
     public static final int RESP_ACCEPTED = 1;
     public static final int RESP_REJECTED = 2;
+    public static int request_code = NULL;
 
     private Dialog dialog;
     private ProgressDialog progress;
-    public static boolean active = false;
-    public static boolean status_changing = false;
-    public static int request_code = NULL;
     private Bitmap bitmapReceivingUser,bitmapRequestingUser;
+
     private static final String TAG = "IB/IBDialog";
     private static Message icebreak_msg = null;
     private static User requesting_user = null;
@@ -51,7 +55,7 @@ public class IBDialog extends Activity
 
 
     private TextView txtIBReqPopup_name,txtIBReqPopup_age,txtIBReqPopup_gender,
-                        txtIBReqPopup_bioTitle,txtIBReqPopup_bio, txtIBReqPopup_occ;
+            txtIBReqPopup_bioTitle,txtIBReqPopup_bio, txtIBReqPopup_occ;
     private ImageView imgIBReqPopup_OtherUser;
     private Button accept,reject;
 
@@ -61,7 +65,6 @@ public class IBDialog extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        dialog = new Dialog(this);
 
         ttfInfinity = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
         ttfAilerons = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
@@ -70,9 +73,26 @@ public class IBDialog extends Activity
         icebreak_msg = dlgIntent.getParcelableExtra("Message");
         receiving_user = dlgIntent.getParcelableExtra("Receiver");
         requesting_user = dlgIntent.getParcelableExtra("Sender");
+        String s = dlgIntent.getStringExtra("Request_Code");
 
-        if(icebreak_msg==null||receiving_user==null||requesting_user==null)
+        //if(IcebreakService.active)
+        //if(SharedPreference.isDialogActive(this))
+        if(LocalComms.getDlgStatus())
+        {
+            Log.d(TAG, "Dialog is already showing!");
+            this.finish();
+        }
+
+        if(icebreak_msg==null||receiving_user==null||requesting_user==null || s==null)
+        {
+            Log.d(TAG,"Some compulsory objects are null.");
             closeActivity();
+        }
+
+        if(s.toLowerCase().equals("null"))
+            closeActivity();
+
+        request_code = Integer.valueOf(s);
 
         if(request_code==INCOMING_REQUEST)//IceBreak request
         {
@@ -95,8 +115,14 @@ public class IBDialog extends Activity
                 drawRejectionUI();
             }
         }
+        //dialog.show();
+        //LocalComms.setDlgStatus(false);
+        //if(dialog==null)
+        //    return;
 
-        dialog.show();
+        //LocalComms.setDlgStatus(true);
+
+        //System.err.println("###############>>>>>>>>>>>Dlg Active: "+LocalComms.getDlgStatus());
 
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener()
         {
@@ -107,10 +133,29 @@ public class IBDialog extends Activity
                     bitmapReceivingUser.recycle();
                 if(bitmapRequestingUser!=null)
                     bitmapRequestingUser.recycle();
+
+                setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
+                //IcebreakService.active=false;
+                //LocalComms.setDlgStatus(false);
+                //changeDlgStatus(false);
+                //SharedPreference.setDialogStatus(IBDialog.this,false);
+                //System.err.println("###############>>>>>>>>>>>Dlg Active: "+LocalComms.getDlgStatus());
+                //System.err.println(">>>>>>>>>>>>>>>OnDismiss->Active:" + IcebreakService.active);
                 IBDialog.request_code = NULL;
                 closeActivity();//return focus to the MainActivity
             }
         });
+    }
+
+    private void setDlgStatus(String val)
+    {
+        try
+        {
+            WritersAndReaders.writeAttributeToConfig(Config.DLG_ACTIVE.getValue(),val);
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public void showProgressBar(final String msg)
@@ -211,7 +256,25 @@ public class IBDialog extends Activity
 
     private void populateIcebreakRequestUI()
     {
-        dialog.setContentView(R.layout.popup_icebreak);
+        if(dialog!=null)
+        {
+            if(!dialog.isShowing())
+            {
+                dialog.setContentView(R.layout.popup_icebreak);
+                setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
+                dialog.show();
+            }else return;//else it's showing - do nothing to it.
+        }
+        else// is null
+        {
+            if(!LocalComms.getDlgStatus())
+            {
+                dialog = new Dialog(this);
+                dialog.setContentView(R.layout.popup_icebreak);
+                setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
+                dialog.show();
+            }else return;//else it's showing - do nothing to it.
+        }
 
         txtIBReqPopup_name = (TextView) dialog.findViewById(R.id.ib_req_username);
         txtIBReqPopup_age = (TextView) dialog.findViewById((R.id.ib_req_user_age));
@@ -252,13 +315,16 @@ public class IBDialog extends Activity
 
     private void initIcebreakRequestHandlers()
     {
+        if(accept==null||reject==null)
+            return;
+
         accept.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
                 showProgressBar("Accepting request...");
-                status_changing = true;
+                IcebreakService.status_changing = true;
                 if(icebreak_msg==null)
                 {
                     Log.d(TAG, "An unexpected error has occurred> icebreak_msg=null");
@@ -296,7 +362,7 @@ public class IBDialog extends Activity
                                     Log.wtf(TAG, "Couldn't get requesting user: " + e.getMessage(), e);
                                 }
 
-                                status_changing = false;
+                                IcebreakService.status_changing = false;
                             }
                             hideProgressBar();
 
@@ -331,7 +397,7 @@ public class IBDialog extends Activity
             public void onClick(View view)
             {
                 showProgressBar("Rejecting request...");
-                status_changing = true;
+                IcebreakService.status_changing = true;
                 icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_REJECTED.getStatus());
                 Thread tStatusUpdater = new Thread(new Runnable()
                 {
@@ -355,7 +421,7 @@ public class IBDialog extends Activity
                                     hideProgressBar();
                                 }
                             });
-                            status_changing = false;
+                            IcebreakService.status_changing = false;
                             dialog.dismiss();
                         }
                         catch (SocketTimeoutException e)
@@ -377,8 +443,23 @@ public class IBDialog extends Activity
 
     private void drawAcceptanceUI()
     {
-        dialog.setContentView(R.layout.popup_accepted);
-        //dialog.show();
+        if(dialog!=null)
+        {
+            if(!dialog.isShowing())
+            {
+                dialog.setContentView(R.layout.popup_accepted);
+                setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
+                dialog.show();
+            }else return;//else it's showing - do nothing to it.
+        }
+        else// is null
+        {
+            dialog = new Dialog(this);
+            dialog.setContentView(R.layout.popup_accepted);
+            setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
+            dialog.show();
+        }
+        //SharedPreference.setDialogStatus(this,true);
 
         TextView txtSuccessfulMatch = (TextView)dialog.findViewById(R.id.SuccessfulMatch);
         ImageView imgLocalUser = (ImageView)dialog.findViewById(R.id.other_pic1);
@@ -413,7 +494,7 @@ public class IBDialog extends Activity
                 else if(request_code==RESP_ACCEPTED||request_code==RESP_REJECTED)
                 {
                     showProgressBar("Loading...");
-                    status_changing = true;
+                    IcebreakService.status_changing = true;
                     //update status
                     icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_DONE.getStatus());
                     Thread tStatusUpdater = new Thread(new Runnable()
@@ -430,7 +511,7 @@ public class IBDialog extends Activity
                                     Log.d(TAG, "Continue Button> Updated Icebreak request locally and remotely.");
                                 }
                                 hideProgressBar();
-                                status_changing = false;
+                                IcebreakService.status_changing = false;
                                 dialog.dismiss();
                                 Intent chatIntent = new Intent(getBaseContext(), ChatActivity.class);
                                 chatIntent.putExtra("Username", icebreak_msg.getSender());
@@ -473,7 +554,7 @@ public class IBDialog extends Activity
                 else if(request_code==RESP_ACCEPTED || request_code==RESP_REJECTED)
                 {
                     showProgressBar("Loading...");
-                    status_changing = true;
+                    IcebreakService.status_changing = true;
                     //update status
                     icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_DONE.getStatus());
                     Thread tStatusUpdater = new Thread(new Runnable()
@@ -491,7 +572,7 @@ public class IBDialog extends Activity
                                     Log.d(TAG, "Continue Button> Updated IceBreak request locally.");
                                 }
                                 hideProgressBar();
-                                status_changing = false;
+                                IcebreakService.status_changing = false;
                                 runOnUiThread(new Runnable()
                                 {
                                     @Override
@@ -521,7 +602,23 @@ public class IBDialog extends Activity
 
     private void drawRejectionUI()
     {
-        dialog.setContentView(R.layout.popup_rejected);
+        if(dialog!=null)
+        {
+            if(!dialog.isShowing())
+            {
+                dialog.setContentView(R.layout.popup_rejected);
+                setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
+                dialog.show();
+            }else return;//else it's showing - do nothing to it.
+        }
+        else// is null
+        {
+            dialog = new Dialog(this);
+            dialog.setContentView(R.layout.popup_rejected);
+            setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
+            dialog.show();
+        }
+        //SharedPreference.setDialogStatus(this,true);
 
         TextView txtUnsuccess = (TextView)dialog.findViewById(R.id.ib_res_unsuccess);
         TextView txtMotivational = (TextView)dialog.findViewById(R.id.txt_motivational_message);
@@ -596,21 +693,61 @@ public class IBDialog extends Activity
 
     public void closeActivity()
     {
+        setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
+        //IcebreakService.active = false;
+        //System.err.println(">>>>>>>>>>>>>>>OnCloseAct->Active:" + IcebreakService.active);
+        //LocalComms.setDlgStatus(false);
+        //changeDlgStatus(false);
+        //SharedPreference.setDialogStatus(this,false);
+        //System.err.println("###############>>>>>>>>>>>Dlg Active: "+LocalComms.getDlgStatus());
         this.finish();
+    }
+
+    @Override
+    public void onDetachedFromWindow()
+    {
+        super.onDetachedFromWindow();
+        //IcebreakService.active = false;
+        //changeDlgStatus(false);
+        //SharedPreference.setDialogStatus(this,false);
+        setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        //IcebreakService.active = false;
+        //changeDlgStatus(false);
+        //SharedPreference.setDialogStatus(this,false);
+        setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
     }
 
     @Override
     public void onStart()
     {
         super.onStart();
-        active = true;
+        //IcebreakService.active = true;
+        //System.err.println(">>>>>>>>>>>>>>>OnStart->Active:" + IcebreakService.active);
+        //changeDlgStatus(true);
+        //SharedPreference.setDialogStatus(this,true);
+        setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
     }
 
     @Override
     public void onStop()
     {
         super.onStop();
-        active = false;
+        //IcebreakService.active = false;
+        //changeDlgStatus(false);
+        //SharedPreference.setDialogStatus(this,false);
+        setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
     }
 
     @Override

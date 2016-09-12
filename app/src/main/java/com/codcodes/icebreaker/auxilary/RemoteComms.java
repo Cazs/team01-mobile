@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.util.Base64;
@@ -16,6 +17,7 @@ import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.model.Message;
 import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.screens.MainActivity;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -76,6 +78,50 @@ public class RemoteComms
             //Log.d(TAG,response);
         }
         return response;
+    }
+
+    public static Drawable getGoogleMapsBitmap(double lat, double lng, int zoom, int w, int h, ArrayList<LatLng> coords) throws IOException
+    {
+        if(coords==null)
+            return null;
+        String event_coords = "";
+        for(LatLng pos:coords)
+            event_coords += pos.latitude+","+pos.longitude+"|";
+        if(event_coords.length()>0)
+            event_coords = event_coords.substring(0,event_coords.length()-1);//remove last pipe
+        String url = "https://maps.google.com/maps/api/staticmap?" +
+                "center=" +lat + "," + lng + "&" +
+                "zoom="+zoom+"&" +
+                "size="+w+"x"+h+"&" +
+                "sensor=true&" +
+                "markers=icon:"+ URLEncoder.encode("http://icebreak.azurewebsites.net/images/public_res/ic_gps_fixed_black_24dp.png","UTF-8")+"|" + lat + "," + lng + "&" +
+                "path=color:0x0000ff|weight:5|"+event_coords;
+
+        Log.d(TAG,"Opening connection to http://maps.google.com...");
+        URL urlConn = new URL(url);
+        HttpsURLConnection httpConn =  (HttpsURLConnection)urlConn.openConnection();
+        httpConn.setRequestMethod("GET");
+        //httpConn.setDoOutput(true);
+        //httpConn.setDoInput(true);
+        //httpConn.setChunkedStreamingMode(1024);
+        /*ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        DataInputStream is = new DataInputStream(httpConn.getInputStream());
+
+        int len;
+        while ((len=is.read(buffer,0,buffer.length))>0)
+        {
+            baos.write(buffer,0,len);
+            baos.flush();
+        }
+        is.close();*/
+        /*Bitmap bmp = null;
+        bmp = BitmapFactory.decodeStream(httpConn.getInputStream());
+        if(httpConn.getInputStream()!=null)
+            httpConn.getInputStream().close();*/
+        //if(httpConn.getResponseCode() == HttpURLConnection.HTTP_OK)
+
+        return Drawable.createFromStream(httpConn.getInputStream(), "google_maps_bitmap");
     }
 
     public static byte[] getFBImage(String host, String resource) throws IOException
@@ -339,10 +385,17 @@ public class RemoteComms
                 payload = payload.split(":")[1];
                 payload = payload.replaceAll("\"", "");
 
-                byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);
-                WritersAndReaders.saveImage(binFileArr, destPath + "/" + image + ext);
-                Log.d(TAG,"Image download complete");
-                return true;
+                try
+                {
+                    byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);
+                    WritersAndReaders.saveImage(binFileArr, destPath + "/" + image + ext);
+                    Log.d(TAG, "Image download complete");
+                    return true;
+                }catch (IllegalArgumentException e)
+                {
+                    Log.d(TAG,e.getMessage(),e);
+                    return false;
+                }
             }
             else throw new FileNotFoundException("Server> File '"+image+ext+"' was not found");
         }
