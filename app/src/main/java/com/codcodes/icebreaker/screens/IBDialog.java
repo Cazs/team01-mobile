@@ -22,7 +22,6 @@ import com.codcodes.icebreaker.auxilary.Config;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
-import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.model.Message;
@@ -30,7 +29,6 @@ import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.services.IcebreakService;
 
 import java.io.IOException;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
 /**
@@ -58,6 +56,7 @@ public class IBDialog extends Activity
             txtIBReqPopup_bioTitle,txtIBReqPopup_bio, txtIBReqPopup_occ;
     private ImageView imgIBReqPopup_OtherUser;
     private Button accept,reject;
+    private RadioButton optionA,optionB,optionC;
 
     private Typeface ttfInfinity, ttfAilerons;
 
@@ -98,8 +97,17 @@ public class IBDialog extends Activity
         {
             if(icebreak_msg.getStatus()==MESSAGE_STATUSES.ICEBREAK_DELIVERED.getStatus())//double check
             {
-                populateIcebreakRequestUI();
-                initIcebreakRequestHandlers();
+                try
+                {
+                    populateIcebreakRequestUI();
+                    initIcebreakRequestHandlers();
+                } catch (IOException e)
+                {
+                    if(e.getMessage()!=null)
+                        Log.wtf(TAG,e.getMessage(),e);
+                    else
+                        e.printStackTrace();
+                }
             }
 
         }else if(request_code==RESP_ACCEPTED||request_code==RESP_REJECTED)//IceBreak response
@@ -117,14 +125,6 @@ public class IBDialog extends Activity
         }
 
         setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
-        //dialog.show();
-        //LocalComms.setDlgStatus(false);
-        //if(dialog==null)
-        //    return;
-
-        //LocalComms.setDlgStatus(true);
-
-        //System.err.println("###############>>>>>>>>>>>Dlg Active: "+LocalComms.getDlgStatus());
 
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener()
         {
@@ -136,13 +136,6 @@ public class IBDialog extends Activity
                 if(bitmapRequestingUser!=null)
                     bitmapRequestingUser.recycle();
 
-                setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
-                //IcebreakService.active=false;
-                //LocalComms.setDlgStatus(false);
-                //changeDlgStatus(false);
-                //SharedPreference.setDialogStatus(IBDialog.this,false);
-                //System.err.println("###############>>>>>>>>>>>Dlg Active: "+LocalComms.getDlgStatus());
-                //System.err.println(">>>>>>>>>>>>>>>OnDismiss->Active:" + IcebreakService.active);
                 IBDialog.request_code = NULL;
                 closeActivity();//return focus to the MainActivity
             }
@@ -156,7 +149,10 @@ public class IBDialog extends Activity
             WritersAndReaders.writeAttributeToConfig(Config.DLG_ACTIVE.getValue(),val);
         } catch (IOException e)
         {
-            e.printStackTrace();
+            if(e.getMessage()!=null)
+                Log.wtf(TAG,e.getMessage(),e);
+            else
+                e.printStackTrace();
         }
     }
 
@@ -256,7 +252,7 @@ public class IBDialog extends Activity
         tImageLoader.start();
     }
 
-    private void populateIcebreakRequestUI()
+    private void populateIcebreakRequestUI() throws IOException
     {
         if(!LocalComms.getDlgStatus())
         {
@@ -268,11 +264,14 @@ public class IBDialog extends Activity
         }else return;//else it's showing - do nothing to it.
 
         txtIBReqPopup_name = (TextView) dialog.findViewById(R.id.ib_req_username);
-        txtIBReqPopup_age = (TextView) dialog.findViewById((R.id.ib_req_user_age));
-        txtIBReqPopup_gender = (TextView) dialog.findViewById((R.id.ib_req_user_gender));
-        txtIBReqPopup_bioTitle = (TextView) dialog.findViewById((R.id.ib_req_user_bio_title));
-        txtIBReqPopup_bio = (TextView) dialog.findViewById((R.id.ib_req_user_bio));
-        txtIBReqPopup_occ = (TextView) dialog.findViewById((R.id.ib_req_user_occupation));
+        txtIBReqPopup_age = (TextView) dialog.findViewById(R.id.ib_req_user_age);
+        txtIBReqPopup_gender = (TextView) dialog.findViewById(R.id.ib_req_user_gender);
+        txtIBReqPopup_bioTitle = (TextView) dialog.findViewById(R.id.ib_req_user_bio_title);
+        txtIBReqPopup_bio = (TextView) dialog.findViewById(R.id.ib_req_user_bio);
+        txtIBReqPopup_occ = (TextView) dialog.findViewById(R.id.ib_req_user_occupation);
+        optionA = (RadioButton) dialog.findViewById(R.id.popup_accepted_radbtn1);
+        optionB = (RadioButton) dialog.findViewById(R.id.popup_accepted_radbtn2);
+        optionC = (RadioButton) dialog.findViewById(R.id.popup_accepted_radbtn3);
 
         imgIBReqPopup_OtherUser = (ImageView) dialog.findViewById(R.id.ib_req_user_image);
 
@@ -302,6 +301,41 @@ public class IBDialog extends Activity
         txtIBReqPopup_bioTitle.setText("Bio: ");
         txtIBReqPopup_bio.setText(requesting_user.getBio());
         txtIBReqPopup_occ.setText("Is a " + requesting_user.getOccupation());
+
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    long ev_id = 0;
+                    String temp = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
+                    if (temp != null)
+                        if (!temp.isEmpty() && !temp.equals("null"))
+                            ev_id = Long.parseLong(temp);
+                    Event event = null;
+                    if (ev_id > 0)
+                        event = RemoteComms.getEvent(ev_id);
+                    if (event != null)
+                    {
+                        String[] places = event.getMeetingPlaces();
+                        if (places.length > 2)
+                        {
+                            optionA.setText(places[0]);
+                            optionB.setText(places[1]);
+                            optionC.setText(places[2]);
+                        }
+                    }
+                }
+                catch (IOException e)
+                {
+                    if(e.getMessage()!=null)
+                        Log.d(TAG,e.getMessage());
+                    else
+                        e.printStackTrace();
+                }
+            }
+        });
     }
 
     private void initIcebreakRequestHandlers()
@@ -350,7 +384,10 @@ public class IBDialog extends Activity
                                     //TODO: Add to networks remote table
                                 } catch (IOException e)
                                 {
-                                    Log.wtf(TAG, "Couldn't get requesting user: " + e.getMessage(), e);
+                                    if(e.getMessage()!=null)
+                                        Log.wtf(TAG, "Couldn't get requesting user: " + e.getMessage(), e);
+                                    else
+                                        e.printStackTrace();
                                 }
 
                                 IcebreakService.status_changing = false;
@@ -448,7 +485,6 @@ public class IBDialog extends Activity
         ImageView imgLocalUser = (ImageView)dialog.findViewById(R.id.other_pic1);
         ImageView imgRemoteUser = (ImageView)dialog.findViewById(R.id.other_pic2);
         TextView phrase = (TextView)dialog.findViewById(R.id.phrase);
-        RadioButton btnChat = (RadioButton) dialog.findViewById(R.id.popup1_Start_Chatting);
         TextView or = (TextView)dialog.findViewById(R.id.or);
         Button btnContinue = (Button)dialog.findViewById(R.id.popup1_Keep_playing);
 
@@ -460,7 +496,7 @@ public class IBDialog extends Activity
         phrase.setTypeface(ttfInfinity);
         or.setTypeface(ttfInfinity);
 
-        btnChat.setOnClickListener(new View.OnClickListener()
+        /*btnChat.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
@@ -515,7 +551,7 @@ public class IBDialog extends Activity
                     tStatusUpdater.start();
                 }
             }
-        });
+        });*/
 
         btnContinue.setOnClickListener(new View.OnClickListener()
         {
@@ -711,7 +747,7 @@ public class IBDialog extends Activity
         //System.err.println(">>>>>>>>>>>>>>>OnStart->Active:" + IcebreakService.active);
         //changeDlgStatus(true);
         //SharedPreference.setDialogStatus(this,true);
-        setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
+        //setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
     }
 
     @Override

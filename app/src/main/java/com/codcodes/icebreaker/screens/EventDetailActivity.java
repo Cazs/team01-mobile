@@ -35,15 +35,18 @@ import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.Config;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.LocationDetector;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
+import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.User;
+import com.codcodes.icebreaker.tabs.UserContactsFragment;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.vision.barcode.Barcode;
@@ -219,7 +222,7 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
                                 {
                                     user.setUsername(SharedPreference.getUsername(EventDetailActivity.this));//for some reason the username is not being set by preceding methods
 
-                                    if(selected_event==null)
+                                    if (selected_event == null)
                                         return;
                                     if (selected_event.getId() > 0)
                                     {
@@ -232,19 +235,17 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
                                         {
                                             String ev_title = selected_event.getTitle();
 
-                                            MainActivity.event_id = selected_event.getId();
-                                            MainActivity.event = selected_event;
-                                            SharedPreference.setEventId(EventDetailActivity.this, selected_event.getId());
+                                            WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),
+                                                    String.valueOf(selected_event.getId()));
+
                                             message = toastHandler("Signed in to event \"" + ev_title + "\"").obtainMessage();
                                             message.sendToTarget();
 
-                                            if(MainActivity.users_at_event == null)
-                                                MainActivity.users_at_event = new ArrayList<>();
-                                            String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + selected_event.getId());
-                                            JSON.<User>getJsonableObjectsFromJson(contactsJson, MainActivity.users_at_event, User.class);
                                             Log.d(TAG, "Signed in to event \"" + ev_title + "\".");
 
-                                            EventDetailActivity.this.finish();
+                                            Intent i = new Intent(EventDetailActivity.this,MainActivity.class);
+                                            i.putExtra("Fragment", UserContactsFragment.class.getName());
+                                            startActivity(i);
                                         } else
                                         {
                                             message = toastHandler("Could not login to event, server response: " + resp).obtainMessage();
@@ -263,15 +264,7 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
                                     Message message = toastHandler("Could not sign in to event, User object is null.").obtainMessage();
                                     message.sendToTarget();
                                 }
-                            } catch (IllegalAccessException e)
-                            {
-                                //TODO: better logging
-                                Log.wtf(TAG, e.getMessage(), e);
-                            } catch (InstantiationException e)
-                            {
-                                //TODO: better logging
-                                Log.wtf(TAG, e.getMessage(), e);
-                            } catch (UnknownHostException e)
+                            }catch (UnknownHostException e)
                             {
                                 Message message = toastHandler("No Internet Access..").obtainMessage();
                                 message.sendToTarget();

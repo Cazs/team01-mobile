@@ -23,6 +23,7 @@ import com.codcodes.icebreaker.screens.MainActivity;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 
 /**
@@ -99,7 +100,12 @@ public class IcebreakService extends IntentService implements LocationListener
                     //Verify User location if at an Event as often as you update IceBreaks.
                     if(!active)//don't check when UI is visible
                     {
-                        long ev_id = SharedPreference.getEventId(IcebreakService.this);
+                        long ev_id = 0;
+                        String temp = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
+                        Log.d(TAG,"Event_ID="+temp);
+                        if(temp!=null)
+                            if(!temp.isEmpty() && !temp.equals("null"))
+                                ev_id=Long.parseLong(temp);
                         if (ev_id > 0)
                         {
                             //is at Event
@@ -110,104 +116,20 @@ public class IcebreakService extends IntentService implements LocationListener
                                 {
                                     //if(lastKnownLoc!=null)
                                     {
-                                        me = new LatLng(lat, lng);
-                                        if (!LocationDetector.containsLocation(me, e.getBoundary(), true))
+                                        if(lat!=0&&lng!=0)
                                         {
-                                            System.out.println("Logging out of Event.");
-                                            logOutUserFromEvent();
-                                        } else Log.d(TAG, "**User location valid.");
+                                            me = new LatLng(lat, lng);
+                                            if (!LocationDetector.containsLocation(me, e.getBoundary(), true))
+                                            {
+                                                System.out.println("Logging out of Event.");
+                                                logOutUserFromEvent();
+                                            } else Log.d(TAG, "**User location valid.");
+                                        }else Log.d(TAG, "User location hasn't been updated yet.");//TODO: if has been 0 for too long kickOut()
                                     } //else Log.d(TAG, "Last known User location is null.");
                                 } else Log.d(TAG, "Boundary for Event: " + ev_id + " is null.");
-                            } else Log.d(TAG, "Event: " + ev_id + " is null,");
-                        } else Log.d(TAG, "User not at a valid Event.");
-                        Log.d(TAG, "Checking for local inbound and outbound Icebreaks.");
-                        ArrayList<Message> messages = LocalComms.getInboundMessages(this,
-                                SharedPreference.getUsername(this).toString());
-
-                        //If there are IceBreaks
-                        if (messages.size() > 0)
-                        {
-                            Log.d(TAG, "Found IceBreak/s.");
-
-                            //Get first IceBreak
-                            icebreak_msg = messages.get(0);
-
-                            receiving_user = LocalComms.getContact(this, icebreak_msg.getReceiver());
-                            if (receiving_user == null)//attempt to download user details
-                                receiving_user = RemoteComms.getUser(this, icebreak_msg.getReceiver());
-
-                            requesting_user = LocalComms.getContact(this, icebreak_msg.getSender());
-                            if (requesting_user == null)//attempt to download user details
-                                requesting_user = RemoteComms.getUser(this, icebreak_msg.getSender());
-
-                            Log.d(TAG + "/IBC", "IBDialog active: " + active);//SharedPreference.isDialogActive(this));
-
-                            //Always wait for pending message status changes to complete
-                            //while (IBDialog.status_changing){System.err.println("IBDialog says> The status of an object is changing.");}
-                            //if (!SharedPreference.isDialogActive(this))
-                            //if(!LocalComms.getDlgStatus())
-                            if (!active)
-                            {
-                                //Show IceBreak Dialog
-                                Intent dlgIntent = new Intent(getApplicationContext(), IBDialog.class);
-                                dlgIntent.putExtra("Message", icebreak_msg);
-                                dlgIntent.putExtra("Receiver", receiving_user);
-                                dlgIntent.putExtra("Sender", requesting_user);
-                                dlgIntent.putExtra("Request_Code", String.valueOf(IBDialog.INCOMING_REQUEST));
-
-                                dlgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                //if(!LocalComms.getDlgStatus())
-                                startActivity(dlgIntent);
-                                //active=true;
-                            }
-                        } else Log.d(TAG, "<No local inbound IceBreaks>");
-
-                        ArrayList<Message> out_messages = LocalComms.getOutboundMessages(this,
-                                SharedPreference.getUsername(this).toString());
-                        //Check for cases where local user is sender
-                        if (out_messages.size() > 0)
-                        {
-                            Log.d(TAG + "/OBC", "IBDialog active: " + active);//SharedPreference.isDialogActive(this));
-                            for (Message m : out_messages)
-                            {
-                                //TODO: send messages to server if they haven't been sent
-                                //Always wait for pending message status changes to complete
-                                //while (status_changing){System.err.println("IBDialog says> The status of an object is changing.");}
-                                //if (!SharedPreference.isDialogActive(this))
-                                //if(!LocalComms.getDlgStatus())
-                                if (!active)
-                                {
-                                    //If local user has been accepted or rejected, show appropriate dialog
-                                    if (m.getStatus() == MESSAGE_STATUSES.ICEBREAK_ACCEPTED.getStatus() ||
-                                            m.getStatus() == MESSAGE_STATUSES.ICEBREAK_REJECTED.getStatus())
-                                    {
-                                        receiving_user = LocalComms.getContact(this, m.getReceiver());
-                                        if (receiving_user == null)//attempt to download user details
-                                            receiving_user = RemoteComms.getUser(this, m.getReceiver());
-
-                                        requesting_user = LocalComms.getContact(this, m.getSender());
-                                        if (requesting_user == null)//attempt to download user details
-                                            requesting_user = RemoteComms.getUser(this, m.getSender());
-                                        //Show dialog
-                                        Intent dlgIntent = new Intent(getApplicationContext(), IBDialog.class);
-                                        dlgIntent.putExtra("Message", m);
-                                        dlgIntent.putExtra("Receiver", receiving_user);
-                                        dlgIntent.putExtra("Sender", requesting_user);
-
-                                        if (m.getStatus() == MESSAGE_STATUSES.ICEBREAK_ACCEPTED.getStatus())
-                                            dlgIntent.putExtra("Request_Code", String.valueOf(IBDialog.RESP_ACCEPTED));
-                                        if (m.getStatus() == MESSAGE_STATUSES.ICEBREAK_REJECTED.getStatus())
-                                            dlgIntent.putExtra("Request_Code", String.valueOf(IBDialog.RESP_REJECTED));
-
-                                        dlgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        startActivity(dlgIntent);
-                                    }
-                                }
-                            }
-                        } else
-                        {
-                            Log.d(TAG, "<No local outbound IceBreaks>");
-                        }
+                            } else Log.d(TAG, "Event: " + ev_id + " is null.");
+                            checkForIceBreaks();
+                        } else Log.d(TAG, "User not at a valid Event. Skipping IceBreak checks.");
                     }else{Log.d(TAG,"UI is active, skipping checks.");}
                     //Take a break, take a KatKit
                     Thread.sleep(INTERVALS.IB_CHECK_DELAY.getValue());
@@ -232,12 +154,109 @@ public class IcebreakService extends IntentService implements LocationListener
             Log.d(TAG,"intent==null:" + (intent==null));//"handler==null:" + (mHandler==null) +
     }
 
+    public void checkForInboundIceBreaks() throws IOException
+    {
+        ArrayList<Message> messages = LocalComms.getInboundMessages(this,
+                SharedPreference.getUsername(this).toString());
+
+        //If there are IceBreaks
+        if (messages.size() > 0)
+        {
+            Log.d(TAG, "Found IceBreak/s.");
+
+            //Get first IceBreak
+            icebreak_msg = messages.get(0);
+
+            receiving_user = LocalComms.getContact(this, icebreak_msg.getReceiver());
+            if (receiving_user == null)//attempt to download user details
+                receiving_user = RemoteComms.getUser(this, icebreak_msg.getReceiver());
+
+            requesting_user = LocalComms.getContact(this, icebreak_msg.getSender());
+            if (requesting_user == null)//attempt to download user details
+                requesting_user = RemoteComms.getUser(this, icebreak_msg.getSender());
+
+            Log.d(TAG + "/IBC", "IBDialog active: " + active);//SharedPreference.isDialogActive(this));
+
+            //Always wait for pending message status changes to complete
+            //while (IBDialog.status_changing){System.err.println("IBDialog says> The status of an object is changing.");}
+            //if (!SharedPreference.isDialogActive(this))
+            //if(!LocalComms.getDlgStatus())
+            if (!active)
+            {
+                //Show IceBreak Dialog
+                Intent dlgIntent = new Intent(getApplicationContext(), IBDialog.class);
+                dlgIntent.putExtra("Message", icebreak_msg);
+                dlgIntent.putExtra("Receiver", receiving_user);
+                dlgIntent.putExtra("Sender", requesting_user);
+                dlgIntent.putExtra("Request_Code", String.valueOf(IBDialog.INCOMING_REQUEST));
+
+                dlgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                //if(!LocalComms.getDlgStatus())
+                startActivity(dlgIntent);
+                //active=true;
+            }
+        } else Log.d(TAG, "<No local inbound IceBreaks>");
+    }
+
+    public void checkForOutboundIceBreaks() throws IOException
+    {
+        ArrayList<Message> out_messages = LocalComms.getOutboundMessages(this,
+                SharedPreference.getUsername(this).toString());
+        //Check for cases where local user is sender
+        if (out_messages.size() > 0)
+        {
+            Log.d(TAG + "/OBC", "IBDialog active: " + active);//SharedPreference.isDialogActive(this));
+            for (Message m : out_messages)
+            {
+                //TODO: send messages to server if they haven't been sent
+                //Always wait for pending message status changes to complete
+                //while (status_changing){System.err.println("IBDialog says> The status of an object is changing.");}
+                //if (!SharedPreference.isDialogActive(this))
+                //if(!LocalComms.getDlgStatus())
+                if (!active)
+                {
+                    //If local user has been accepted or rejected, show appropriate dialog
+                    if (m.getStatus() == MESSAGE_STATUSES.ICEBREAK_ACCEPTED.getStatus() ||
+                            m.getStatus() == MESSAGE_STATUSES.ICEBREAK_REJECTED.getStatus())
+                    {
+                        receiving_user = LocalComms.getContact(this, m.getReceiver());
+                        if (receiving_user == null)//attempt to download user details
+                            receiving_user = RemoteComms.getUser(this, m.getReceiver());
+
+                        requesting_user = LocalComms.getContact(this, m.getSender());
+                        if (requesting_user == null)//attempt to download user details
+                            requesting_user = RemoteComms.getUser(this, m.getSender());
+                        //Show dialog
+                        Intent dlgIntent = new Intent(getApplicationContext(), IBDialog.class);
+                        dlgIntent.putExtra("Message", m);
+                        dlgIntent.putExtra("Receiver", receiving_user);
+                        dlgIntent.putExtra("Sender", requesting_user);
+
+                        if (m.getStatus() == MESSAGE_STATUSES.ICEBREAK_ACCEPTED.getStatus())
+                            dlgIntent.putExtra("Request_Code", String.valueOf(IBDialog.RESP_ACCEPTED));
+                        if (m.getStatus() == MESSAGE_STATUSES.ICEBREAK_REJECTED.getStatus())
+                            dlgIntent.putExtra("Request_Code", String.valueOf(IBDialog.RESP_REJECTED));
+
+                        dlgIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(dlgIntent);
+                    }
+                }
+            }
+        } else
+        {
+            Log.d(TAG, "<No local outbound IceBreaks>");
+        }
+    }
+
+    public void checkForIceBreaks() throws IOException
+    {
+        Log.d(TAG, "Checking for local inbound and outbound Icebreaks.");
+        checkForInboundIceBreaks();
+        checkForOutboundIceBreaks();
+    }
+
     public void logOutUserFromEvent() throws IOException
     {
-        MainActivity.event = null;
-        MainActivity.event_id = 0;
-        MainActivity.users_at_event = null;
-        SharedPreference.setEventId(this, 0);
         //Update status on server
         User u = LocalComms.getContact(this,SharedPreference.getUsername(this));
         if(u==null)
@@ -247,7 +266,12 @@ public class IcebreakService extends IntentService implements LocationListener
             Event e = new Event();
             e.setId(0);
             u.setEvent(e);
-            RemoteComms.postData("userUpdate/"+u.getUsername(),u.toString());
+            String res = RemoteComms.postData("userUpdate/"+u.getUsername(),u.toString());
+            if(res.contains("200"))
+            {
+                WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),"0");
+                Log.d(TAG,"Successfully updated user Event status locally and remotely.");
+            }else Log.wtf(TAG,"Could not update Event status of User on remote DB.");
         }
     }
 

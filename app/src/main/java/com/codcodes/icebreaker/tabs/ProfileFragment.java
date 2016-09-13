@@ -21,10 +21,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.codcodes.icebreaker.auxilary.Config;
 import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
+import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.screens.Edit_ProfileActivity;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.screens.InitialActivity;
@@ -302,9 +304,14 @@ public class ProfileFragment extends android.support.v4.app.Fragment
             {
                 //Clean up
                 MainActivity.uhandle = "";
-                MainActivity.event_id = 0;
-                MainActivity.event = null;
-                MainActivity.users_at_event = null;
+                try
+                {
+                    WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),"0");
+                    WritersAndReaders.writeAttributeToConfig(Config.DLG_ACTIVE.getValue(),Config.DLG_ACTIVE_FALSE.getValue());
+                } catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
                 SharedPreference.logOut(view.getContext());
                 LoginManager.getInstance().logOut();
                 //Go to landing page

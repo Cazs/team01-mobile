@@ -7,7 +7,8 @@ public enum Config
 {
     DLG_ACTIVE("ib_dlg_active"),
     DLG_ACTIVE_TRUE("true"),
-    DLG_ACTIVE_FALSE("false");
+    DLG_ACTIVE_FALSE("false"),
+    EVENT_ID("event_id");
 
     private String value;
 

@@ -21,6 +21,7 @@ import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.Config;
 import com.codcodes.icebreaker.auxilary.ContactListSwitches;
 import com.codcodes.icebreaker.auxilary.INTERVALS;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
@@ -29,6 +30,8 @@ import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.UserListRecyclerViewAdapter;
+import com.codcodes.icebreaker.auxilary.WritersAndReaders;
+import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.screens.MainActivity;
@@ -144,14 +147,14 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
         *The reason I did the following is so that the only entry in the contacts is the
         * R.string.msg_not_in_event message
         */
-        Thread t = new Thread(new Runnable()
+        /*Thread t = new Thread(new Runnable()
         {
             @Override
             public void run()
             {
                 try
                 {
-                    refreshUsersAtEvent();
+                    refreshUsersAtEvent(null);
                 }
                 catch (ConcurrentModificationException e)
                 {
@@ -160,7 +163,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 }
             }
         });
-        t.start();
+        t.start();*/
 
         return view;
     }
@@ -175,43 +178,21 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
             {
                 try
                 {
-                    if (MainActivity.event_id > 0)
+                    long event_id=0;
+                    String tmp = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
+                    if(tmp!=null)
+                        if(!tmp.isEmpty() && !tmp.equals("null"))
+                            event_id=Long.valueOf(tmp);
+                    if (event_id > 0)
                     {
-                        ArrayList<User> users = new ArrayList<User>();
-                        MainActivity.event = RemoteComms.getEvent(MainActivity.event_id);
-                        String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + MainActivity.event_id);
-                        JSON.<User>getJsonableObjectsFromJson(contactsJson, users, User.class);
+                        contacts = new ArrayList<User>();
+
+                        Event event = RemoteComms.getEvent(event_id);
+                        String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + event_id);
+                        JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
                         int i=0;
-                        if(MainActivity.users_at_event==null)
-                            MainActivity.users_at_event = new ArrayList<User>();
-                        if(users==null)
-                            return;
-                        if(users.size()!=MainActivity.users_at_event.size())//then number of users has changed
-                        {
-                            MainActivity.users_at_event = new ArrayList<User>();
-                            for(User u:users)
-                                MainActivity.users_at_event.add(u);
-                            refreshUsersAtEvent();
-                        }
-                        /* Commented out due to performance considerations
-                        else //Still the same number of users, compare each user
-                        {
-                            boolean has_changes = false;
-                            for(User u:users)
-                            {
-                                if(!u.getUsername().equals(MainActivity.users_at_event.get(i)))
-                                    has_changes = true;
-                                ++i;
-                            }
-                            if(has_changes)
-                            {
-                                MainActivity.users_at_event = new ArrayList<User>();
-                                for(User u:users)
-                                    MainActivity.users_at_event.add(u);
-                                refreshUsersAtEvent();
-                            }
-                        }*/
-                    } else Log.d(TAG,"User not at an event.");
+                        refreshUsersAtEvent();
+                    }// else Log.d(TAG,"User not at an event.");
                 }
                 catch (ConcurrentModificationException e)
                 {
@@ -237,17 +218,8 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
 
     private void refreshUsersAtEvent() throws ConcurrentModificationException
     {
-        contacts = new ArrayList<>();
-
         /**Prepare to set adapter**/
         //Load users at Event
-        if(MainActivity.val_switch.getSwitch() == ContactListSwitches.SHOW_USERS_AT_EVENT.getSwitch())
-            contacts = MainActivity.users_at_event;
-        else//Load local contacts
-            contacts = LocalComms.getContacts(UserContactsFragment.this.getActivity());
-
-        if(contacts==null)
-            return;
         //Attempt to load images into memory and set the list adapter
         bitmaps = new ArrayList<Bitmap>();
         Bitmap circularbitmap = null;
@@ -255,27 +227,41 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ALPHA_8;
 
-        for (User u : contacts)
+        if(contacts!=null)
         {
-            //Look for user profile image
-            bitmap = LocalComms.getImage(getContext(), u.getUsername(), ".png", "/profile", options);
-            if (bitmap == null)
-                bitmap = RemoteComms.getImage(getActivity(), u.getUsername(), ".png", "/profile", options);
-
-            if(bitmap!=null)
-                circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_200);
-
-            if (bitmap == null || circularbitmap == null)
+            for (User u : contacts)
             {
-                Log.wtf(TAG, "Bitmap "+u.getUsername()+".png is null");
-                bitmaps.add(null);
+                //Look for user profile image
+                bitmap = LocalComms.getImage(getContext(), u.getUsername(), ".png", "/profile", options);
+                if (bitmap == null)
+                    bitmap = RemoteComms.getImage(getActivity(), u.getUsername(), ".png", "/profile", options);
+
+                if (bitmap != null)
+                    circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_200);
+
+                if (bitmap == null || circularbitmap == null)
+                {
+                    Log.wtf(TAG, "Bitmap " + u.getUsername() + ".png is null");
+                    bitmaps.add(null);
+                } else
+                {
+                    //Log.d(TAG, "Loaded bitmap to memory.");
+                    bitmaps.add(circularbitmap);
+                    bitmap.recycle();
+                }
             }
-            else
-            {
-                //Log.d(TAG, "Loaded bitmap to memory.");
-                bitmaps.add(circularbitmap);
-                bitmap.recycle();
-            }
+        }
+        else contacts = new ArrayList<>();
+
+        if(contacts.isEmpty())
+        {
+            User temp = new User();
+            temp.setFirstname(getString(R.string.msg_not_in_event));
+            temp.setLastname("");
+            ArrayList<User> temp_lst = new ArrayList<User>();
+            temp_lst.add(temp);
+            recyclerView.setAdapter(new UserListRecyclerViewAdapter(temp_lst, bitmaps, mListener));
+            Log.d(TAG, "Contact list is empty.");
         }
 
         Runnable runnable = new Runnable()
@@ -285,24 +271,8 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
             {
                 if (recyclerView != null)
                 {
-                    if(contacts==null)
-                        contacts = new ArrayList<>();
-
-                    if(contacts.isEmpty())
-                    {
-                        User temp = new User();
-                        temp.setFirstname(getString(R.string.msg_not_in_event));
-                        temp.setLastname("");
-                        ArrayList<User> temp_lst = new ArrayList<User>();
-                        temp_lst.add(temp);
-                        recyclerView.setAdapter(new UserListRecyclerViewAdapter(temp_lst, bitmaps, mListener));
-                        Log.d(TAG, "Contact list is empty.");
-                    }
-                    else
-                    {
-                        recyclerView.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
-                        Log.d(TAG, "Set contact list.");
-                    }
+                    recyclerView.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
+                    Log.d(TAG, "Set contact list.");
                 }
                 if(swipeRefreshLayout!=null)
                     swipeRefreshLayout.setRefreshing(false);

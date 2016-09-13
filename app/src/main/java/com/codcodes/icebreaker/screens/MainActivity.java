@@ -88,9 +88,9 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     private static boolean dlg_visible = false;
 
     //Since this class is called before any other class, we can do this
-    public static long event_id = 0;
-    public static Event event = null;
-    public static ArrayList<User> users_at_event = new ArrayList<>();
+    private long event_id = 0;
+    private Event event = null;
+    //public static ArrayList<User> users_at_event = new ArrayList<>();
 
     private User lcl = null;
 
@@ -137,7 +137,13 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         setContentView(R.layout.activity_main);
         //LinearLayout action_bar = (LinearLayout)MainActivity.this.findViewById(R.id.actionBar);
         //Load User data.
-        loadUserData();
+        try
+        {
+            loadUserData();
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
 
         ttfInfinity = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
         ttfAilerons = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
@@ -173,7 +179,17 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         tablayout.getTabAt(1).setIcon(viewPagerIcons[1]);
         tablayout.getTabAt(2).setIcon(viewPagerIcons[2]);
         headingTextView.setTypeface(ttfInfinity);
-        headingTextView.setTextSize(35);
+        headingTextView.setTextSize(30);
+
+        Intent i = getIntent();
+        String frag=i.getStringExtra("Fragment");
+        if(frag!=null)
+        {
+            if(frag.equals(UserContactsFragment.class.getName()))
+                mViewPager.setCurrentItem(1, true);
+        }
+
+
         /*fabSwitch.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -243,10 +259,13 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         });
     }
 
-    private void loadUserData()
+    private void loadUserData() throws IOException
     {
         //Load last Event User was at if it exists.
-        event_id = SharedPreference.getEventId(this);
+        String tmp = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
+        if(tmp!=null)
+            if(!tmp.isEmpty() && !tmp.equals("null"))
+                event_id = Long.valueOf(tmp);
         if(event_id>0)
         {
             Thread tEventLoader = new Thread(new Runnable()
@@ -511,7 +530,13 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     public void onResume()
     {
         super.onResume();
-        loadUserData();
+        try
+        {
+            loadUserData();
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     @Override
