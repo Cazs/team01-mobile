@@ -628,6 +628,7 @@ public class IBDialog extends Activity
 
     private void drawRejectionUI()
     {
+        System.err.println(">>>>>>>>>>>>>>>>>Drawing Rejection UI");
         if(!LocalComms.getDlgStatus())
         {
             if(dialog==null)

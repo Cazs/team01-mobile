@@ -28,16 +28,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/white"
-                android:layout_marginRight="@dimen/dp_size_20"
-                android:layout_marginTop="@dimen/dp_size_178">
-
-    </View>
-
-
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/white"
+                    android:layout_marginRight="@dimen/dp_size_20"
+                    android:layout_marginTop="@dimen/dp_size_178"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -45,20 +41,20 @@
                     android:id="@+id/reward_title"
                     android:text="Rewards"
                     android:textSize="18pt"
-                    android:textColor="@color/white"
-                    />
+                    android:textColor="@color/white"/>
+
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_marginBottom="@dimen/dp_size_20"
                     >
 
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:layout_width="@dimen/dp_size_100"
-                    android:layout_height="@dimen/dp_size_100"
-                    android:layout_marginTop="@dimen/dp_size_60"
-                    android:id="@+id/circleviewrewards"
-                    />
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:layout_width="@dimen/dp_size_100"
+                        android:layout_height="@dimen/dp_size_100"
+                        android:layout_marginTop="@dimen/dp_size_60"
+                        android:id="@+id/circleviewrewards"
+                        />
 
 
                     <TextView
