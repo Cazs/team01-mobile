@@ -285,6 +285,7 @@ public class IBDialog extends Activity
             public void onClick(View view)
             {
                 setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
+                
                 runOnUiThread(new Runnable()
                 {
                     @Override
