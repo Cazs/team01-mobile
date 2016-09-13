@@ -230,10 +230,9 @@ public class IBDialog extends Activity
         {
             if(dialog==null)
                 dialog = new Dialog(this);
+
             dialog.setContentView(R.layout.popup_icebreak);
             setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
-            if(dialog.isShowing())
-                dialog.hide();
             dialog.show();
         }//else return;//else it's showing - do nothing to it.
 
@@ -285,7 +284,8 @@ public class IBDialog extends Activity
             public void onClick(View view)
             {
                 setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
-                
+                if(dialog!=null)
+                    dialog.hide();
                 runOnUiThread(new Runnable()
                 {
                     @Override
@@ -356,8 +356,6 @@ public class IBDialog extends Activity
             if(request_code==RESP_ACCEPTED)
             {
                 dialog.setContentView(R.layout.popup_accepted2);
-                if(dialog.isShowing())
-                    dialog.hide();
                 dialog.show();
 
                 WindowManager wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
@@ -365,16 +363,13 @@ public class IBDialog extends Activity
                 DisplayMetrics metrics = new DisplayMetrics();
                 dis.getMetrics(metrics);
                 dialog.getWindow().setLayout((int) (metrics.widthPixels * 0.90), metrics.widthPixels);
-                setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
             }
             else if(request_code==INCOMING_REQUEST)
             {
                 dialog.setContentView(R.layout.popup_accepted);
-                if(dialog.isShowing())
-                    dialog.hide();
                 dialog.show();
                 setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
-            }
+            }else dialog.dismiss();
         }//else return;//else it's showing - do nothing to it.
 
         TextView txtSuccessfulMatch = (TextView)dialog.findViewById(R.id.SuccessfulMatch);
@@ -637,11 +632,10 @@ public class IBDialog extends Activity
         {
             if(dialog==null)
                 dialog = new Dialog(this);
+
             dialog.setContentView(R.layout.popup_rejected);
-            setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
-            if(dialog.isShowing())
-                dialog.hide();
             dialog.show();
+            setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
         }//else return;//else it's showing - do nothing to it.
 
         TextView txtUnsuccess = (TextView)dialog.findViewById(R.id.ib_res_unsuccess);
