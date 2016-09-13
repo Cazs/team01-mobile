@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Environment;
 import android.support.design.widget.TabLayout;
@@ -85,6 +86,7 @@ public class RewardsActivity extends AppCompatActivity
         tablayout.setupWithViewPager(mViewPager);
         tablayout.getTabAt(0).setIcon(imageResId[0]);
         tablayout.getTabAt(1).setIcon(imageResId[1]);
+        tablayout.setSelectedTabIndicatorColor(Color.parseColor("#FFFFFF"));
         ImageView circularImageView = (ImageView) findViewById(R.id.circleviewrewards);
 
 
@@ -136,7 +138,7 @@ public class RewardsActivity extends AppCompatActivity
         {
             switch (position)
             {
-                case 0: return RewardFragment.newInstance(context);
+                case 0: return AchievementFragment.newInstance(context);
                 case 1: return RewardFragment.newInstance(context);
                 default:return RewardFragment.newInstance(context);
             }

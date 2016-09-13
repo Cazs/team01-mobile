@@ -41,7 +41,7 @@ public class AchievementsActivity extends Activity
         /*String[] arr = new String[20];
         for(int i=0;i<20;i++)
             arr[i] = new String("Achievement " + (i+1));*/
-        adapter = new AchievementsAdapter(achievements,this);
+
 
         lstAchievements = (ListView) findViewById(R.id.lstAchs);
         lstAchievements.setAdapter(adapter);

@@ -151,4 +151,5 @@
     <dimen name="dp_size_50dp">50dp</dimen>
     <dimen name="dp_size_20dp">20dp</dimen>
     <dimen name="dp_size_5dp">5dp</dimen>
+    <dimen name="dp_size_380">380dp</dimen>
 </resources>

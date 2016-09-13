@@ -6,8 +6,17 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.AchievementsAdapter;
+import com.codcodes.icebreaker.auxilary.RewardsAdapter;
+import com.codcodes.icebreaker.model.Achievement;
+import com.codcodes.icebreaker.model.Rewards;
+import com.google.android.gms.ads.reward.RewardItem;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by tevin on 2016/07/13.
@@ -15,16 +24,24 @@ import com.codcodes.icebreaker.R;
 public class RewardFragment extends android.support.v4.app.Fragment
 {
     private static AssetManager mgr;
-
-
-
+    private ListView rewardList;
+    private RewardsAdapter adapter;
+    private ArrayList<Rewards> rewads;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
 
         View v = inflater.inflate(R.layout.fragment_reward,container,false);
+        rewardList = (ListView) v.findViewById(R.id.RewarList);
+        rewads = new ArrayList<Rewards>();
+        rewads.add(new Rewards("Free Icebreak Event Ticket",false,"Party Animal Achievement reward"));
+        rewads.add(new Rewards("Free Shot",false,"Most Rejected"));
+        rewads.add(new Rewards("Free VIP pass",false,"IceBreak Queen/King"));
+        rewads.add(new Rewards("Free drink ",false,"Populer Kids"));
+        rewads.add(new Rewards("Free Hamper",false,"Star Of The Night"));
+        adapter = new RewardsAdapter(getContext(),rewads,0);
+        rewardList.setAdapter(adapter);
         return v;
-
     }
 
     public static RewardFragment newInstance(Context context)
@@ -35,6 +52,5 @@ public class RewardFragment extends android.support.v4.app.Fragment
         e.setArguments(b);
         return e;
     }
-
 
 }
