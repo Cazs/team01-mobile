@@ -75,6 +75,7 @@ public class WritersAndReaders
     {
         File f = new File(MainActivity.rootDir + "/Icebreak/config.cfg");
         StringBuilder result = new StringBuilder();
+        boolean rec_found=false;
         if(f.exists())
         {
             String s = "";
@@ -85,21 +86,29 @@ public class WritersAndReaders
                 {
                     String var = s.split("=")[0];
                     String val = s.split("=")[1];
+                    //If the record exists, change it
                     if(var.equals(key))
+                    {
                         val = value;
-                    result.append(var+"="+val);
+                        rec_found=true;
+                    }
+                    result.append(var+"="+val+"\n");
                 }
             }
-            in.close();
+            /*if(in!=null)
+                in.close();*/
         }
-        else
-        {
-            result.append(key+"="+value);
-        }
+        else result.append(key+"="+value+"\n");//File is empty/dne
+
+        System.err.println("#############################Writing to config: " + key + "=" + value);
+
+        if(!rec_found)//File exists but record doesn't exist - create new record
+            result.append(key+"="+value+"\n");
+
         PrintWriter out = new PrintWriter(f);
-        out.print(result.toString());
+        out.print(result);
         out.flush();
-        out.close();
+        //out.close();
     }
 
     public static String readAttributeFromConfig(String key) throws IOException
@@ -116,10 +125,15 @@ public class WritersAndReaders
                     String var = s.split("=")[0];
                     String val = s.split("=")[1];
                     if(var.equals(key))
+                    {
+                        /*if(in!=null)
+                            in.close();*/
                         return val;
+                    }
                 }
             }
-            in.close();
+            /*if(in!=null)
+                in.close();*/
         }
         return null;
     }

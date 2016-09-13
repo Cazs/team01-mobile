@@ -18,6 +18,7 @@ import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
 import com.codcodes.icebreaker.auxilary.NOTIFICATION_ID;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
+import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.Message;
 import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.screens.MainActivity;
@@ -78,7 +79,7 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
                         }
                         break;
                     case 103:
-                        if(msg.getSender().equals(MainActivity.uhandle))//local user got accepted
+                        if(msg.getSender().equals(SharedPreference.getUsername(MessageFcmService.this)))//local user got accepted
                         {
                             User rem_usr = LocalComms.getContact(getApplicationContext(),msg.getReceiver());
                             if(rem_usr==null)
@@ -90,10 +91,16 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
                             //notify user
                             String name = LocalComms.getValidatedName(rem_usr);
                             LocalComms.showNotification(getApplicationContext(),name + " would also like to get to know you.", NOTIFICATION_ID.NOTIF_REQUEST.getId());
+                        }else
+                        {
+                            User sendr = LocalComms.getContact(getApplicationContext(),msg.getSender());
+                            if(sendr==null)
+                                sendr = RemoteComms.getUser(getApplicationContext(), msg.getSender());
+                            LocalComms.showNotification(getApplicationContext(),"You accepted " + LocalComms.getValidatedName(sendr)+"'s request.", NOTIFICATION_ID.NOTIF_REQUEST.getId());
                         }
                         break;
                     case 104:
-                        if(msg.getSender().equals(MainActivity.uhandle))//local user got rejected
+                        if(msg.getSender().equals(SharedPreference.getUsername(MessageFcmService.this)))//local user got rejected
                         {
                             User rem_usr = LocalComms.getContact(getApplicationContext(), msg.getReceiver());
                             if(rem_usr==null)
@@ -102,6 +109,13 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
                             //notify user
                             String name = LocalComms.getValidatedName(rem_usr);
                             LocalComms.showNotification(getApplicationContext(),name + " is not keen right now, better luck next time ;)", NOTIFICATION_ID.NOTIF_REQUEST.getId());
+                        }
+                        else
+                        {
+                            User sendr = LocalComms.getContact(getApplicationContext(),msg.getSender());
+                            if(sendr==null)
+                                sendr = RemoteComms.getUser(getApplicationContext(), msg.getSender());
+                            LocalComms.showNotification(getApplicationContext(),"You rejected " + LocalComms.getValidatedName(sendr)+"'s request.", NOTIFICATION_ID.NOTIF_REQUEST.getId());
                         }
                         break;
                 }

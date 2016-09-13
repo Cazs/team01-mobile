@@ -21,6 +21,7 @@ public class Event implements IJsonable, Parcelable
     private int access_code;
     private ArrayList<LatLng> boundary = null;
     private final String TAG = "IB/Event";
+    private String[] places = null;
 
     public Event() {}
 
@@ -42,6 +43,7 @@ public class Event implements IJsonable, Parcelable
     public int getAccessCode() {
         return access_code;
     }
+    public String[] getMeetingPlaces(){return this.places;}
     public ArrayList<LatLng> getBoundary(){return this.boundary;}
 
     public void setAccessCode(int accessCode) {
@@ -53,7 +55,7 @@ public class Event implements IJsonable, Parcelable
     public void setAddress(String address){this.address = address;}
     public void setRadius(int radius){this.radius = radius;}
     public void setBoundary(ArrayList<LatLng> boundary) {this.boundary = boundary;}
-
+    public void setMeetingPlaces(String[] places){this.places=places;}
     public void setBoundary(String bounds)
     {
         if(bounds.contains(";"))
@@ -101,6 +103,10 @@ public class Event implements IJsonable, Parcelable
                 break;
             case "AccessCode":
                 setAccessCode(Integer.valueOf(value));
+                break;
+            case "Meeting_Places":
+                if(value.contains(";"))
+                    this.places = value.split(";");
                 break;
             default:
                 System.err.println("Event.class> Unknown attribute: " + var);

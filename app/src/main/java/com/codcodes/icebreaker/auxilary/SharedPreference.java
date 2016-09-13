@@ -13,7 +13,6 @@ import com.codcodes.icebreaker.model.Event;
 public class SharedPreference
 {
     static final String USERNAME="username";
-    static final String CURRENT_EVENT_SHARED_TITLE="event";
     static final String LAST_KNOWN_LOC="location";
     //static final String IS_DIALOG_ACTIVE="isDialogActive";
 
@@ -26,13 +25,6 @@ public class SharedPreference
     {
         SharedPreferences.Editor editor = getSharedPreferences(ctx).edit();
         editor.putString(USERNAME,username);
-        editor.commit();
-    }
-
-    public static void setEventId(Context ctx,long event_id)
-    {
-        SharedPreferences.Editor editor = getSharedPreferences(ctx).edit();
-        editor.putLong(CURRENT_EVENT_SHARED_TITLE,event_id);
         editor.commit();
     }
 
@@ -56,11 +48,6 @@ public class SharedPreference
     public static String getUsername(Context context)
     {
         return getSharedPreferences(context).getString(USERNAME,"");
-    }
-
-    public static long getEventId(Context context)
-    {
-        return getSharedPreferences(context).getLong(CURRENT_EVENT_SHARED_TITLE,0);
     }
 
     public static String getLocation(Context context)
