@@ -253,22 +253,19 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
         }
         else contacts = new ArrayList<>();
 
-        if(contacts.isEmpty())
-        {
-            User temp = new User();
-            temp.setFirstname(getString(R.string.msg_not_in_event));
-            temp.setLastname("");
-            ArrayList<User> temp_lst = new ArrayList<User>();
-            temp_lst.add(temp);
-            recyclerView.setAdapter(new UserListRecyclerViewAdapter(temp_lst, bitmaps, mListener));
-            Log.d(TAG, "Contact list is empty.");
-        }
-
         Runnable runnable = new Runnable()
         {
             @Override
             public void run()
             {
+                if(contacts.isEmpty())
+                {
+                    User temp = new User();
+                    temp.setFirstname(getString(R.string.msg_not_in_event));
+                    temp.setLastname("");
+                    contacts.add(temp);
+                    Log.d(TAG, "Contact list is empty.");
+                }
                 if (recyclerView != null)
                 {
                     recyclerView.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));
