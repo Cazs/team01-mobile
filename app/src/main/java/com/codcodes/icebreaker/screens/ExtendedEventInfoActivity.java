@@ -45,7 +45,7 @@ public class ExtendedEventInfoActivity extends AppCompatActivity
 
         ttfAilerons = Typeface.createFromAsset(this.getAssets(),"Ailerons-Typeface.otf");
         title = (TextView)ExtendedEventInfoActivity.this.findViewById(R.id.main_heading);
-        title.setTextSize(25);
+        title.setTextSize(20);
         title.setTypeface(ttfAilerons);
 
         Bundle extras = getIntent().getExtras();
@@ -57,6 +57,7 @@ public class ExtendedEventInfoActivity extends AppCompatActivity
             event = extras.getParcelable("Event");
 
             title.setText(event.getTitle());
+            //TODO: Resize title size nicely
 
             if(slat!=null)
                 if(!slat.isEmpty())

@@ -31,6 +31,7 @@ import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.MessagePollContract;
 import com.codcodes.icebreaker.model.MessagePollHelper;
+import com.codcodes.icebreaker.model.User;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -42,18 +43,15 @@ import java.util.Date;
 public class OtherUserProfileActivity extends AppCompatActivity
 {
     private TextView profile;
-    private String fname;
-    private String lname;
-    private String username;
-    private String age;
-    private String occupation;
-    private String bio;
-    private String gender;
     private ProgressDialog progress;
     private ProgressBar pb_profile;
+
+    private User user = null;
+
     private boolean prog_bar = false;
     private final int MSG_ID_LEN = 20;
     private static final String TAG = "IB/OtherUserActivity";
+
     private Bitmap bmp_profile;
 
     @Override
@@ -72,13 +70,7 @@ public class OtherUserProfileActivity extends AppCompatActivity
         if (extras != null)
         {
             //All this information will need to be sent to other party
-            fname = extras.getString("Firstname");
-            lname = extras.getString("Lastname");
-            username = extras.getString("Username");
-            age = Integer.toString(extras.getInt("Age"));
-            occupation = extras.getString("Occupation");
-            bio = extras.getString("Bio");
-            gender = extras.getString("Gender");
+            user = extras.getParcelable("User");
         }
         else
         {
@@ -90,6 +82,7 @@ public class OtherUserProfileActivity extends AppCompatActivity
         profile = (TextView) findViewById(R.id.main_heading);
         Typeface heading = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
         profile.setTypeface(heading);
+        profile.setTextSize(29);
 
         //Load and render selected user's profile
         final Activity ctxt = this;
@@ -102,9 +95,9 @@ public class OtherUserProfileActivity extends AppCompatActivity
                 pb_profile.setProgress(pb_profile.getProgress()+10);
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                bmp_profile = LocalComms.getImage(ctxt, username, ".png", "/profile", options);
+                bmp_profile = LocalComms.getImage(ctxt, user.getUsername(), ".png", "/profile", options);
                 if(bmp_profile==null)
-                    bmp_profile = RemoteComms.getImage(ctxt, username, ".png", "/profile", options);
+                    bmp_profile = RemoteComms.getImage(ctxt, user.getUsername(), ".png", "/profile", options);
                 runOnUiThread(new Runnable()
                 {
                     @Override
@@ -127,19 +120,19 @@ public class OtherUserProfileActivity extends AppCompatActivity
         Typeface h = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
         TextView txtName = (TextView) findViewById(R.id.other_profile_name);
         txtName.setTypeface(h);
-        txtName.setText(fname + " " + lname); // TODO: get name from database
+        txtName.setText(LocalComms.getValidatedName(user));
 
         TextView txtAge = (TextView) findViewById(R.id.other_profile_age);
         txtAge.setTypeface(h);
-        txtAge.setText("Age:" + age);
+        txtAge.setText("Age:" + user.getAge());
 
         TextView txtOccupation = (TextView) findViewById(R.id.other_profile_occupation);
         txtOccupation.setTypeface(h);
-        txtOccupation.setText(occupation);
+        txtOccupation.setText(user.getOccupation());
 
         TextView txtGender = (TextView) findViewById(R.id.other_profile_gender);
         txtGender.setTypeface(h);
-        txtGender.setText(gender);
+        txtGender.setText(user.getGender());
 
         TextView txtBioTitle = (TextView) findViewById(R.id.other_profile_bio_title);
         txtBioTitle.setTypeface(h);
@@ -147,12 +140,12 @@ public class OtherUserProfileActivity extends AppCompatActivity
 
         TextView txtBio = (TextView) findViewById(R.id.other_profile_bio);
         txtBio.setTypeface(h);
-        txtBio.setText(bio);
+        txtBio.setText(user.getBio());
 
         icebreak.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showProgressBar();
+                progress = LocalComms.showProgressDialog(OtherUserProfileActivity.this,"Sending request...");
                 Thread tSender = new Thread(new Runnable()
                 {
                     @Override
@@ -175,7 +168,7 @@ public class OtherUserProfileActivity extends AppCompatActivity
                         msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE,"<ICEBREAK>");
                         msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS,String.valueOf(MESSAGE_STATUSES.ICEBREAK.getStatus()));
                         msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER,SharedPreference.getUsername(getBaseContext()).toString());
-                        msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER,username);
+                        msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER,user.getUsername());
                         msg_data.put(MessagePollContract.MessageEntry.COL_MESSAGE_TIME,sdf.format(new Date()));
 
                         long newRowId = db.insert(MessagePollContract.MessageEntry.TABLE_NAME,null,msg_data);
@@ -188,7 +181,7 @@ public class OtherUserProfileActivity extends AppCompatActivity
                         msg_details.add(new AbstractMap.SimpleEntry<String, String>("message", "ICEBREAK"));
                         msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_status", String.valueOf(MESSAGE_STATUSES.ICEBREAK.getStatus())));
                         msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_sender", SharedPreference.getUsername(getBaseContext()).toString()));//TODO
-                        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_receiver", username));//TODO
+                        msg_details.add(new AbstractMap.SimpleEntry<String, String>("message_receiver", user.getUsername()));//TODO
 
                         //Send to server
                         try
@@ -213,11 +206,10 @@ public class OtherUserProfileActivity extends AppCompatActivity
                         catch (IOException e)
                         {
                             //TODO: Better logging
-                            hideProgressBar();
                             Log.wtf(TAG, e.getMessage(),e);
                             Toast.makeText(getBaseContext(), "Unable to send IceBreak request.", Toast.LENGTH_LONG).show();
                         }
-                        hideProgressBar();
+                        LocalComms.hideProgressBar(progress);
                     }
                 });
                 tSender.start();
@@ -236,23 +228,5 @@ public class OtherUserProfileActivity extends AppCompatActivity
             }
         };
         return toastHandler;
-    }
-
-    public void hideProgressBar()
-    {
-        if(progress!=null)
-            if(progress.isShowing())
-                progress.dismiss();
-    }
-
-    public void showProgressBar()
-    {
-        if(progress==null)
-            progress=new ProgressDialog(this);
-        progress.setMessage("Sending request");
-        progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progress.setIndeterminate(true);
-        progress.setProgress(0);
-        progress.show();
     }
 }

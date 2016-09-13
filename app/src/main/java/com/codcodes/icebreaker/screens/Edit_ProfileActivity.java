@@ -94,6 +94,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         Typeface ttf_infinity = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
 
         name.setTypeface(h);
+        name.setTextSize(30);
         edit_image_link.setTypeface(ttf_infinity);
         edit_image_link.setTextSize(18);
 

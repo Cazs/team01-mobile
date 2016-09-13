@@ -78,26 +78,8 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
         validatePermissions();
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
-        //cationDetector = new LocationDetector();
-        // getSupportActionBar().setDisplayShowHomeEnabled(true);
-        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        Bundle extras = getIntent().getExtras();
 
-        /*polygon = new ArrayList<>();
-        polygon.add(new LatLng(-26.182944, 27.997387));
-        polygon.add(new LatLng(-26.183185, 27.996846));
-        polygon.add(new LatLng(-26.183816, 27.996964));
-        polygon.add(new LatLng(-26.184235, 27.997307));
-        polygon.add(new LatLng(-26.184312, 27.997704));
-        polygon.add(new LatLng(-26.184201, 27.997913));
-        polygon.add(new LatLng(-26.184008, 27.998251));
-        polygon.add(new LatLng(-26.183815, 27.998380));
-        polygon.add(new LatLng(-26.183517, 27.998471));*/
-        //-26.183297, 27.995006
-        //-26.182944,27.997387
-        //me = new LatLng(-27.133954, 27.931488);
+        Bundle extras = getIntent().getExtras();
 
         locationChecker = new LocationDetector();
 
@@ -128,6 +110,7 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
         eventDetails = (TextView)findViewById(R.id.Event_Heading);
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         eventDetails.setTypeface(heading);
+        eventDetails.setTextSize(29);
 
         final EditText accessCode = (EditText) findViewById(R.id.AccessCode);
 
@@ -145,13 +128,6 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
                 return false;
             }
         });
-        //Location loc;
-       /* if((loc = locationDetector.getLocation()) != null)
-        {
-
-            Log.d("Testing", String.valueOf(loc.getLongitude()) + " : " + String.valueOf(loc.getLatitude() ));
-        }*/
-
     }
 
     public void viewPosition(View view)
@@ -179,7 +155,9 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        locationMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 10, this);
+        int min_metres=50;
+        long refresh_interval=10;
+        locationMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, min_metres, refresh_interval, this);
     }
 
     private Handler toastHandler(final String text)
@@ -395,6 +373,18 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
     {
         lat = location.getLatitude();
         lng = location.getLongitude();
+        try
+        {
+            WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(),String.valueOf(location.getLatitude()));
+            WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(),String.valueOf(location.getLongitude()));
+        } catch (IOException e)
+        {
+            if(e.getMessage()!=null)
+                Log.d(TAG,e.getMessage(),e);
+            else
+                e.printStackTrace();
+        }
+        Log.d(TAG,"["+location.getLatitude()+","+location.getLongitude()+"]");
     }
 
     @Override

@@ -58,7 +58,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements IOnListFragmentInteractionListener, LocationListener
+public class MainActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
 {
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        validateLocationPermissions();
+        //validateLocationPermissions();
         //Get and set hash
         try
         {
@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         AppEventsLogger.activateApp(getApplication());
 
         setContentView(R.layout.activity_main);
-        //LinearLayout action_bar = (LinearLayout)MainActivity.this.findViewById(R.id.actionBar);
+
         //Load User data.
         try
         {
@@ -189,49 +189,12 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 mViewPager.setCurrentItem(1, true);
         }
 
-
-        /*fabSwitch.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                Animation animation1 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.scale);
-                final ImageView imgAnim = (ImageView)findViewById(R.id.imgAnimCircle);
-                imgAnim.setVisibility(View.VISIBLE);
-                imgAnim.startAnimation(animation1);
-
-                imgAnim.postOnAnimation(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        imgAnim.setVisibility(View.GONE);
-                    }
-                });
-
-                if(val_switch==ContactListSwitches.SHOW_USER_CONTACTS)
-                {
-                    val_switch = ContactListSwitches.SHOW_USERS_AT_EVENT;
-                    fabSwitch.setBackgroundResource(R.drawable.blue);
-                }
-                else
-                {
-                    val_switch = ContactListSwitches.SHOW_USER_CONTACTS;
-                    fabSwitch.setBackgroundResource(R.drawable.turqoise);
-                }
-            }
-        });*/
-
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener()
         {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
             {
                 TextView title = (TextView)MainActivity.this.findViewById(R.id.main_heading);
-
-                /*if(position == 1)
-                    fabSwitch.show();
-                else fabSwitch.hide();*/
 
                 if(position == 2)
                 {
@@ -366,14 +329,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 if (!((User) item).getFirstname().equals(getString(R.string.msg_not_in_event)))
                 {
                     Intent intent = new Intent(this, OtherUserProfileActivity.class);
-                    //TODO: Parceable
-                    intent.putExtra("Firstname", ((User) item).getFirstname());
-                    intent.putExtra("Lastname", ((User) item).getLastname());
-                    intent.putExtra("Username", ((User) item).getUsername());
-                    intent.putExtra("Age", ((User) item).getAge());
-                    intent.putExtra("Gender", ((User) item).getGender());
-                    intent.putExtra("Occupation", ((User) item).getOccupation());
-                    intent.putExtra("Bio", ((User) item).getBio());
+                    intent.putExtra("User", ((User) item));
                     startActivity(intent);
 
                     Log.d(TAG, "Loaded other User.");
@@ -406,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         }
     }
 
-    private void validateLocationPermissions()
+    /*private void validateLocationPermissions()
     {
         LocationManager locationMgr;
         locationMgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -424,11 +380,22 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         }
 
         locationMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 10, this);
-    }
+    }*/
 
-    @Override
+    /*@Override
     public void onLocationChanged(Location location)
     {
+        try
+        {
+            WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(),String.valueOf(location.getLatitude()));
+            WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(),String.valueOf(location.getLongitude()));
+        } catch (IOException e)
+        {
+            if(e.getMessage()!=null)
+                Log.d(TAG,e.getMessage(),e);
+            else
+                e.printStackTrace();
+        }
         Log.d(TAG,"["+location.getLatitude()+","+location.getLongitude()+"]");
     }
 
@@ -448,7 +415,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     public void onProviderDisabled(String s)
     {
 
-    }
+    }*/
 
     public class FragmentAdapter extends FragmentPagerAdapter
     {
@@ -502,7 +469,18 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     public void onPause()
     {
         super.onPause();
-        //setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
+        setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
+        try
+        {
+            WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(),"0");
+            WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(),"0");
+        } catch (IOException e)
+        {
+            if(e.getMessage()!=null)
+                Log.d(TAG,e.getMessage(),e);
+            else
+                e.printStackTrace();
+        }
     }
 
     @Override
@@ -516,7 +494,36 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     protected void onDestroy()
     {
         super.onDestroy();
-        //setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
+        setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
+        try
+        {
+            WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(),"0");
+            WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(),"0");
+        } catch (IOException e)
+        {
+            if(e.getMessage()!=null)
+                Log.d(TAG,e.getMessage(),e);
+            else
+                e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onRestart()
+    {
+        super.onRestart();
+        setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
+        try
+        {
+            WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(),"0");
+            WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(),"0");
+        } catch (IOException e)
+        {
+            if(e.getMessage()!=null)
+                Log.d(TAG,e.getMessage(),e);
+            else
+                e.printStackTrace();
+        }
     }
 
     @Override
@@ -535,7 +542,10 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             loadUserData();
         } catch (IOException e)
         {
-            e.printStackTrace();
+            if(e.getMessage()!=null)
+                Log.d(TAG,e.getMessage(),e);
+            else
+                e.printStackTrace();
         }
     }
 

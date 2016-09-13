@@ -1,10 +1,15 @@
 package com.codcodes.icebreaker.services;
 
+import android.Manifest;
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
 import com.codcodes.icebreaker.auxilary.Config;
@@ -29,7 +34,7 @@ import java.util.ArrayList;
 /**
  * Created by Casper on 2016/08/16.
  */
-public class IcebreakService extends IntentService implements LocationListener
+public class IcebreakService extends IntentService// implements LocationListener
 {
     //private Context context = null;
     private static Message icebreak_msg = new Message();
@@ -55,7 +60,6 @@ public class IcebreakService extends IntentService implements LocationListener
     public int onStartCommand(Intent intent, int flags, int startId)
     {
         //mHandler = new Handler();//Bind to main/UI thread
-        //validatePermissions();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -63,25 +67,6 @@ public class IcebreakService extends IntentService implements LocationListener
     {
         return me;
     }
-
-    /*private void validatePermissions()
-    {
-        LocationManager locationMgr;
-        locationMgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        if (AppCompatActivity.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-        {
-            // TODO: Consider calling
-            //    Activity#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for Activity#requestPermissions for more details.
-            return;
-        }
-        locationMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-    }*/
 
     @Override
     protected void onHandleIntent(Intent intent)
@@ -102,7 +87,6 @@ public class IcebreakService extends IntentService implements LocationListener
                     {
                         long ev_id = 0;
                         String temp = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
-                        Log.d(TAG,"Event_ID="+temp);
                         if(temp!=null)
                             if(!temp.isEmpty() && !temp.equals("null"))
                                 ev_id=Long.parseLong(temp);
@@ -116,6 +100,28 @@ public class IcebreakService extends IntentService implements LocationListener
                                 {
                                     //if(lastKnownLoc!=null)
                                     {
+                                        String str_lat = WritersAndReaders.readAttributeFromConfig(Config.LOC_LAT.getValue());
+                                        if(str_lat!=null)
+                                        {
+                                            if(!str_lat.isEmpty() && !str_lat.equals("null"))
+                                            {
+                                                try {
+                                                    lat = Double.parseDouble(str_lat);
+                                                }catch (NumberFormatException ex){
+                                                    Log.wtf(TAG,"Not a number",ex);}
+                                            }
+                                        }
+                                        String str_lng = WritersAndReaders.readAttributeFromConfig(Config.LOC_LNG.getValue());
+                                        if(str_lng!=null)
+                                        {
+                                            if(!str_lng.isEmpty() && !str_lng.equals("null"))
+                                            {
+                                                try {
+                                                    lng = Double.parseDouble(str_lng);
+                                                }catch (NumberFormatException ex){
+                                                    Log.wtf(TAG,"Not a number",ex);}
+                                            }
+                                        }
                                         if(lat!=0&&lng!=0)
                                         {
                                             me = new LatLng(lat, lng);
@@ -198,6 +204,25 @@ public class IcebreakService extends IntentService implements LocationListener
         } else Log.d(TAG, "<No local inbound IceBreaks>");
     }
 
+    /*private void validatePermissions()
+    {
+        LocationManager locationMgr;
+        locationMgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 10, this);
+    }*/
+
     public void checkForOutboundIceBreaks() throws IOException
     {
         ArrayList<Message> out_messages = LocalComms.getOutboundMessages(this,
@@ -275,12 +300,13 @@ public class IcebreakService extends IntentService implements LocationListener
         }
     }
 
-    @Override
+    /*@Override
     public void onLocationChanged(Location location)
     {
         //IcebreakService.lastKnownLoc = location;
         lat = location.getLatitude();
         lng = location.getLongitude();
+        System.err.println("#####################IServ:location changed!");
     }
 
     @Override
@@ -299,5 +325,5 @@ public class IcebreakService extends IntentService implements LocationListener
     public void onProviderDisabled(String s)
     {
         Log.d(TAG,"onProviderDisabled Status: " + s);
-    }
+    }*/
 }

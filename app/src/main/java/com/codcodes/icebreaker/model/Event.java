@@ -105,7 +105,6 @@ public class Event implements IJsonable, Parcelable
                 setAccessCode(Integer.valueOf(value));
                 break;
             case "Meeting_Places":
-                System.err.println("$$$$$$$$$$$$$$$$meeting_places:"+value);
                 if(value.contains(";"))
                     this.places = value.split(";");
                 break;

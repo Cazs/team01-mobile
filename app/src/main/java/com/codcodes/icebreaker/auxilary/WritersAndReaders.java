@@ -108,7 +108,7 @@ public class WritersAndReaders
         PrintWriter out = new PrintWriter(f);
         out.print(result);
         out.flush();
-        out.close();
+        //out.close();
     }
 
     public static String readAttributeFromConfig(String key) throws IOException

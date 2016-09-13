@@ -247,12 +247,16 @@ public class LocalComms
             } else //Existing Message
             {
                 updateMessageStatusById(context, m.getId(), m.getStatus());
-                Log.d(TAG, "Message already exists table, updated status");
+                updateMessageById(context, m.getId(), m.getMessage());
+                Log.d(TAG, "Message already exists in Message table, updated it.");
             }
         }
         catch (SQLiteCantOpenDatabaseException e)
         {
-            Log.wtf(TAG,e.getMessage(),e);
+            if(e.getMessage()!=null)
+                Log.wtf(TAG,e.getMessage(),e);
+            else
+                e.printStackTrace();
             //TODO: Better logging
         }
         finally
@@ -305,11 +309,45 @@ public class LocalComms
             String[] args = {String.valueOf(status), id};
             db.execSQL(q,args);
 
-            Log.d(TAG, "Successfully updated message status on remote and local DB");
+            Log.d(TAG, "Successfully updated Message status on local DB");
         }
         catch (SQLiteCantOpenDatabaseException e)
         {
-            Log.wtf(TAG,e.getMessage(),e);
+            if(e.getMessage()!=null)
+                Log.wtf(TAG,e.getMessage(),e);
+            else
+                e.printStackTrace();
+            //TODO: Better logging
+        }
+        finally
+        {
+            closeDB(db);
+        }
+    }
+
+    public static void updateMessageById(Context context, String id, String msg)
+    {
+        SQLiteDatabase db = null;
+        try
+        {
+            MessagePollHelper dbHelper = new MessagePollHelper(context);//getBaseContext());
+            db = dbHelper.getWritableDatabase();
+            //Didn't create DB here because when updating there should already be a DB
+
+            String q = "UPDATE " + MessagePollContract.MessageEntry.TABLE_NAME +
+                    " SET " + MessagePollContract.MessageEntry.COL_MESSAGE + " =? WHERE " +
+                    MessagePollContract.MessageEntry.COL_MESSAGE_ID + "=?";
+            String[] args = {msg, id};
+            db.execSQL(q,args);
+
+            Log.d(TAG, "Successfully updated Message on local DB");
+        }
+        catch (SQLiteCantOpenDatabaseException e)
+        {
+            if(e.getMessage()!=null)
+                Log.wtf(TAG,e.getMessage(),e);
+            else
+                e.printStackTrace();
             //TODO: Better logging
         }
         finally
