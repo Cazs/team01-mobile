@@ -238,7 +238,6 @@ public class ProfileFragment extends android.support.v4.app.Fragment
         });
         thread.start();
 
-
         rewards.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -324,7 +323,9 @@ public class ProfileFragment extends android.support.v4.app.Fragment
 
     public void runOnUI(Runnable r)
     {
-        ProfileFragment.this.getActivity().runOnUiThread(r);
+        if(ProfileFragment.this!=null)
+            if(ProfileFragment.this.getActivity()!=null)
+                ProfileFragment.this.getActivity().runOnUiThread(r);
     }
 
     public static ProfileFragment newInstance(Context context)

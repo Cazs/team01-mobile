@@ -578,7 +578,8 @@ public class IBDialog extends Activity
                 }
                 else if(request_code==RESP_ACCEPTED)//initiator has been accepted
                 {
-                    progress = LocalComms.showProgressDialog(IBDialog.this,"Loading...");
+                    if(progress==null)
+                        progress = LocalComms.showProgressDialog(IBDialog.this,"Loading...");
                     IcebreakService.status_changing = true;
                     //update status
                     icebreak_msg.setStatus(MESSAGE_STATUSES.ICEBREAK_DONE.getStatus());

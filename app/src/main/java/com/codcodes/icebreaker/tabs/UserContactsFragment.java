@@ -170,19 +170,21 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
 
     public void refresh()
     {
-        tContactsRefresh = new Timer();
+        /*tContactsRefresh = new Timer();
         tContactsRefresh.scheduleAtFixedRate(new TimerTask()
+        {*/
+        Thread t = new Thread(new Runnable()
         {
             @Override
             public void run()
             {
                 try
                 {
-                    long event_id=0;
+                    long event_id = 0;
                     String tmp = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
-                    if(tmp!=null)
-                        if(!tmp.isEmpty() && !tmp.equals("null"))
-                            event_id=Long.valueOf(tmp);
+                    if (tmp != null)
+                        if (!tmp.isEmpty() && !tmp.equals("null"))
+                            event_id = Long.valueOf(tmp);
                     if (event_id > 0)
                     {
                         contacts = new ArrayList<User>();
@@ -190,30 +192,31 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                         Event event = RemoteComms.getEvent(event_id);
                         String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + event_id);
                         JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
-                        int i=0;
+                        int i = 0;
                         refreshUsersAtEvent();
                     }// else Log.d(TAG,"User not at an event.");
-                }
-                catch (ConcurrentModificationException e)
+                } catch (ConcurrentModificationException e)
                 {
                     //TODO: Better logging.
-                    Log.wtf(TAG,e.getMessage(),e);
-                }
-                catch (java.lang.InstantiationException e)
+                    Log.wtf(TAG, e.getMessage(), e);
+                } catch (java.lang.InstantiationException e)
                 {
                     //TODO: Better logging.
-                    Log.wtf(TAG,e.getMessage(),e);
+                    Log.wtf(TAG, e.getMessage(), e);
                 } catch (IllegalAccessException e)
                 {
                     //TODO: Better logging.
-                    Log.wtf(TAG,e.getMessage(),e);
+                    Log.wtf(TAG, e.getMessage(), e);
                 } catch (IOException e)
                 {
                     //TODO: Better logging.
-                    Log.wtf(TAG,e.getMessage(),e);
+                    Log.wtf(TAG, e.getMessage(), e);
                 }
             }
-        }, 0, INTERVALS.USERS_AT_EVENT_REFRESH_DELAY.getValue());
+        });
+        t.start();
+            /*}
+        }, 0, INTERVALS.USERS_AT_EVENT_REFRESH_DELAY.getValue());*/
     }
 
     private void refreshUsersAtEvent() throws ConcurrentModificationException

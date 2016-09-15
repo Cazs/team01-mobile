@@ -2,6 +2,7 @@ package com.codcodes.icebreaker.tabs;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -69,6 +70,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
     private static ArrayList<Event> events;
     private SwipeRefreshLayout swipeRefreshLayout;
     public static final String TAG = "IB/EventsFragment";
+    private ProgressDialog progress = null;
 
     private IOnListFragmentInteractionListener mListener;
     private RecyclerView recyclerView;
@@ -141,7 +143,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
             public void run()
             {
                 Looper.prepare();
-
+                progress = LocalComms.showProgressDialog(getActivity(),"Loading Events...");
                 events = new ArrayList<>();
                 try
                 {
@@ -200,6 +202,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                             @Override
                             public void run()
                             {
+                                LocalComms.hideProgressBar(progress);
                                 if (recyclerView != null)
                                 {
                                     if(events==null)
