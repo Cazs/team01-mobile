@@ -92,19 +92,44 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
             TextView eventDescription = (TextView)findViewById(R.id.event_description);
             eventDescription.setText(selected_event.getDescription());
 
-            BitmapFactory.Options options = new BitmapFactory.Options();
+            final BitmapFactory.Options options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-            Bitmap bitmap = LocalComms.getImage(this, "event_icons-"+selected_event.getId(), ".png", "/events", options);
-            if(bitmap==null)
-                bitmap = RemoteComms.getImage(this, "event_icons-"+selected_event.getId(), ".png", "/events", options);
-
-            if(bitmap!=null)
+            Thread tIconLoader = new Thread(new Runnable()
             {
-                Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
-                ImageView eventImage = (ImageView) findViewById((R.id.event_image));
-                eventImage.setImageBitmap(circularbitmap);
-                bitmap.recycle();
-            }
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        Bitmap bitmap = LocalComms.getImage(EventDetailActivity.this, "event_icons-" + selected_event.getId(), ".png", "/events", options);
+                        if (bitmap == null)
+                            bitmap = RemoteComms.getImage(EventDetailActivity.this, "event_icons-" + selected_event.getId(), ".png", "/events", options);
+
+                        if (bitmap != null)
+                        {
+                            final Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
+                            runOnUiThread(new Runnable()
+                            {
+                                @Override
+                                public void run()
+                                {
+                                    ImageView eventImage = (ImageView) findViewById((R.id.event_image));
+                                    eventImage.setImageBitmap(circularbitmap);
+                                }
+                            });
+                            bitmap.recycle();
+                        }
+                    }
+                    catch (IOException e)
+                    {
+                        if(e.getMessage()!=null)
+                            Log.wtf(TAG,e.getMessage(),e);
+                        else
+                            e.printStackTrace();
+                    }
+                }
+            });
+            tIconLoader.start();
         }else this.finish();
 
         eventDetails = (TextView)findViewById(R.id.Event_Heading);
@@ -181,7 +206,7 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
         {
             if (matchAccessCode(code))
             {
-                Log.d(TAG,"##############ELoc"+selected_event.getBoundary());
+                //Log.d(TAG,"##############ELoc"+selected_event.getBoundary());
                 if (locationChecker.containsLocation(me, selected_event.getBoundary(), true))
                 {
                     Log.d(TAG,"Valid code and location");

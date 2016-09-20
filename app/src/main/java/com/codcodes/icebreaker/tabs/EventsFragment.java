@@ -70,7 +70,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
     private static ArrayList<Event> events;
     private SwipeRefreshLayout swipeRefreshLayout;
     public static final String TAG = "IB/EventsFragment";
-    private ProgressDialog progress = null;
+    //private ProgressDialog progress = null;
 
     private IOnListFragmentInteractionListener mListener;
     private RecyclerView recyclerView;
@@ -143,7 +143,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
             public void run()
             {
                 Looper.prepare();
-                progress = LocalComms.showProgressDialog(getActivity(),"Loading Events...");
+                //progress = LocalComms.showProgressDialog(getActivity(),"Loading Events...");
                 events = new ArrayList<>();
                 try
                 {
@@ -190,11 +190,21 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                             options = new BitmapFactory.Options();
                             options.inPreferredConfig = Bitmap.Config.ALPHA_8;
 
-                            Bitmap bitmap = LocalComms.getImage(getContext(),iconName,".png","/events",options);
-                            if(bitmap==null)
-                                bitmap  = RemoteComms.getImage(getContext(), iconName, ".png", "/events", options);
+                            try
+                            {
+                                Bitmap bitmap = LocalComms.getImage(getContext(), iconName, ".png", "/events", options);
+                                if (bitmap == null)
+                                    bitmap = RemoteComms.getImage(getContext(), iconName, ".png", "/events", options);
 
-                            bitmaps.add(bitmap);
+                                bitmaps.add(bitmap);
+                            }
+                            catch (IOException ex)
+                            {
+                                if(ex.getMessage()!=null)
+                                    Log.wtf(TAG,ex.getMessage(),ex);
+                                else
+                                    ex.printStackTrace();
+                            }
                         }
 
                         Runnable runnable = new Runnable()
@@ -202,7 +212,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                             @Override
                             public void run()
                             {
-                                LocalComms.hideProgressBar(progress);
+                                //LocalComms.hideProgressBar(progress);
                                 if (recyclerView != null)
                                 {
                                     if(events==null)

@@ -63,19 +63,21 @@ public class RemoteComms
         String response = null;
         if(httpConn.getResponseCode() == HttpURLConnection.HTTP_OK)
         {
-            Scanner s = new Scanner(httpConn.getInputStream());
-
-            while (s.hasNextLine())
-                response += s.nextLine();
+            response="";
+            BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getInputStream()));
+            String line="";
+            int read=0;
+            while ((line=in.readLine())!=null)
+                response += line;
             //Log.d(TAG,response);
         }else
         {
-            Scanner s = new Scanner(httpConn.getErrorStream());
-            response = null;//"Error: ";
-
-            while (s.hasNextLine())
-                response += s.nextLine();
-            //Log.d(TAG,response);
+            response="";
+            BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getErrorStream()));
+            String line="";
+            int read=0;
+            while ((line=in.readLine())!=null)
+                response += line;
         }
         return response;
     }
@@ -388,7 +390,7 @@ public class RemoteComms
                 try
                 {
                     byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);
-                    WritersAndReaders.saveImage(binFileArr, destPath + "/" + image + ext);
+                    WritersAndReaders.saveImage(context, binFileArr, destPath + "/" + image + ext);
                     Log.d(TAG, "Image download complete");
                     return true;
                 }catch (IllegalArgumentException e)
@@ -419,7 +421,7 @@ public class RemoteComms
         return dec;
     }
 
-    public static Bitmap getImage(Context context, String filename,String ext, String path, BitmapFactory.Options options)
+    public static Bitmap getImage(Context context, String filename,String ext, String path, BitmapFactory.Options options) throws IOException
     {
         path = path.charAt(0) != '/' && path.charAt(0) != '\\' ? '/' + path : path;
         Bitmap bitmap = null;

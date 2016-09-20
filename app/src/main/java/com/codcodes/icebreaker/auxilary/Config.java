@@ -10,7 +10,12 @@ public enum Config
     DLG_ACTIVE_FALSE("false"),
     LOC_LAT("dev_loc_lat"),
     LOC_LNG("dev_loc_lng"),
-    EVENT_ID("event_id");
+    EVENT_ID("event_id"),
+    META_DELIM(";"),
+    META_DATE_MODIFIED("dmd"),
+    META_PARAM_NEWER("1"),
+    META_PARAM_EQUAL("0"),
+    META_CMP_ERR("meta_compare_error");
 
     private String value;
 

@@ -95,21 +95,31 @@ public class OtherUserProfileActivity extends AppCompatActivity
                 pb_profile.setProgress(pb_profile.getProgress()+10);
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                bmp_profile = LocalComms.getImage(ctxt, user.getUsername(), ".png", "/profile", options);
-                if(bmp_profile==null)
-                    bmp_profile = RemoteComms.getImage(ctxt, user.getUsername(), ".png", "/profile", options);
-                runOnUiThread(new Runnable()
+                try
                 {
-                    @Override
-                    public void run()
+                    bmp_profile = LocalComms.getImage(ctxt, user.getUsername(), ".png", "/profile", options);
+                    if (bmp_profile == null)
+                        bmp_profile = RemoteComms.getImage(ctxt, user.getUsername(), ".png", "/profile", options);
+                    runOnUiThread(new Runnable()
                     {
-                        if(bmp_profile!=null)
+                        @Override
+                        public void run()
                         {
-                            profileImage.setImageBitmap(bmp_profile);
-                            LocalComms.hideImageProgressBar(pb_profile);
+                            if (bmp_profile != null)
+                            {
+                                profileImage.setImageBitmap(bmp_profile);
+                                LocalComms.hideImageProgressBar(pb_profile);
+                            }
                         }
-                    }
-                });
+                    });
+                }
+                catch (IOException e)
+                {
+                    if(e.getMessage()!=null)
+                        Log.wtf(TAG,e.getMessage(),e);
+                    else
+                        e.printStackTrace();
+                }
             }
         });
         tUserProfileLoader.start();

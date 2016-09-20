@@ -48,7 +48,6 @@ public class IcebreakService extends IntentService// implements LocationListener
     private double lng = 0;
     private static LatLng me = null;
     private final String TAG = "IB/IcebreakService";
-    public  static int semaphore = 0;
     //private Handler mHandler;
 
     public IcebreakService()

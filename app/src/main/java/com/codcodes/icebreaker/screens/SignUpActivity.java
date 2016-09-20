@@ -39,6 +39,7 @@ import com.facebook.FacebookSdk;
 import com.facebook.Profile;
 import com.facebook.ProfileTracker;
 import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
@@ -139,7 +140,7 @@ public class SignUpActivity extends AppCompatActivity
                             {
                                 byte[] res = RemoteComms.getFBImage("https://graph.facebook.com","v2.7/"+ accessToken.getUserId()+"/picture?width=540&height=480&access_token="+accessToken.getToken());
                                 //Write image to local disk
-                                WritersAndReaders.saveImage(res,"profile/"+usr+".png");
+                                WritersAndReaders.saveImage(SignUpActivity.this,res,"profile/"+usr+".png");
                                 //Update remote Image
                                 int code = RemoteComms.imageUpload(res,"profile;"+usr,".png");
                                 if(code==HttpURLConnection.HTTP_OK)
@@ -576,12 +577,14 @@ public class SignUpActivity extends AppCompatActivity
                                 //Toast.makeText(SignUpActivity.this, "Username already exists, please try again.", Toast.LENGTH_LONG).show();
                                 message = toastHandler("Username already exists, please try again.").obtainMessage();
                                 message.sendToTarget();
+                                LoginManager.getInstance().logOut();
                             }
                             else
                             {
                                 //Toast.makeText(SignUpActivity.this, "Username already exists, please try again.", Toast.LENGTH_LONG).show();
                                 message = toastHandler("Could not register your account.").obtainMessage();
                                 message.sendToTarget();
+                                LoginManager.getInstance().logOut();
                             }
                         }
                     } else
@@ -589,25 +592,35 @@ public class SignUpActivity extends AppCompatActivity
                         Log.wtf(TAG,"User registration payload is empty.");
                         Message message = toastHandler("Could not register your account, registration payload is empty.").obtainMessage();
                         message.sendToTarget();
+                        LoginManager.getInstance().logOut();
                     }
                 }
                 catch (UnknownHostException e)
                 {
                     Message message = toastHandler("No Internet Access..").obtainMessage();
                     message.sendToTarget();
-                    Log.d(TAG,e.getMessage(),e);
+                    if(e.getMessage()!=null)
+                        Log.d(TAG,e.getMessage(),e);
+                    else e.printStackTrace();
+                    LoginManager.getInstance().logOut();
                 }
                 catch (SocketTimeoutException e)
                 {
                     Message message = toastHandler("Connection Timed Out").obtainMessage();
                     message.sendToTarget();
-                    Log.d(TAG,e.getMessage(),e);
+                    if(e.getMessage()!=null)
+                        Log.d(TAG,e.getMessage(),e);
+                    else e.printStackTrace();
+                    LoginManager.getInstance().logOut();
                 }
                 catch (IOException e)
                 {
                     Message message = toastHandler("IOException: " + e.getMessage()).obtainMessage();
                     message.sendToTarget();
-                    Log.d(TAG,e.getMessage(),e);
+                    if(e.getMessage()!=null)
+                        Log.d(TAG,e.getMessage(),e);
+                    else e.printStackTrace();
+                    LoginManager.getInstance().logOut();
                 }
                 finally
                 {

@@ -12,14 +12,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteCantOpenDatabaseException;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Path;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
@@ -33,6 +30,9 @@ import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.model.Message;
 import com.codcodes.icebreaker.model.MessagePollContract;
 import com.codcodes.icebreaker.model.MessagePollHelper;
+import com.codcodes.icebreaker.model.Metadata;
+import com.codcodes.icebreaker.model.MetadataContract;
+import com.codcodes.icebreaker.model.MetadataHelper;
 import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.model.UserContract;
 import com.codcodes.icebreaker.model.UserHelper;
@@ -50,7 +50,7 @@ public class LocalComms
     private static final String TAG = "IB/LocalComms";
     private static boolean ib_dlg_active = false;
 
-    public static Bitmap getImage(Context context, String filename,String ext, String path, BitmapFactory.Options options)
+    public static Bitmap getImage(Context context, String filename,String ext, String path, BitmapFactory.Options options) throws IOException
     {
         path = path.charAt(0) != '/' && path.charAt(0) != '\\' ? '/' + path : path;
         if(!ext.contains("."))//add dot to image extension if it's not there
@@ -64,22 +64,97 @@ public class LocalComms
         }
         else//exists
         {
-            Log.d(TAG,filename + ext+" exists.");
-            //Bitmap bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
-            Bitmap compressed = ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext,context);
-            //bitmap.recycle();
-            return compressed;
+            //Get remote meta data for file
+            String file_id = path+'|'+filename+ext;
+            //remove any remaining slashes
+            String temp="";
+            for(char c:file_id.toCharArray())
+                if(c=='/'||c=='\\')
+                    temp += '|';
+                else temp += c;
+            file_id = temp;
+
+            if(file_id.charAt(0)=='|')
+                file_id=file_id.substring(1);//remove first slash
+            //get remote metadata for the file
+            String payload = RemoteComms.sendGetRequest("getMeta/"+file_id);
+            if(payload!=null)
+            {
+                if(!payload.isEmpty())
+                {
+                    if(!payload.toLowerCase().equals("error"))
+                    {
+                        Metadata remote_metadata = new Metadata();
+                        JSON.getJsonable(payload, remote_metadata);
+
+                        if(remote_metadata.getEntry()==null||remote_metadata.getMeta()==null)
+                            return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+
+                        if(remote_metadata.getEntry().toLowerCase().equals("null")||remote_metadata.getMeta().toLowerCase().equals("null"))
+                            return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+
+                        String lmDat = null;
+                        try
+                        {
+                            lmDat = LocalComms.getMetaRecord(context, file_id);
+                        }catch (SQLiteException e)
+                        {
+                            if(e.getMessage()!=null)
+                                Log.d(TAG,e.getMessage());
+                            else e.printStackTrace();
+                        }
+
+                        /*
+                         * Save Metadata to disk,
+                         * It's fine to save it here because you've already loaded local
+                         * Metadata to memory - if it exists.
+                         */
+                        LocalComms.addMetaRecord(context,remote_metadata.getEntry(),remote_metadata.getMeta());
+
+                        if(lmDat!=null)//local file has metadata.
+                        {
+                            Metadata local_metadata = new Metadata(file_id,lmDat);
+
+                            try
+                            {
+                                //Bitmap bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
+                                //Bitmap compressed =
+                                //bitmap.recycle();
+                                long r_dmd = Long.parseLong(remote_metadata.getAttribute(Config.META_DATE_MODIFIED.getValue()));
+                                Config mod = local_metadata.compareDateModified(r_dmd);
+                                if (mod.getValue().equals(Config.META_PARAM_NEWER.getValue()))//remote file is newer
+                                    return RemoteComms.getImage(context, filename, ext, path, options);
+                                else if (mod.getValue().equals(Config.META_PARAM_EQUAL.getValue()))//local file is up to date
+                                    return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+
+                            } catch (NumberFormatException e)
+                            {
+                                if (e.getMessage() != null)
+                                    Log.wtf(TAG, e.getMessage(), e);
+                                else
+                                    e.printStackTrace();
+                            }
+                            return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+                        }else//local file doesn't have metadata yet if null
+                        {
+                            return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+                        }
+                    }else
+                    {
+                        Log.wtf(TAG,payload);
+                        return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+                    }
+                }else
+                {
+                    Log.wtf(TAG,payload);
+                    return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+                }
+            }else
+            {
+                Log.wtf(TAG,payload);
+                return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+            }
         }
-    }
-
-    public static boolean getDlgStatus()
-    {
-        return LocalComms.ib_dlg_active;
-    }
-
-    public static void setDlgStatus(boolean status)
-    {
-        LocalComms.ib_dlg_active = status;
     }
 
     public static ProgressDialog showProgressDialog(Context context, String msg)
@@ -126,6 +201,117 @@ public class LocalComms
             pb.setActivated(false);
             pb.setEnabled(false);
         } else Log.d(TAG,"ProgressBar is null.");
+    }
+
+    public static boolean addMetaRecord(Context context, String entry, String value)
+    {
+        if(context!=null)
+        {
+            String meta=null;
+            try
+            {
+                meta = getMetaRecord(context, entry);
+            }
+            catch (SQLiteException e)
+            {
+                if(e.getMessage()!=null)
+                    Log.d(TAG,e.getMessage());
+                else e.printStackTrace();
+            }
+            if (meta == null)//dne
+            {
+                MetadataHelper dbHelper = new MetadataHelper(context);
+                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                dbHelper.onCreate(db);
+
+                ContentValues values = new ContentValues();
+                values.put(MetadataContract.MetaEntry.COL_META_ENTRY, entry);
+                values.put(MetadataContract.MetaEntry.COL_META_ENTRY_DATA, value);
+
+                db.insert(MetadataContract.MetaEntry.TABLE_NAME, null, values);
+
+                db.close();
+
+                Log.d(TAG,"addMetaRecord> Added new Meta Record.");
+            }else
+            {
+                if(!meta.contains(value))//change local meta if there has been a change in metadata remotely
+                    return updateMetaEntry(context,entry,value, meta);
+                else Log.d(TAG,"addMetaRecord> Record["+entry+"] exists and is up-to-date.");
+            }
+            return true;
+        }else
+        {
+            Log.d(TAG,"addMetaRecord> Context is null.");
+            return  false;
+        }
+    }
+
+    public static boolean updateMetaEntry(Context context, String entry, String value, String meta) throws SQLiteException
+    {
+        MetadataHelper dbHelper = new MetadataHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        if(meta.contains("="))
+        {
+            if(value.contains("="))
+            {
+                if (meta.contains(value.split("=")[0]))
+                {
+                    meta = meta.replaceAll("(" + value.split("=")[0] + "=\\.+)", value);
+                } else
+                {
+                    if (meta.isEmpty())
+                        meta = entry + '=' + value;
+                    else
+                        meta = meta + ';' + entry + '=' + value;
+                }
+            }else
+            {
+                Log.d(TAG,"updateMetaEntry> Error: Value has no assignment.");
+                return false;
+            }
+        } else
+        {
+            if (meta.isEmpty())
+                meta = entry + '=' + value;
+            else
+                meta = meta + ';' + entry + '=' + value;
+        }
+
+        ContentValues values = new ContentValues();
+        values.put(MetadataContract.MetaEntry.COL_META_ENTRY,entry);
+        values.put(MetadataContract.MetaEntry.COL_META_ENTRY_DATA,meta);
+
+        String where = MetadataContract.MetaEntry.COL_META_ENTRY+"=?";
+        String[] where_args = {entry};
+        db.update(MetadataContract.MetaEntry.TABLE_NAME,values,where,where_args);
+
+        db.close();
+
+        Log.d(TAG,"updateMetaRecord> Record["+entry+"] successfully updated to "+value+".");
+        return true;
+    }
+
+    public static String getMetaRecord(Context context, String entry) throws SQLiteException
+    {
+        MetadataHelper dbHelper = new MetadataHelper(context);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        //no need for dbHelper.onCreate(db);
+        String query = "SELECT * FROM " + MetadataContract.MetaEntry.TABLE_NAME +
+                " WHERE " + MetadataContract.MetaEntry.COL_META_ENTRY + " = ?";
+
+        String meta=null;
+        Cursor c = db.rawQuery(query,new String[]{entry});
+        if(c.moveToFirst())
+        //if(c.getCount()>0)
+        {
+            meta = c.getString(c.getColumnIndex(MetadataContract.MetaEntry.COL_META_ENTRY_DATA));
+        }
+        c.close();
+        db.close();
+
+        return meta;
     }
 
     public static  void updateLocalMessage(Context context, SQLiteDatabase db, Message m)
@@ -251,7 +437,7 @@ public class LocalComms
                 Log.d(TAG, "Message already exists in Message table, updated it.");
             }
         }
-        catch (SQLiteCantOpenDatabaseException e)
+        catch (SQLiteException e)
         {
             if(e.getMessage()!=null)
                 Log.wtf(TAG,e.getMessage(),e);
@@ -279,7 +465,7 @@ public class LocalComms
             Cursor c =  db.rawQuery(query, new String[] {id});
             rowCount = c.getCount();
         }
-        catch (SQLiteCantOpenDatabaseException e)
+        catch (SQLiteException e)
         {
             Log.wtf(TAG,e.getMessage(),e);
             //TODO: Better logging
@@ -311,7 +497,7 @@ public class LocalComms
 
             Log.d(TAG, "Successfully updated Message status on local DB");
         }
-        catch (SQLiteCantOpenDatabaseException e)
+        catch (SQLiteException e)
         {
             if(e.getMessage()!=null)
                 Log.wtf(TAG,e.getMessage(),e);
@@ -342,7 +528,7 @@ public class LocalComms
 
             Log.d(TAG, "Successfully updated Message on local DB");
         }
-        catch (SQLiteCantOpenDatabaseException e)
+        catch (SQLiteException e)
         {
             if(e.getMessage()!=null)
                 Log.wtf(TAG,e.getMessage(),e);
@@ -400,7 +586,7 @@ public class LocalComms
                 messages.add(m);
             }
         }
-        catch (SQLiteCantOpenDatabaseException e)
+        catch (SQLiteException e)
         {
             Log.wtf(TAG,e.getMessage(),e);
             //TODO: Better logging
@@ -451,7 +637,7 @@ public class LocalComms
                 Log.d(TAG, "User exists in local DB");
             }
         }
-        catch (SQLiteCantOpenDatabaseException e)
+        catch (SQLiteException e)
         {
             Log.wtf(TAG,e.getMessage(),e);
             //TODO: Better logging
@@ -493,7 +679,7 @@ public class LocalComms
             } else
                 Log.d(TAG, "User exists in local DB");
         }
-        catch (SQLiteCantOpenDatabaseException e)
+        catch (SQLiteException e)
         {
             Log.wtf(TAG,e.getMessage(),e);
             //TODO: Better logging
@@ -563,7 +749,7 @@ public class LocalComms
                         "the username was found.");
             }
         }
-        catch (SQLiteCantOpenDatabaseException e)
+        catch (SQLiteException e)
         {
             Log.wtf(TAG,e.getMessage(),e);
             //TODO: Better logging
@@ -614,7 +800,7 @@ public class LocalComms
             }
             else Log.d(TAG,"No contacts were found.");
         }
-        catch (SQLiteCantOpenDatabaseException e)
+        catch (SQLiteException e)
         {
             Log.wtf(TAG,e.getMessage(),e);
             //TODO: Better logging
@@ -643,7 +829,7 @@ public class LocalComms
             Cursor c =  db.rawQuery(query, new String[] {username});
             rowCount = c.getCount();
         }
-        catch (SQLiteCantOpenDatabaseException e)
+        catch (SQLiteException e)
         {
             Log.wtf(TAG,e.getMessage(),e);
             //TODO: Better logging
@@ -696,7 +882,7 @@ public class LocalComms
             }else Log.wtf(TAG,"The impossible has happened, couldn't set DB cursor to first entry when trying get Message even though " +
             "the Message_id was found.");
         }
-        catch (SQLiteCantOpenDatabaseException e)
+        catch (SQLiteException e)
         {
             Log.wtf(TAG,e.getMessage(),e);
             //TODO: Better logging
@@ -750,7 +936,7 @@ public class LocalComms
                 messages.add(m);
             }
         }
-        catch (SQLiteCantOpenDatabaseException e)
+        catch (SQLiteException e)
         {
             Log.wtf(TAG,e.getMessage(),e);
             //TODO: Better logging

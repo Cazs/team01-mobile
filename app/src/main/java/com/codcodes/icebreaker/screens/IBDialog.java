@@ -6,7 +6,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
@@ -66,6 +65,8 @@ public class IBDialog extends Activity
 
     private Typeface ttfInfinity, ttfAilerons;
 
+    private boolean active = true;
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
@@ -80,11 +81,22 @@ public class IBDialog extends Activity
         requesting_user = dlgIntent.getParcelableExtra("Sender");
         String s = dlgIntent.getStringExtra("Request_Code");
 
-        System.err.println("############RC:" + s);
-
         //if(IcebreakService.active)
         //if(SharedPreference.isDialogActive(this))
-        if(LocalComms.getDlgStatus())
+        String stat = null;
+        try
+        {
+            stat = WritersAndReaders.readAttributeFromConfig(Config.DLG_ACTIVE.getValue());
+            if(stat!=null)
+                active = stat.toLowerCase().equals("true");
+        } catch (IOException e)
+        {
+            if(e.getMessage()!=null)
+                Log.d(TAG,e.getMessage(),e);
+            else
+                e.printStackTrace();
+        }
+        if(active)
         {
             Log.d(TAG, "Dialog is already showing!");
             this.finish();
@@ -178,12 +190,22 @@ public class IBDialog extends Activity
             {
                 if(requesting_user!=null)
                 {
-                    //try to load local image for sender
-                    if(bitmapRequestingUser!=null)
-                        bitmapRequestingUser.recycle();
-                    bitmapRequestingUser = LocalComms.getImage(IBDialog.this, requesting_user.getUsername(), ".png", "/profile", options);
-                    if (bitmapRequestingUser == null)//try get image from server if no local image
-                        bitmapRequestingUser = RemoteComms.getImage(IBDialog.this, requesting_user.getUsername(), ".png", "/profile", options);
+                    try
+                    {
+                        //try to load local image for sender
+                        if(bitmapRequestingUser!=null)
+                            bitmapRequestingUser.recycle();
+                        bitmapRequestingUser = LocalComms.getImage(IBDialog.this, requesting_user.getUsername(), ".png", "/profile", options);
+                        if (bitmapRequestingUser == null)//try get image from server if no local image
+                            bitmapRequestingUser = RemoteComms.getImage(IBDialog.this, requesting_user.getUsername(), ".png", "/profile", options);
+                    }
+                    catch (IOException e)
+                    {
+                        if(e.getMessage()!=null)
+                            Log.wtf(TAG,e.getMessage(),e);
+                        else
+                            e.printStackTrace();
+                    }
 
                     //set image
                     Runnable r = new Runnable()
@@ -202,22 +224,32 @@ public class IBDialog extends Activity
                 {
                     if(bitmapReceivingUser!=null)
                         bitmapReceivingUser.recycle();
-                    //try to load local image for receiver
-                    bitmapReceivingUser = LocalComms.getImage(IBDialog.this, receiving_user.getUsername(), ".png", "/profile", options);
-                    if (bitmapReceivingUser == null)//try get image from server if no local image
-                        bitmapReceivingUser = RemoteComms.getImage(IBDialog.this, receiving_user.getUsername(), ".png", "/profile", options);
-
-                    //set image
-                    Runnable r = new Runnable()
+                    try
                     {
-                        @Override
-                        public void run()
+                        //try to load local image for receiver
+                        bitmapReceivingUser = LocalComms.getImage(IBDialog.this, receiving_user.getUsername(), ".png", "/profile", options);
+                        if (bitmapReceivingUser == null)//try get image from server if no local image
+                            bitmapReceivingUser = RemoteComms.getImage(IBDialog.this, receiving_user.getUsername(), ".png", "/profile", options);
+
+                        //set image
+                        Runnable r = new Runnable()
                         {
-                            if(images[1]!=null)
-                                images[1].setImageBitmap(bitmapReceivingUser);
-                        }
-                    };
-                    runOnUiThread(r);
+                            @Override
+                            public void run()
+                            {
+                                if (images[1] != null)
+                                    images[1].setImageBitmap(bitmapReceivingUser);
+                            }
+                        };
+                        runOnUiThread(r);
+                    }
+                    catch (IOException e)
+                    {
+                        if(e.getMessage()!=null)
+                            Log.wtf(TAG,e.getMessage(),e);
+                        else
+                            e.printStackTrace();
+                    }
                 }else Log.d(TAG,"Receiving user is null");
             }
         });
@@ -226,7 +258,7 @@ public class IBDialog extends Activity
 
     private void populateIcebreakRequestUI() throws IOException
     {
-        if(!LocalComms.getDlgStatus())
+        if(!active)
         {
             if(dialog==null)
                 dialog = new Dialog(this);
@@ -349,7 +381,7 @@ public class IBDialog extends Activity
 
     private void drawAcceptanceUI()
     {
-        if(!LocalComms.getDlgStatus())
+        if(!active)
         {
             if(dialog==null)
                 dialog = new Dialog(this);
@@ -357,6 +389,7 @@ public class IBDialog extends Activity
             {
                 dialog.setContentView(R.layout.popup_accepted2);
                 dialog.show();
+                setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
 
                 WindowManager wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
                 Display dis = wm.getDefaultDisplay();
@@ -369,6 +402,7 @@ public class IBDialog extends Activity
                 dialog.setContentView(R.layout.popup_accepted);
                 dialog.show();
                 setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
+
             }else dialog.dismiss();
         }//else return;//else it's showing - do nothing to it.
 
@@ -442,34 +476,34 @@ public class IBDialog extends Activity
         {
             t.start();
 
-            optionA.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+            optionA.setOnClickListener(new View.OnClickListener()
             {
                 @Override
-                public void onCheckedChanged(CompoundButton compoundButton, boolean b)
+                public void onClick(View view)
                 {
-                    optionA.setChecked(b);
+                    optionA.setChecked(true);
                     optionB.setChecked(false);
                     optionC.setChecked(false);
                 }
             });
-            optionB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+            optionB.setOnClickListener(new View.OnClickListener()
             {
                 @Override
-                public void onCheckedChanged(CompoundButton compoundButton, boolean b)
+                public void onClick(View view)
                 {
                     optionA.setChecked(false);
-                    optionB.setChecked(b);
+                    optionB.setChecked(true);
                     optionC.setChecked(false);
                 }
             });
-            optionC.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+            optionC.setOnClickListener(new View.OnClickListener()
             {
                 @Override
-                public void onCheckedChanged(CompoundButton compoundButton, boolean b)
+                public void onClick(View view)
                 {
                     optionA.setChecked(false);
                     optionB.setChecked(false);
-                    optionC.setChecked(b);
+                    optionC.setChecked(true);
                 }
             });
         }
@@ -629,8 +663,7 @@ public class IBDialog extends Activity
 
     private void drawRejectionUI()
     {
-        System.err.println(">>>>>>>>>>>>>>>>>Drawing Rejection UI");
-        if(!LocalComms.getDlgStatus())
+        if(!active)
         {
             if(dialog==null)
                 dialog = new Dialog(this);
@@ -714,12 +747,6 @@ public class IBDialog extends Activity
     public void closeActivity()
     {
         setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
-        //IcebreakService.active = false;
-        //System.err.println(">>>>>>>>>>>>>>>OnCloseAct->Active:" + IcebreakService.active);
-        //LocalComms.setDlgStatus(false);
-        //changeDlgStatus(false);
-        //SharedPreference.setDialogStatus(this,false);
-        //System.err.println("###############>>>>>>>>>>>Dlg Active: "+LocalComms.getDlgStatus());
         this.finish();
     }
 
@@ -727,9 +754,6 @@ public class IBDialog extends Activity
     public void onDetachedFromWindow()
     {
         super.onDetachedFromWindow();
-        //IcebreakService.active = false;
-        //changeDlgStatus(false);
-        //SharedPreference.setDialogStatus(this,false);
         setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
     }
 
@@ -743,9 +767,6 @@ public class IBDialog extends Activity
     protected void onDestroy()
     {
         super.onDestroy();
-        //IcebreakService.active = false;
-        //changeDlgStatus(false);
-        //SharedPreference.setDialogStatus(this,false);
         setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
     }
 
@@ -753,10 +774,6 @@ public class IBDialog extends Activity
     public void onStart()
     {
         super.onStart();
-        //IcebreakService.active = true;
-        //System.err.println(">>>>>>>>>>>>>>>OnStart->Active:" + IcebreakService.active);
-        //changeDlgStatus(true);
-        //SharedPreference.setDialogStatus(this,true);
         //setDlgStatus(Config.DLG_ACTIVE_TRUE.getValue());
     }
 
@@ -764,9 +781,6 @@ public class IBDialog extends Activity
     public void onStop()
     {
         super.onStop();
-        //IcebreakService.active = false;
-        //changeDlgStatus(false);
-        //SharedPreference.setDialogStatus(this,false);
         //setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
     }
 

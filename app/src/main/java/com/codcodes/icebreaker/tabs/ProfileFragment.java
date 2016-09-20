@@ -157,7 +157,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                 }
                 else//All is well
                 {
-                    user= userList.get(0);
+                    user = userList.get(0);
                     Name = user.getFirstname() + " " + user.getLastname();
                     Age = String.valueOf(user.getAge());
                     Occupation = user.getOccupation();
@@ -168,10 +168,20 @@ public class ProfileFragment extends android.support.v4.app.Fragment
 
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                    bitmap = LocalComms.getImage(getActivity(),username, ".png", "/profile", options);
-                    if(bitmap==null)
-                        bitmap = RemoteComms.getImage(getActivity(),username, ".png", "/profile", options);
-                    circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
+                    try
+                    {
+                        bitmap = LocalComms.getImage(getActivity(), username, ".png", "/profile", options);
+                        if (bitmap == null)
+                            bitmap = RemoteComms.getImage(getActivity(), username, ".png", "/profile", options);
+                        circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
+                    }
+                    catch (IOException e)
+                    {
+                        if(e.getMessage()!=null)
+                            Log.wtf(TAG,e.getMessage(),e);
+                        else
+                            e.printStackTrace();
+                    }
                     //Look for user profile image
                     /*if (!new File(Environment.getExternalStorageDirectory().getPath()
                             + profilePicture).exists())
@@ -228,7 +238,8 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                         name.setText(Name);
                         occupation.setText(Occupation);
                         circularImageView = (ImageView) v.findViewById(R.id.circleview);
-                        circularImageView.setImageBitmap(circularbitmap);
+                        if(circularbitmap!=null)
+                            circularImageView.setImageBitmap(circularbitmap);
                         editButton.setVisibility(View.VISIBLE);
                         LocalComms.hideImageProgressBar(pb_profile);
                     }

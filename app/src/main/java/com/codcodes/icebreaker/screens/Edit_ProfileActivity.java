@@ -133,7 +133,10 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
             Bio.setText(extras.getString("Bio"));
             Gender = extras.getString("Gender");
             profilePicture = extras.getString("Username");
-            Gender = Gender.toLowerCase();
+            if(Gender==null)
+                Gender="unspecified";
+            else
+                Gender = Gender.toLowerCase();
             int gender = 0;
             switch(Gender)
             {
@@ -147,11 +150,33 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                     gender = 2;
                     break;
             }
-            BitmapFactory.Options options = new BitmapFactory.Options();
+            final BitmapFactory.Options options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-            bitmap = LocalComms.getImage(getApplicationContext(),profilePicture,".png","/profile",options);
-            circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-            circularImageView.setImageBitmap(circularbitmap);
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        bitmap = LocalComms.getImage(getApplicationContext(),profilePicture,".png","/profile",options);
+                        circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run()
+                            {
+                                circularImageView.setImageBitmap(circularbitmap);
+                            }
+                        });
+                    } catch (IOException e)
+                    {
+                        if(e.getMessage()!=null)
+                            Log.d(TAG,e.getMessage(),e);
+                        else
+                            e.printStackTrace();
+                    }
+                }
+            });
+            t.start();
             spinner.setSelection(gender);
         }
 
@@ -264,7 +289,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                                 message.sendToTarget();
 
                                 //Save  copy of image to app directory iff it was uploaded successfully
-                                WritersAndReaders.saveImage(bmp_arr, "/profile/" + usr + ".png");
+                                WritersAndReaders.saveImage(Edit_ProfileActivity.this,bmp_arr, "/profile/" + usr + ".png");
                             } else
                             {
                                 Message message = toastHandler("Image upload successful: " + res_code).obtainMessage();

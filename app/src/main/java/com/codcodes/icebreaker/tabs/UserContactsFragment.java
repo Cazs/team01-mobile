@@ -234,10 +234,20 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
         {
             for (User u : contacts)
             {
-                //Look for user profile image
-                bitmap = LocalComms.getImage(getContext(), u.getUsername(), ".png", "/profile", options);
-                if (bitmap == null)
-                    bitmap = RemoteComms.getImage(getActivity(), u.getUsername(), ".png", "/profile", options);
+                try
+                {
+                    //Look for user profile image
+                    bitmap = LocalComms.getImage(getContext(), u.getUsername(), ".png", "/profile", options);
+                    if (bitmap == null)
+                        bitmap = RemoteComms.getImage(getActivity(), u.getUsername(), ".png", "/profile", options);
+                }
+                catch (IOException e)
+                {
+                    if(e.getMessage()!=null)
+                        Log.wtf(TAG,e.getMessage(),e);
+                    else
+                        e.printStackTrace();
+                }
 
                 if (bitmap != null)
                     circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_200);

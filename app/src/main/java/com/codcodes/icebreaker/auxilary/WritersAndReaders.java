@@ -18,6 +18,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -26,7 +27,7 @@ public class WritersAndReaders
 {
 	private static String TAG = "IB/WritersAndReaders";
 
-	public static void saveImage(byte[] data,String filename)
+    public static void saveImage(Context context, byte[] data,String filename)
 	{
         File f=null;
         String folders = "";
@@ -57,6 +58,14 @@ public class WritersAndReaders
 
 		try
 		{
+            //Set file attributes
+            Long date_modified = System.currentTimeMillis();
+            String pth=f.getPath().toString();
+            pth.replace("/","|");
+            pth.replace("\\","|");
+            LocalComms.addMetaRecord(context,pth, Config.META_DATE_MODIFIED.getValue()
+                    +"="+ String.valueOf(date_modified));
+
             FileOutputStream fos = new FileOutputStream(f.getPath().toString());
             fos.write(data);
 			fos.flush();
@@ -66,13 +75,16 @@ public class WritersAndReaders
 		catch (IOException e)
 		{
             //TODO: better logging
-			Log.d(TAG,"Could not write file: " + e.getMessage());
-            e.printStackTrace();
+            if(e.getMessage()!=null)
+			    Log.d(TAG,"Could not write file: " + e.getMessage());
+            else
+                e.printStackTrace();
 		}
 	}
 
     public static void writeAttributeToConfig(String key, String value) throws IOException
     {
+        //TO_Consider: add meta data for [key,value] to meta records.
         File f = new File(MainActivity.rootDir + "/Icebreak/config.cfg");
         StringBuilder result = new StringBuilder();
         boolean rec_found=false;
@@ -80,35 +92,40 @@ public class WritersAndReaders
         {
             String s = "";
             BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
+            int line_read_count=0;
             while ((s = in.readLine())!=null)
             {
                 if(s.contains("="))
                 {
-                    String var = s.split("=")[0];
+                    String k = s.split("=")[0];
                     String val = s.split("=")[1];
                     //If the record exists, change it
-                    if(var.equals(key))
+                    if(k.equals(key))
                     {
-                        val = value;
+                        val = value;//Update record value
                         rec_found=true;
                     }
-                    result.append(var+"="+val+"\n");
-                }
+                    result.append(k+"="+val+"\n");//Append existing record.
+                    line_read_count++;
+                }else Log.wtf(TAG,"Config file may be corrupt.");
             }
+            if(!rec_found)//File exists but no key was found - write new line.
+                result.append(key+"="+value+"\n");
             /*if(in!=null)
                 in.close();*/
         }
-        else result.append(key+"="+value+"\n");//File is empty/dne
+        else result.append(key+"="+value+"\n");//File DNE - write new line.
 
-        System.err.println("#############################Writing to config: " + key + "=" + value);
+        //System.err.println("#############################Writing to config: " + key + "=" + value);
 
-        if(!rec_found)//File exists but record doesn't exist - create new record
-            result.append(key+"="+value+"\n");
+        /*if(!rec_found)//File exists but record doesn't exist - create new record
+            result.append(key+"="+value+"\n");*/
 
+        //Write to disk.
         PrintWriter out = new PrintWriter(f);
         out.print(result);
         out.flush();
-        //out.close();
+        out.close();
     }
 
     public static String readAttributeFromConfig(String key) throws IOException
