@@ -28,6 +28,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -47,11 +48,15 @@ import com.codcodes.icebreaker.services.MessageFcmService;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.User;
+import com.codcodes.icebreaker.tabs.ContactsMenuFragment;
+import com.codcodes.icebreaker.tabs.EventMenuFragment;
 import com.codcodes.icebreaker.tabs.EventsFragment;
 import com.codcodes.icebreaker.tabs.ProfileFragment;
+import com.codcodes.icebreaker.tabs.ProfileMenuFragment;
 import com.codcodes.icebreaker.tabs.UserContactsFragment;
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
+import com.google.android.gms.vision.text.Line;
 
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -75,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     private Button accept, reject;
     private TextView txtPopupbio, txtPopupbioTitle, txtPopupgender, txtPopupage, txtPopupname;
     private LinearLayout actionBar;
-    private ViewPager mViewPager;
+    private ViewPager mViewPager, contextMenuPager;
     private Typeface ttfInfinity, ttfAilerons;
 
     public static String rootDir = Environment.getExternalStorageDirectory().getPath();
@@ -86,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     public static String uhandle = "";
     private static boolean cview_set = false;
     private static boolean dlg_visible = false;
+    private static int tab_pos=0;
 
     //Since this class is called before any other class, we can do this
     private long event_id = 0;
@@ -118,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 md.update(signature.toByteArray());
                 //Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
             }
-        } catch (PackageManager.NameNotFoundException e)
+        }catch (PackageManager.NameNotFoundException e)
         {
             //TODO: Better logging
             toastHandler("PackageManager name not found.").obtainMessage().sendToTarget();
@@ -166,14 +172,35 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         //Load UI components
         actionBar = (LinearLayout)findViewById(R.id.actionBar);
         mViewPager = (ViewPager) findViewById(R.id.container);
+        contextMenuPager = (ViewPager) findViewById(R.id.context_menu_container);
+
         TabLayout tablayout = (TabLayout) findViewById(R.id.tab_layout);
         TextView headingTextView = (TextView) findViewById(R.id.main_heading);
         ttfInfinity = Typeface.createFromAsset(this.getAssets(),"Ailerons-Typeface.otf");
         //final FloatingActionButton fabSwitch = (FloatingActionButton)findViewById(R.id.fabSwitch);
         //fabSwitch.hide();
 
+        Button btnFilter = (Button)MainActivity.this.findViewById(R.id.btn_filter);
+
+        btnFilter.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                LinearLayout dragView = (LinearLayout) MainActivity.this.findViewById(R.id.dragView);
+                if (dragView != null)
+                {
+                    dragView.callOnClick();
+                    //Log.d(TAG,">>>>>>>>>>Showing sliding panel");
+                    //dragView.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
         //Setup UI components
         mViewPager.setAdapter(new FragmentAdapter(getSupportFragmentManager(),MainActivity.this));
+        contextMenuPager.setAdapter(new ContextMenuFragmentAdapter(getSupportFragmentManager(),MainActivity.this));
+
         tablayout.setupWithViewPager(mViewPager);// Set up the ViewPager with the sections adapter.
         tablayout.getTabAt(0).setIcon(viewPagerIcons[0]);
         tablayout.getTabAt(1).setIcon(viewPagerIcons[1]);
@@ -185,8 +212,21 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         String frag=i.getStringExtra("Fragment");
         if(frag!=null)
         {
+            if(frag.equals(EventsFragment.class.getName()))
+            {
+                mViewPager.setCurrentItem(0, true);
+                //contextMenuPager.setCurrentItem(0, true);
+            }
             if(frag.equals(UserContactsFragment.class.getName()))
+            {
                 mViewPager.setCurrentItem(1, true);
+                //contextMenuPager.setCurrentItem(1, true);
+            }
+            if(frag.equals(ProfileFragment.class.getName()))
+            {
+                mViewPager.setCurrentItem(2, true);
+                //contextMenuPager.setCurrentItem(2, true);
+            }
         }
 
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener()
@@ -195,11 +235,14 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
             {
                 TextView title = (TextView)MainActivity.this.findViewById(R.id.main_heading);
+                tab_pos=position;
+                if(contextMenuPager!=null)
+                    contextMenuPager.setCurrentItem(position, true);
 
                 if(position == 2)
                 {
                     title.setText("Your Profile");
-                    title.setTextSize(30);
+                    title.setTextSize(25);
                 }
                 else
                 {
@@ -211,7 +254,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             @Override
             public void onPageSelected(int position)
             {
-                TextView title = (TextView)MainActivity.this.findViewById(R.id.main_heading);
             }
 
             @Override
@@ -220,6 +262,43 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
             }
         });
+    }
+
+    public class ContextMenuFragmentAdapter extends FragmentPagerAdapter
+    {
+        final int PAGE_COUNT = 3;
+        private Context context;
+
+        public ContextMenuFragmentAdapter(FragmentManager fm,Context context)
+        {
+            super(fm);
+            this.context=context;
+        }
+
+        @Override
+        public Fragment getItem(int position)
+        {
+            switch (position)
+            {
+                case 0:
+                    return EventMenuFragment.newInstance(context,getIntent().getExtras());
+                case 1:
+                    return ContactsMenuFragment.newInstance(context, getIntent().getExtras());
+                case 2:
+                    return ProfileMenuFragment.newInstance(context);
+                default: return null;
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return PAGE_COUNT;
+        }
+
+        public CharSequence getPageTitle(int position)
+        {
+            return null;
+        }
     }
 
     private void loadUserData() throws IOException
@@ -361,61 +440,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             Toast.makeText(this, "User object is null.", Toast.LENGTH_LONG).show();
         }
     }
-
-    /*private void validateLocationPermissions()
-    {
-        LocationManager locationMgr;
-        locationMgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-        {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-
-        locationMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 10, this);
-    }*/
-
-    /*@Override
-    public void onLocationChanged(Location location)
-    {
-        try
-        {
-            WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(),String.valueOf(location.getLatitude()));
-            WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(),String.valueOf(location.getLongitude()));
-        } catch (IOException e)
-        {
-            if(e.getMessage()!=null)
-                Log.d(TAG,e.getMessage(),e);
-            else
-                e.printStackTrace();
-        }
-        Log.d(TAG,"["+location.getLatitude()+","+location.getLongitude()+"]");
-    }
-
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle)
-    {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String s)
-    {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String s)
-    {
-
-    }*/
 
     public class FragmentAdapter extends FragmentPagerAdapter
     {

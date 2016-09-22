@@ -283,11 +283,11 @@ public class SignUpActivity extends AppCompatActivity
                     new_user.setFirstname(profile.getFirstName());
                     new_user.setLastname(profile.getLastName());
                 }
-                else
+                /*else
                 {
-                    new_user.setFirstname(" ");
-                    new_user.setLastname(" ");
-                }
+                    new_user.setFirstname("");
+                    new_user.setLastname("");
+                }*/
 
                 if(accessToken!=null)
                 {
@@ -351,6 +351,7 @@ public class SignUpActivity extends AppCompatActivity
         if(db.isOpen())
             db.close();
         //Write user to disk
+        SharedPreference.setUsername(getApplicationContext(), u.getUsername());
         LocalComms.addContact(this,u);
     }
 
@@ -423,20 +424,23 @@ public class SignUpActivity extends AppCompatActivity
     private void showEditProfile(User u) throws IOException
     {
         User new_user = RemoteComms.getUser(this,u.getUsername());
-        restart(new_user);
+        if(new_user!=null)
+        {
+            restart(new_user);
 
-        Intent editScreen = new Intent(this,Edit_ProfileActivity.class);
+            Intent editScreen = new Intent(this, Edit_ProfileActivity.class);
 
-        editScreen.putExtra("First Name",new_user.getFirstname());
-        editScreen.putExtra("Last Name",new_user.getLastname());
-        editScreen.putExtra("Age",String.valueOf(new_user.getAge()));
-        editScreen.putExtra("Occupation",new_user.getOccupation());
-        editScreen.putExtra("Catchphrase",new_user.getCatchphrase());
-        editScreen.putExtra("Bio",new_user.getBio());
-        editScreen.putExtra("Gender",new_user.getGender());
-        editScreen.putExtra("Username",new_user.getUsername());
+            editScreen.putExtra("First Name", new_user.getFirstname());
+            editScreen.putExtra("Last Name", new_user.getLastname());
+            editScreen.putExtra("Age", String.valueOf(new_user.getAge()));
+            editScreen.putExtra("Occupation", new_user.getOccupation());
+            editScreen.putExtra("Catchphrase", new_user.getCatchphrase());
+            editScreen.putExtra("Bio", new_user.getBio());
+            editScreen.putExtra("Gender", new_user.getGender());
+            editScreen.putExtra("Username", new_user.getUsername());
 
-        startActivity(editScreen);
+            startActivity(editScreen);
+        }else Log.d(TAG,"User object from remote server is null.");
     }
 
 
@@ -474,13 +478,13 @@ public class SignUpActivity extends AppCompatActivity
             if(Pattern.compile(ppat_spaces).matcher(username).matches())//if(!username.contains(" "))
                 if(Pattern.compile(ppat_upper).matcher(username).matches())
                     if(Pattern.compile(ppat_lower).matcher(username).matches())
-                        if(Pattern.compile(ppat_digit).matcher(username).matches())
-                            if(Pattern.compile(ppat_spec).matcher(username).matches())
+                        //if(Pattern.compile(ppat_digit).matcher(username).matches())
+                            //if(Pattern.compile(ppat_spec).matcher(username).matches())
                                 if(Pattern.compile(ppat_nspec).matcher(username).matches())
                                     return true;
                                 else Log.d(TAG,"Has illegal chars.");
-                            else Log.d(TAG,"Doesn't have special char.");
-                        else Log.d(TAG,"Doesn't have digits.");
+                            //else Log.d(TAG,"Doesn't have special char.");
+                        //else Log.d(TAG,"Doesn't have digits.");
                     else Log.d(TAG,"Doesn't lowercase chars.");
                 else Log.d(TAG,"Doesn't have uppercase chars.");
             else Log.d(TAG,"Has spaces.");
@@ -560,7 +564,6 @@ public class SignUpActivity extends AppCompatActivity
                             message = toastHandler("Successfully logged in.").obtainMessage();
                             message.sendToTarget();
 
-                            SharedPreference.setUsername(getApplicationContext(), user.getUsername());
                             showEditProfile(user);
 
                             if(resp.toLowerCase().contains("exists=true"))

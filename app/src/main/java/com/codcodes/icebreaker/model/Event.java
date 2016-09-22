@@ -114,6 +114,37 @@ public class Event implements IJsonable, Parcelable
         }
     }
 
+    public LatLng getOrigin()
+    {
+        double maxLat = 0.0;
+        double maxLng = 0.0;
+        double minLat = 0.0;
+        double minLng = 0.0;
+
+        if(boundary!=null)
+        {
+            if(!boundary.isEmpty())
+            {
+                maxLat = boundary.get(0).latitude;
+                maxLng = boundary.get(0).longitude;
+
+                for (LatLng loc : boundary)
+                {
+                    if (loc.latitude > maxLat)
+                        maxLat = loc.latitude;
+                    if (loc.longitude > maxLng)
+                        maxLng = loc.longitude;
+                    if (loc.latitude < minLat)
+                        minLat = loc.latitude;
+                    if (loc.longitude < minLng)
+                        minLng = loc.longitude;
+                }
+            }
+        }
+
+        return new LatLng(minLat+((maxLat-minLat)/2),minLng+((maxLng-minLng)/2));
+    }
+
     @Override
     public int describeContents()
     {

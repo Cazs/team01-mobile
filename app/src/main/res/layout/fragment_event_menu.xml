@@ -1,0 +1,34 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.codcodes.icebreaker.tabs.EventMenuFragment"
+    android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/txtFilter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/ctxt_menu_filter"
+            android:textColor="@color/black"
+            android:textSize="22sp"/>
+
+        <EditText
+            android:id="@+id/edtRange"
+            android:layout_width="@dimen/dp_size_200"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:hint="@string/range_hint_text"
+            android:inputType="number"
+            android:fontFamily="monospace"
+            android:background="@drawable/textbox"/>
+
+        <Button
+            android:layout_width="65dp"
+            android:layout_height="63dp"
+            android:layout_gravity="center"
+            android:background="@drawable/events_btn_sync_click"/>
+
+</LinearLayout>

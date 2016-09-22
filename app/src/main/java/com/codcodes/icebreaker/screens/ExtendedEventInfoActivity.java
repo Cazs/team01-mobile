@@ -45,7 +45,7 @@ public class ExtendedEventInfoActivity extends AppCompatActivity
 
         ttfAilerons = Typeface.createFromAsset(this.getAssets(),"Ailerons-Typeface.otf");
         title = (TextView)ExtendedEventInfoActivity.this.findViewById(R.id.main_heading);
-        title.setTextSize(20);
+        title.setTextSize(26);
         title.setTypeface(ttfAilerons);
 
         Bundle extras = getIntent().getExtras();

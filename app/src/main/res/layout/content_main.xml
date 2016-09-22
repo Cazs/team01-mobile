@@ -1,38 +1,86 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".screens.MainActivity"
-    tools:showIn="@layout/activity_main"
-    android:orientation="vertical"
-    android:layout_marginTop="@dimen/app_bar_bmargin"
-    android:weightSum="100">
+    android:orientation="vertical">
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/container"
+    <com.sothree.slidinguppanel.SlidingUpPanelLayout
+        android:id="@+id/sliding_layout"
+        xmlns:sothree="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="90"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        android:layout_height="match_parent"
+        android:gravity="bottom"
+        sothree:umanoDragView="@+id/dragView"
+        sothree:umanoOverlay="true"
+        sothree:umanoPanelHeight="@dimen/sliding_tab_h"
+        sothree:umanoShadowHeight="@dimen/dp_size_4">
 
-    <!--<ImageView
-        android:id="@+id/imgAnimCircle"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_gravity="center|bottom"
-        android:visibility="gone"
-        android:src="@drawable/translucent_circle"/>-->
+        <!--Main Content-->
+        <LinearLayout
+            android:id="@+id/main"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="false"
+            android:orientation="vertical"
+            android:weightSum="100">
 
-    <android.support.design.widget.TabLayout
-        android:id="@+id/tab_layout"
-        style="@style/MyCustomTabLayout"
-        android:layout_weight="10"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@color/iceblue" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="15">
+                <include
+                    layout="@layout/appbar"/>
+            </LinearLayout>
 
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/container"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="75"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+            <!--<ImageView
+                android:id="@+id/imgAnimCircle"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center|bottom"
+                android:visibility="gone"
+                android:src="@drawable/translucent_circle"/>-->
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/dragView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#ffffff"
+            android:clickable="true"
+            android:focusable="false"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sliding_tab_h">
+
+                <android.support.design.widget.TabLayout
+                    android:id="@+id/tab_layout"
+                    style="@style/MyCustomTabLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/iceblue" />
+
+            </LinearLayout>
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/context_menu_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        </LinearLayout>
+
+    </com.sothree.slidinguppanel.SlidingUpPanelLayout>
 </LinearLayout>

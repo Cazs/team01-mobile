@@ -185,6 +185,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                         BitmapFactory.Options options = null;
                         for (Event e : events)
                         {
+                            Log.d(TAG,"Event["+e.getId()+"] origin: " + e.getOrigin());
                             iconName = "event_icons-" + e.getId();
                             //Download the file only if it has not been cached
                             options = new BitmapFactory.Options();

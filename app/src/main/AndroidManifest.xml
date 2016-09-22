@@ -136,9 +136,6 @@
                 android:value="com.codcodes.icebreaker.screens.MainActivity" />
         </activity>
         <activity
-            android:name=".screens.IceBreakActivity"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
-        <activity
             android:name=".screens.IBDialog"
             android:parentActivityName=".screens.MainActivity"/>
         <activity
