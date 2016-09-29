@@ -1,21 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v4.widget.SwipeRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/swipe_refresh_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.v7.widget.RecyclerView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/eventsList"
-        android:name="com.codcodes.icebreaker.tabs.dummy.EventsFragment"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="2dp"
-        android:layout_marginRight="2dp"
-        app:layoutManager="LinearLayoutManager"
-        tools:context=".tabs.EventsFragment"
-        tools:listitem="@layout/ib_list_item_1" />
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/eventsList"
+            android:name="com.codcodes.icebreaker.tabs.dummy.EventsFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            app:layoutManager="LinearLayoutManager"
+            tools:context=".tabs.EventsFragment"
+            tools:listitem="@layout/ib_list_item_1" />
+
+        <LinearLayout
+            android:id="@+id/animContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignBaseline="@+id/eventsList"
+            android:background="@color/white">
+
+            <pl.bclogic.pulsator4droid.library.PulsatorLayout
+                android:id="@+id/pulsator"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:pulse_repeat="0"
+                app:pulse_color="@color/colorAccent"
+                app:pulse_startFromScratch="true">
+
+                <LinearLayout
+                    android:id="@+id/anim_logo"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:orientation="vertical"
+                    android:layout_centerInParent="true">
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@mipmap/ic_launcher"
+                        android:layout_gravity="center"
+                        android:onClick="animLogoClick"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/hack_gps_container"
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:background="@drawable/action_bar_background"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_centerInParent="true">
+                    <RadioGroup
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <RadioButton
+                            android:id="@+id/rbtn_student_center"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Student Center"/>
+
+                        <RadioButton
+                            android:id="@+id/rbtn_auditorium"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Auditorium"/>
+
+                        <RadioButton
+                            android:id="@+id/rbtn_pond"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Pond"/>
+
+                        <RadioButton
+                            android:id="@+id/rbtn_library"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Library"/>
+                    </RadioGroup>
+                </LinearLayout>
+
+            </pl.bclogic.pulsator4droid.library.PulsatorLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
 </android.support.v4.widget.SwipeRefreshLayout>

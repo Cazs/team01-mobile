@@ -7,12 +7,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
@@ -23,6 +28,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +38,7 @@ import com.codcodes.icebreaker.auxilary.ContactListSwitches;
 import com.codcodes.icebreaker.auxilary.CustomListAdapter;
 import com.codcodes.icebreaker.auxilary.EventsRecyclerViewAdapter;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
+import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
@@ -70,15 +78,31 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
     private static ArrayList<Event> events;
     private SwipeRefreshLayout swipeRefreshLayout;
     public static final String TAG = "IB/EventsFragment";
+    private double location_lat=0.0;
+    private double location_lng=0.0;
+    private LinearLayout animContainer;
+    private static EventsFragment e;
     //private ProgressDialog progress = null;
 
     private IOnListFragmentInteractionListener mListener;
     private RecyclerView recyclerView;
     private int mColumnCount = 1;
+    private ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
+    //private ImageView imgAnim;
+    private PulsatorLayout pulsator;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+    }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         final View v = inflater.inflate(R.layout.fragment_events,container,false);
+
+        //imgAnim = (ImageView)v.findViewById(R.id.eventAnim);
+        animContainer = (LinearLayout)v.findViewById(R.id.animContainer);
 
         swipeRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_layout);
 
@@ -103,154 +127,121 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
             }
         }
 
-        reloadEvents();
+        /*if(recyclerView.getAdapter()==null)
+            setAdapter();
+        else Log.d(TAG,"Event Adapter is set.");
 
-        //Bundle extras = getArguments();
-        /*final PulsatorLayout pulsator = (PulsatorLayout) v.findViewById(R.id.pulsator);
+        beginLoadingAnim();*/
+        Bundle extras = getArguments();
+        pulsator = (PulsatorLayout) v.findViewById(R.id.pulsator);
+        pulsator.setInterpolator(PulsatorLayout.INTERP_ACCELERATE_DECELERATE);
+        pulsator.setDuration(2000);
+
         if(extras!=null)
         {
             boolean check = extras.getBoolean("com.codcodes.icebreaker.Back");
             if (check)
-            {
-                pulsator.setVisibility(View.GONE);
-                //list.setVisibility(View.VISIBLE);
-            }
+                setAdapter();
         }
         else
         {
-
-            pulsator.start();
-            pulsator.postDelayed(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    pulsator.setVisibility(View.GONE);
-                    //list.setVisibility(View.VISIBLE);
-
-                }
-            }, 10000);
-        }*/
-
+            if(MainActivity.is_reloading_events)
+                pulsator.start();
+            else setAdapter();
+        }
         return v;
     }
 
-    public void reloadEvents()
+    public void animLogoClick(View view)
     {
-        Thread eventsThread = new Thread(new Runnable()
-        {
+        Toast.makeText(getContext(),"On click",Toast.LENGTH_LONG).show();
+    }
+
+    public void setAdapter()
+    {
+        if(animContainer!=null)
+            animContainer.setVisibility(View.GONE);
+        if(pulsator!=null)
+            pulsator.stop();
+
+        MainActivity.is_reloading_events=false;
+
+        Thread t = new Thread(new Runnable() {
             @Override
             public void run()
             {
-                Looper.prepare();
-                //progress = LocalComms.showProgressDialog(getActivity(),"Loading Events...");
-                events = new ArrayList<>();
-                try
+                if (recyclerView != null)
                 {
-                    String eventsJson = RemoteComms.sendGetRequest("readEvents");
-                    JSON.<Event>getJsonableObjectsFromJson(eventsJson,events,Event.class);
-                } catch (IOException e)
-                {
-                    Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_LONG).show();
-                    Log.wtf(TAG,e.getMessage());
-                    //TODO: Better Logging
-                }
-                catch (java.lang.InstantiationException e)
-                {
-                    Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_LONG).show();
-                    Log.d(TAG,e.getMessage());
-                    //TODO: Error Logging
-                } catch (IllegalAccessException e)
-                {
-                    Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_LONG).show();
-                    Log.d(TAG,e.getMessage());
-                    //TODO: Error Logging
-                }
-                if(events==null)
-                {
-                    //TODO: Notify user
-                    Log.d(TAG,"Something went wrong while we were trying to read the events.");
-                }
-                else if(events.isEmpty())
-                {
-                    //TODO: Notify user
-                    Log.d(TAG,"No events were found");
-                }
-                else//All is well
-                {
-                    final ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
-                    try
+                    if(events==null)
+                        events = new ArrayList<>();
+
+                    if(events.isEmpty())
                     {
-                        String iconName = "";
-                        BitmapFactory.Options options = null;
-                        for (Event e : events)
+                        Event temp = new Event();
+                        temp.setTitle(getString(R.string.msg_no_events));
+                        final ArrayList<Event> temp_lst = new ArrayList<Event>();
+                        temp_lst.add(temp);
+                        if(getActivity()!=null)
                         {
-                            Log.d(TAG,"Event["+e.getId()+"] origin: " + e.getOrigin());
-                            iconName = "event_icons-" + e.getId();
-                            //Download the file only if it has not been cached
-                            options = new BitmapFactory.Options();
-                            options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-
-                            try
+                            getActivity().runOnUiThread(new Runnable()
                             {
-                                Bitmap bitmap = LocalComms.getImage(getContext(), iconName, ".png", "/events", options);
-                                if (bitmap == null)
-                                    bitmap = RemoteComms.getImage(getContext(), iconName, ".png", "/events", options);
-
-                                bitmaps.add(bitmap);
-                            }
-                            catch (IOException ex)
+                                @Override
+                                public void run()
+                                {
+                                    recyclerView.setAdapter(new EventsRecyclerViewAdapter(temp_lst, bitmaps, mListener));
+                                }
+                            });
+                        }else Log.wtf(TAG,"MainActivity is null.");
+                        Log.d(TAG, "Events list is empty.");
+                    }
+                    else
+                    {
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        if(bitmaps==null)
+                            bitmaps=new ArrayList<>();
+                        try
+                        {
+                            if (bitmaps.isEmpty())
                             {
-                                if(ex.getMessage()!=null)
-                                    Log.wtf(TAG,ex.getMessage(),ex);
-                                else
-                                    ex.printStackTrace();
+
+                                for (Event e : events)
+                                    bitmaps.add(LocalComms.getImage(getContext(), "event_icons-" + e.getId(), ".png", "/events", options));
                             }
+                            if(getActivity()!=null)
+                            {
+                                getActivity().runOnUiThread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        recyclerView.setAdapter(new EventsRecyclerViewAdapter(events, bitmaps, mListener));
+                                    }
+                                });
+                            }else Log.wtf(TAG,"MainActivity is null.");
                         }
+                        catch (IOException e)
+                        {
+                            LocalComms.logException(e);
+                        }
+                        Log.d(TAG, "Set events list.");
+                    }
 
-                        Runnable runnable = new Runnable()
+                    if(getActivity()!=null)
+                    {
+                        getActivity().runOnUiThread(new Runnable()
                         {
                             @Override
                             public void run()
                             {
-                                //LocalComms.hideProgressBar(progress);
-                                if (recyclerView != null)
-                                {
-                                    if(events==null)
-                                        events = new ArrayList<>();
-
-                                    if(events.isEmpty())
-                                    {
-                                        Event temp = new Event();
-                                        temp.setTitle(getString(R.string.msg_no_events));
-                                        ArrayList<Event> temp_lst = new ArrayList<Event>();
-                                        temp_lst.add(temp);
-                                        recyclerView.setAdapter(new EventsRecyclerViewAdapter(temp_lst, bitmaps, mListener));
-                                        Log.d(TAG, "Events list is empty.");
-                                    }
-                                    else
-                                    {
-                                        recyclerView.setAdapter(new EventsRecyclerViewAdapter(events, bitmaps, mListener));
-                                        Log.d(TAG, "Set events list.");
-                                    }
-                                }
                                 if(swipeRefreshLayout!=null)
                                     swipeRefreshLayout.setRefreshing(false);
                             }
-                        };
-                        runOnUI(runnable);
-                    }
-                    catch(ConcurrentModificationException e)
-                    {
-                        if(e.getMessage()!=null)
-                            Log.d(TAG, e.getMessage());
-                        else
-                            e.printStackTrace();
-                    }
+                        });
+                    }else Log.wtf(TAG,"MainActivity is null.");
                 }
             }
         });
-        eventsThread.start();
+        t.start();
     }
 
     @Override
@@ -275,19 +266,136 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
         mListener = null;
     }
 
-    public void runOnUI(Runnable r)
+    public void setEvents(ArrayList<Event> events){this.events=events;}
+
+    public void setBitmaps(ArrayList<Bitmap> bitmaps){this.bitmaps=bitmaps;}
+
+    public void setLat(double lat){this.location_lat=lat;}
+
+    public void setLng(double lng){this.location_lng=lng;}
+
+    public static EventsFragment newInstance(Context context, Bundle b, ArrayList<Event> events,
+                                             ArrayList<Bitmap> bitmaps,double lat, double lng)
     {
-        if(EventsFragment.this!=null)
-            if(EventsFragment.this.getActivity()!=null)
-                EventsFragment.this.getActivity().runOnUiThread(r);
+        if(e==null)
+            e = new EventsFragment();
+        e.setEvents(events);
+        e.setBitmaps(bitmaps);
+        e.setLat(lat);
+        e.setLng(lng);
+        mgr = context.getAssets();
+        if(!e.isAdded())
+            e.setArguments(b);
+        return e;
     }
 
-    public static EventsFragment newInstance(Context context, Bundle b)
+    public void reloadEvents()
     {
-        EventsFragment e = new EventsFragment();
-        mgr = context.getAssets();
-        e.setArguments(b);
-        return e;
+        MainActivity.is_reloading_events=true;
+        if(animContainer!=null)
+            animContainer.setVisibility(View.VISIBLE);
+        startPulsator();
+
+
+        Thread eventsThread = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Looper.prepare();
+                //progress = LocalComms.showProgressDialog(getActivity(),"Loading Events...");
+                while (location_lat==0.0||location_lng==0.0){}//wait for location
+
+                //Attempt to load Events
+                events = new ArrayList<>();
+                try
+                {
+                    String eventIds = RemoteComms.sendGetRequest("getNearbyEventIds/" + location_lat
+                            + '/' + location_lng + '/' + MainActivity.range);
+                    eventIds=eventIds.replaceAll("\\[","");
+                    eventIds=eventIds.replaceAll("\\]","");
+                    eventIds=eventIds.replaceAll("\"","");
+                    eventIds=eventIds.replaceAll("\\{","");
+                    eventIds=eventIds.replaceAll("\\}","");
+
+                    String[] ids_arr = eventIds.split(",");
+                    for(String id:ids_arr)
+                    {
+                        try
+                        {
+                            long ev_id = Long.parseLong(id);
+                            Event event = LocalComms.getEvent(getContext(), ev_id);
+                            events.add(event);
+                        }
+                        catch (NumberFormatException e)
+                        {
+                            LocalComms.logException(e);
+                        }
+                    }
+                }
+                catch (IOException e)
+                {
+                    LocalComms.logException(e);
+                }
+
+                //Attempt to load bitmaps and set adapter
+                if(events==null)
+                {
+                    Toast.makeText(getContext(),"Something went wrong while we were trying to read the events. Please reload.",Toast.LENGTH_LONG).show();
+                    Log.d(TAG,"Something went wrong while we were trying to read the events.");
+                    events = new ArrayList<>();
+                }
+                if(events.isEmpty())
+                {
+                    Toast.makeText(getContext(),"No events were found.",Toast.LENGTH_LONG).show();
+                    Log.d(TAG,"No events were found.");
+                }
+
+                bitmaps = new ArrayList<Bitmap>();
+                try
+                {
+                    String iconName = "";
+                    BitmapFactory.Options options = null;
+                    for (Event e : events)
+                    {
+                        iconName = "event_icons-" + e.getId();
+                        //Download the file only if it has not been cached
+                        options = new BitmapFactory.Options();
+                        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+
+                        try
+                        {
+                            Bitmap bitmap = LocalComms.getImage(getContext(), iconName, ".png", "/events", options);
+
+                            bitmaps.add(bitmap);
+                        }
+                        catch (IOException ex)
+                        {
+                            LocalComms.logException(ex);
+                        }
+                    }
+                    getActivity().runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            setAdapter();
+                        }
+                    });
+                }
+                catch(ConcurrentModificationException e)
+                {
+                    LocalComms.logException(e);
+                }
+            }
+        });
+        eventsThread.start();
+    }
+
+    public void startPulsator()
+    {
+        if(this.pulsator!=null)
+            this.pulsator.start();
     }
 
     @Override

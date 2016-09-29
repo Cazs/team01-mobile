@@ -57,90 +57,77 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
             try
             {
                 String json_msg = RemoteComms.sendGetRequest("getMessageById/"+kv_pair[1]);
-                ArrayList<Message> msgs = new ArrayList<Message>();
-                JSON.<Message>getJsonableObjectsFromJson(json_msg, msgs, Message.class);
+                //ArrayList<Message> msgs = new ArrayList<Message>();
+                //JSON.<Message>getJsonableObjectsFromJson(json_msg, msgs, Message.class);
+                //Message msg = msgs.get(0);
 
-                //Decode message
-                Message msg = msgs.get(0);
-                switch (msg.getStatus())
+                Message msg = new Message();
+                JSON.getJsonable(json_msg,msg);
+                if(msg.isValid())
                 {
-                    case 101:
-                    case 102:
-                        //Add user to local contacts
-                        if(msg.getReceiver().equals(MainActivity.uhandle))
-                        {
-                            User rem_usr = LocalComms.getContact(getApplicationContext(),msg.getSender());
-                            if(rem_usr==null)
-                                rem_usr = RemoteComms.getUser(getApplicationContext(), msg.getSender());
+                    //Decode message
+                    switch (msg.getStatus())
+                    {
+                        case 101:
+                        case 102:
+                            //Add user to local contacts
+                            if (msg.getReceiver().equals(SharedPreference.getUsername(this)))
+                            {
+                                User rem_usr = LocalComms.getContact(getApplicationContext(), msg.getSender());
+                                if (rem_usr == null)
+                                    rem_usr = RemoteComms.getUser(getApplicationContext(), msg.getSender());
 
-                            //notify user
-                            String name = LocalComms.getValidatedName(rem_usr);
-                            LocalComms.showNotification(getApplicationContext(),name + " would like to get to know you.", NOTIFICATION_ID.NOTIF_REQUEST.getId());
-                        }
-                        break;
-                    case 103:
-                        if(msg.getSender().equals(SharedPreference.getUsername(MessageFcmService.this)))//local user got accepted
-                        {
-                            User rem_usr = LocalComms.getContact(getApplicationContext(),msg.getReceiver());
-                            if(rem_usr==null)
-                                rem_usr = RemoteComms.getUser(getApplicationContext(), msg.getReceiver());
+                                //notify user
+                                String name = LocalComms.getValidatedName(rem_usr);
+                                LocalComms.showNotification(getApplicationContext(), name + " would like to get to know you.", NOTIFICATION_ID.NOTIF_REQUEST.getId());
+                            }
+                            break;
+                        case 103:
+                            if (msg.getSender().equals(SharedPreference.getUsername(MessageFcmService.this)))//local user got accepted
+                            {
+                                User rem_usr = LocalComms.getContact(getApplicationContext(), msg.getReceiver());
+                                if (rem_usr == null)
+                                    rem_usr = RemoteComms.getUser(getApplicationContext(), msg.getReceiver());
 
-                            //Save contact to disk
-                            LocalComms.addContact(this, rem_usr);
+                                //Save contact to disk
+                                LocalComms.addContact(this, rem_usr);
 
-                            //notify user
-                            String name = LocalComms.getValidatedName(rem_usr);
-                            LocalComms.showNotification(getApplicationContext(),name + " would also like to get to know you.", NOTIFICATION_ID.NOTIF_REQUEST.getId());
-                        }else
-                        {
-                            User sendr = LocalComms.getContact(getApplicationContext(),msg.getSender());
-                            if(sendr==null)
-                                sendr = RemoteComms.getUser(getApplicationContext(), msg.getSender());
-                            LocalComms.showNotification(getApplicationContext(),"You accepted " + LocalComms.getValidatedName(sendr)+"'s request.", NOTIFICATION_ID.NOTIF_REQUEST.getId());
-                        }
-                        break;
-                    case 104:
-                        if(msg.getSender().equals(SharedPreference.getUsername(MessageFcmService.this)))//local user got rejected
-                        {
-                            User rem_usr = LocalComms.getContact(getApplicationContext(), msg.getReceiver());
-                            if(rem_usr==null)
-                                rem_usr = RemoteComms.getUser(getApplicationContext(), msg.getReceiver());
+                                //notify user
+                                String name = LocalComms.getValidatedName(rem_usr);
+                                LocalComms.showNotification(getApplicationContext(), name + " wants to meet up at " + msg.getMessage(), NOTIFICATION_ID.NOTIF_REQUEST.getId());
+                            } else
+                            {
+                                User sendr = LocalComms.getContact(getApplicationContext(), msg.getSender());
+                                if (sendr == null)
+                                    sendr = RemoteComms.getUser(getApplicationContext(), msg.getSender());
+                                LocalComms.showNotification(getApplicationContext(), "You accepted " + LocalComms.getValidatedName(sendr) + "'s request.", NOTIFICATION_ID.NOTIF_REQUEST.getId());
+                            }
+                            break;
+                        case 104:
+                            if (msg.getSender().equals(SharedPreference.getUsername(MessageFcmService.this)))//local user got rejected
+                            {
+                                User rem_usr = LocalComms.getContact(getApplicationContext(), msg.getReceiver());
+                                if (rem_usr == null)
+                                    rem_usr = RemoteComms.getUser(getApplicationContext(), msg.getReceiver());
 
-                            //notify user
-                            String name = LocalComms.getValidatedName(rem_usr);
-                            LocalComms.showNotification(getApplicationContext(),name + " is not keen right now, better luck next time ;)", NOTIFICATION_ID.NOTIF_REQUEST.getId());
-                        }
-                        else
-                        {
-                            User sendr = LocalComms.getContact(getApplicationContext(),msg.getSender());
-                            if(sendr==null)
-                                sendr = RemoteComms.getUser(getApplicationContext(), msg.getSender());
-                            LocalComms.showNotification(getApplicationContext(),"You rejected " + LocalComms.getValidatedName(sendr)+"'s request.", NOTIFICATION_ID.NOTIF_REQUEST.getId());
-                        }
-                        break;
-                }
-
-                //Add message (or update status) on local DB
-                LocalComms.addMessageToLocalDB(getApplicationContext(),msg);
-
+                                //notify user
+                                String name = LocalComms.getValidatedName(rem_usr);
+                                LocalComms.showNotification(getApplicationContext(), name + " is not keen right now, better luck next time ;)", NOTIFICATION_ID.NOTIF_REQUEST.getId());
+                            } else
+                            {
+                                User sendr = LocalComms.getContact(getApplicationContext(), msg.getSender());
+                                if (sendr == null)
+                                    sendr = RemoteComms.getUser(getApplicationContext(), msg.getSender());
+                                LocalComms.showNotification(getApplicationContext(), "You rejected " + LocalComms.getValidatedName(sendr) + "'s request.", NOTIFICATION_ID.NOTIF_REQUEST.getId());
+                            }
+                            break;
+                    }
+                    //Add message (or update status) on local DB
+                    LocalComms.addMessageToLocalDB(getApplicationContext(),msg);
+                }else Log.wtf(TAG,"Message["+kv_pair[1]+"] is invalid.");
             } catch (IOException e)
             {
-                if(e.getMessage()!=null)
-                    Log.d(TAG,e.getMessage());//TODO: better logging
-                else
-                    e.printStackTrace();
-            }catch (InstantiationException e)
-            {
-                if(e.getMessage()!=null)
-                    Log.d(TAG,e.getMessage());//TODO: better logging
-                else
-                    e.printStackTrace();
-            }catch (IllegalAccessException e)
-            {
-                if(e.getMessage()!=null)
-                    Log.d(TAG,e.getMessage());//TODO: better logging
-                else
-                    e.printStackTrace();
+                LocalComms.logException(e);
             }
         }
     }

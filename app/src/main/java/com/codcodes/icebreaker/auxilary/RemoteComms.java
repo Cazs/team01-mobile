@@ -82,30 +82,49 @@ public class RemoteComms
         return response;
     }
 
-    public static Drawable getGoogleMapsBitmap(double lat, double lng, int zoom, int w, int h, ArrayList<LatLng> coords) throws IOException
+    public ArrayList<Event> getNearbyEvents(double lat, double lng, double range) throws InstantiationException, IllegalAccessException, IOException
     {
-        if(coords==null)
-            return null;
-        String event_coords = "";
-        for(LatLng pos:coords)
-            event_coords += pos.latitude+","+pos.longitude+"|";
-        if(event_coords.length()>0)
-            event_coords = event_coords.substring(0,event_coords.length()-1);//remove last pipe
-        String url = "https://maps.google.com/maps/api/staticmap?" +
-                "center=" +lat + "," + lng + "&" +
-                "zoom="+zoom+"&" +
-                "size="+w+"x"+h+"&" +
-                "sensor=true&" +
-                "markers=icon:"+ URLEncoder.encode("http://icebreak.azurewebsites.net/images/public_res/ic_gps_fixed_black_24dp.png","UTF-8")+"|" + lat + "," + lng + "&" +
-                "path=color:0x0000ff|weight:5|"+event_coords;
 
-        Log.d(TAG,"Opening connection to http://maps.google.com...");
-        URL urlConn = new URL(url);
-        HttpsURLConnection httpConn =  (HttpsURLConnection)urlConn.openConnection();
-        httpConn.setRequestMethod("GET");
-        //httpConn.setDoOutput(true);
-        //httpConn.setDoInput(true);
-        //httpConn.setChunkedStreamingMode(1024);
+        String response = sendGetRequest(String.format("getNearbyEvents/%s/%s/%s",
+                String.valueOf(lat), String.valueOf(lng), String.valueOf(range)));
+        ArrayList<Event> events = new ArrayList<>();
+        JSON.<Event>getJsonableObjectsFromJson(response,events,Event.class);
+        return events;
+    }
+
+    public static Drawable getGoogleMapsBitmap(double lat, double lng, int zoom, int w, int h, Event event) throws IOException
+    {
+        if(event.isValid())
+        {
+            double lat_offset = 0.00005;
+            double lng_offset = 0.00000;
+
+            String event_coords = "";
+
+            for (LatLng pos : event.getBoundary())
+                event_coords += pos.latitude + "," + pos.longitude + "|";
+            if (event_coords.length() > 0)
+                event_coords = event_coords.substring(0, event_coords.length() - 1);//remove last pipe
+            String url = "https://maps.google.com/maps/api/staticmap?" +
+                    "center=" + lat + "," + lng + "&" +
+                    "zoom=" + zoom + "&" +
+                    "size=" + w + "x" + h + "&" +
+                    "sensor=true&" +
+                    "markers=icon:" + URLEncoder.encode("http://icebreak.azurewebsites.net/images/public_res/ic_gps_fixed_black_24dp.png", "UTF-8") + "|" + lat + "," + lng + "&";
+            if (event.getOrigin().latitude != 0.0 && event.getOrigin().longitude != 0.0)
+            {
+                url += "markers=icon:" + URLEncoder.encode("http://icebreak.azurewebsites.net/images/public_res/dot.png", "UTF-8") + "|" + event.getOrigin().latitude + "," + event.getOrigin().longitude + "&";
+                url += "path=color:0x0000ff|weight:5|" + (lat + lat_offset) + "," + (lng + lng_offset) + "|" + (event.getOrigin().latitude + lat_offset) + "," + (event.getOrigin().longitude + lng_offset) + "&";
+            }
+            url += "path=color:0x0000ff|weight:5|" + event_coords;
+
+            Log.d(TAG, "Opening connection to http://maps.google.com...");
+            URL urlConn = new URL(url);
+            HttpsURLConnection httpConn = (HttpsURLConnection) urlConn.openConnection();
+            httpConn.setRequestMethod("GET");
+            //httpConn.setDoOutput(true);
+            //httpConn.setDoInput(true);
+            //httpConn.setChunkedStreamingMode(1024);
         /*ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];
         DataInputStream is = new DataInputStream(httpConn.getInputStream());
@@ -121,9 +140,14 @@ public class RemoteComms
         bmp = BitmapFactory.decodeStream(httpConn.getInputStream());
         if(httpConn.getInputStream()!=null)
             httpConn.getInputStream().close();*/
-        //if(httpConn.getResponseCode() == HttpURLConnection.HTTP_OK)
+            //if(httpConn.getResponseCode() == HttpURLConnection.HTTP_OK)
 
-        return Drawable.createFromStream(httpConn.getInputStream(), "google_maps_bitmap");
+            return Drawable.createFromStream(httpConn.getInputStream(), "google_maps_bitmap");
+        }else
+        {
+            Log.d(TAG,"getGoogleMapsBitmap> Invalid Event.");
+            return null;
+        }
     }
 
     public static byte[] getFBImage(String host, String resource) throws IOException

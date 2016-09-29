@@ -183,34 +183,35 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                     long event_id = 0;
                     String tmp = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
                     if (tmp != null)
+                    {
                         if (!tmp.isEmpty() && !tmp.equals("null"))
                             event_id = Long.valueOf(tmp);
-                    if (event_id > 0)
-                    {
-                        contacts = new ArrayList<User>();
+                        if (event_id > 0)
+                        {
+                            contacts = new ArrayList<User>();
 
-                        Event event = RemoteComms.getEvent(event_id);
-                        String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + event_id);
-                        JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
-                        int i = 0;
-                        refreshUsersAtEvent();
-                    }// else Log.d(TAG,"User not at an event.");
+                            Event event = RemoteComms.getEvent(event_id);
+                            String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + event_id);
+                            JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
+                            refreshUsersAtEvent();
+                        }// else Log.d(TAG,"User not at an event.");
+                    }
+                }
+                catch (NumberFormatException e)
+                {
+                    LocalComms.logException(e);
                 } catch (ConcurrentModificationException e)
                 {
-                    //TODO: Better logging.
-                    Log.wtf(TAG, e.getMessage(), e);
+                    LocalComms.logException(e);
                 } catch (java.lang.InstantiationException e)
                 {
-                    //TODO: Better logging.
-                    Log.wtf(TAG, e.getMessage(), e);
+                    LocalComms.logException(e);
                 } catch (IllegalAccessException e)
                 {
-                    //TODO: Better logging.
-                    Log.wtf(TAG, e.getMessage(), e);
+                    LocalComms.logException(e);
                 } catch (IOException e)
                 {
-                    //TODO: Better logging.
-                    Log.wtf(TAG, e.getMessage(), e);
+                    LocalComms.logException(e);
                 }
             }
         });
@@ -238,8 +239,8 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 {
                     //Look for user profile image
                     bitmap = LocalComms.getImage(getContext(), u.getUsername(), ".png", "/profile", options);
-                    if (bitmap == null)
-                        bitmap = RemoteComms.getImage(getActivity(), u.getUsername(), ".png", "/profile", options);
+                    //if (bitmap == null)
+                    //    bitmap = RemoteComms.getImage(getActivity(), u.getUsername(), ".png", "/profile", options);
                 }
                 catch (IOException e)
                 {

@@ -5,14 +5,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 /**
- * Created by Casper on 2016/08/10.
+ * Created by Casper on 2016/09/22.
  */
-public class MessagePollHelper extends SQLiteOpenHelper
+public class EventHelper extends SQLiteOpenHelper
 {
     public static final String DB_NAME = "IcebreakDB";
     public static final int DB_VERSION = 1;
 
-    public MessagePollHelper(Context ctxt)
+    public EventHelper(Context ctxt)
     {
         super(ctxt,DB_NAME,null,DB_VERSION);
     }
@@ -20,7 +20,7 @@ public class MessagePollHelper extends SQLiteOpenHelper
     @Override
     public void onCreate(SQLiteDatabase db)
     {
-        db.execSQL(MessagePollContract.SQL_CREATE_tblMSG);
+        db.execSQL(EventContract.SQL_CREATE_tblEvents);
     }
 
     @Override

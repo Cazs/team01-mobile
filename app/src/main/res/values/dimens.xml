@@ -8,7 +8,7 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="fab_bmargin">30dp</dimen>
 
-    <dimen name="sliding_tab_h">55dp</dimen>
+    <dimen name="sliding_tab_h">60dp</dimen>
 
     <dimen name="title_text_size">29pt</dimen>
 
@@ -32,7 +32,7 @@
     <dimen name="signup_logo_h">20dp</dimen>
 
     <dimen name="logo_w">50dp</dimen>
-    <dimen name="logo_h">50dp</dimen>
+    <dimen name="logo_h">65dp</dimen>
     <dimen name="logo_tmargin">5dp</dimen>
 
     <dimen name="profile_settings_h">400dp</dimen>

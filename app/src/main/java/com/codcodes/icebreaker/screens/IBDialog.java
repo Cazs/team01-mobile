@@ -196,8 +196,8 @@ public class IBDialog extends Activity
                         if(bitmapRequestingUser!=null)
                             bitmapRequestingUser.recycle();
                         bitmapRequestingUser = LocalComms.getImage(IBDialog.this, requesting_user.getUsername(), ".png", "/profile", options);
-                        if (bitmapRequestingUser == null)//try get image from server if no local image
-                            bitmapRequestingUser = RemoteComms.getImage(IBDialog.this, requesting_user.getUsername(), ".png", "/profile", options);
+                        //if (bitmapRequestingUser == null)//try get image from server if no local image
+                        //    bitmapRequestingUser = RemoteComms.getImage(IBDialog.this, requesting_user.getUsername(), ".png", "/profile", options);
                     }
                     catch (IOException e)
                     {
@@ -228,8 +228,8 @@ public class IBDialog extends Activity
                     {
                         //try to load local image for receiver
                         bitmapReceivingUser = LocalComms.getImage(IBDialog.this, receiving_user.getUsername(), ".png", "/profile", options);
-                        if (bitmapReceivingUser == null)//try get image from server if no local image
-                            bitmapReceivingUser = RemoteComms.getImage(IBDialog.this, receiving_user.getUsername(), ".png", "/profile", options);
+                        //if (bitmapReceivingUser == null)//try get image from server if no local image
+                        //    bitmapReceivingUser = RemoteComms.getImage(IBDialog.this, receiving_user.getUsername(), ".png", "/profile", options);
 
                         //set image
                         Runnable r = new Runnable()

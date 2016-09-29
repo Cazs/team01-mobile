@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
+    android:id="@+id/imgGpsLoc"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -11,36 +12,18 @@
     android:weightSum="100">
 
     <LinearLayout
-        android:id="@+id/actionBar"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="13"
-        android:background="@drawable/action_bar_bg"
-        android:layout_marginBottom="-5dp">
-
-        <ImageView
-            android:layout_width="@dimen/logo_w"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="@dimen/dp_size_20"
-            android:src="@mipmap/ic_launcher" />
-
-        <TextView
-            android:id="@+id/main_heading"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/app_name"
-            android:textSize="29pt"
-            android:maxLines="1"
-            android:textColor="@color/white" />
-
+        android:layout_weight="17"
+        android:background="@drawable/action_bar_background">
+        <include
+            layout="@layout/appbar"/>
     </LinearLayout>
 
     <RelativeLayout
-        android:id="@+id/imgGpsLoc"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="100"/>
+        android:layout_weight="93"
+        android:background="@android:color/transparent"/>
 
 </LinearLayout>

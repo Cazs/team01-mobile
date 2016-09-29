@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -45,7 +46,8 @@ public class ExtendedEventInfoActivity extends AppCompatActivity
 
         ttfAilerons = Typeface.createFromAsset(this.getAssets(),"Ailerons-Typeface.otf");
         title = (TextView)ExtendedEventInfoActivity.this.findViewById(R.id.main_heading);
-        title.setTextSize(26);
+        int hsize=26;
+        title.setTextSize(hsize);
         title.setTypeface(ttfAilerons);
 
         Bundle extras = getIntent().getExtras();
@@ -56,8 +58,20 @@ public class ExtendedEventInfoActivity extends AppCompatActivity
             String slng = extras.getString("Location_lng");
             event = extras.getParcelable("Event");
 
+            if(event==null||slat==null||slng==null)
+                return;
+
+            int len = event.getTitle().length();
+            if(len>0 && len<=5)hsize=30;
+            if(len>5 && len<=10)hsize=26;
+            if(len>10 && len<=15)hsize=22;
+            if(len>15 && len<=20)hsize=18;
+            if(len>20 && len<=25)hsize=14;
+            if(len>25 && len<=30)hsize=10;
+            if(len>30)hsize=8;
+
+            title.setTextSize(hsize);
             title.setText(event.getTitle());
-            //TODO: Resize title size nicely
 
             if(slat!=null)
                 if(!slat.isEmpty())
@@ -68,7 +82,7 @@ public class ExtendedEventInfoActivity extends AppCompatActivity
                     lng = Double.valueOf(slng);
         }else this.finish();
 
-        final RelativeLayout imgGpsLoc = (RelativeLayout)findViewById(R.id.imgGpsLoc);
+        final LinearLayout imgGpsLoc = (LinearLayout)findViewById(R.id.imgGpsLoc);
 
         progressDlg = LocalComms.showProgressDialog(ExtendedEventInfoActivity.this,"Fetching image...");
         Thread tImageLoader = new Thread(new Runnable()
@@ -79,7 +93,7 @@ public class ExtendedEventInfoActivity extends AppCompatActivity
                 try
                 {
                     //TODO: have Event organisers set zoom level etc.
-                    final Drawable bg = RemoteComms.getGoogleMapsBitmap(lat, lng, 18, 400, 1000, event.getBoundary());
+                    final Drawable bg = RemoteComms.getGoogleMapsBitmap(lat, lng, 18, 400, 1000, event);
                     //final BitmapDrawable background = new BitmapDrawable(b);
                     ExtendedEventInfoActivity.this.runOnUiThread(new Runnable()
                     {

@@ -27,9 +27,12 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.model.Event;
+import com.codcodes.icebreaker.model.EventContract;
+import com.codcodes.icebreaker.model.EventHelper;
 import com.codcodes.icebreaker.model.Message;
 import com.codcodes.icebreaker.model.MessagePollContract;
-import com.codcodes.icebreaker.model.MessagePollHelper;
+import com.codcodes.icebreaker.model.MessageHelper;
 import com.codcodes.icebreaker.model.Metadata;
 import com.codcodes.icebreaker.model.MetadataContract;
 import com.codcodes.icebreaker.model.MetadataHelper;
@@ -37,6 +40,7 @@ import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.model.UserContract;
 import com.codcodes.icebreaker.model.UserHelper;
 import com.codcodes.icebreaker.screens.MainActivity;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,6 +80,7 @@ public class LocalComms
 
             if(file_id.charAt(0)=='|')
                 file_id=file_id.substring(1);//remove first slash
+
             //get remote metadata for the file
             String payload = RemoteComms.sendGetRequest("getMeta/"+file_id);
             if(payload!=null)
@@ -88,10 +93,22 @@ public class LocalComms
                         JSON.getJsonable(payload, remote_metadata);
 
                         if(remote_metadata.getEntry()==null||remote_metadata.getMeta()==null)
+                        {
+                            Log.d(TAG,"[~"+path + '/' + filename + ext +"] Remote Metadata Entry or Meta is null.");
                             return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+                        }
 
                         if(remote_metadata.getEntry().toLowerCase().equals("null")||remote_metadata.getMeta().toLowerCase().equals("null"))
+                        {
+                            Log.d(TAG,"[~"+path + '/' + filename + ext +"] Remote Metadata Entry or Meta is null.");
                             return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+                        }
+
+                        if(remote_metadata.getEntry().toLowerCase().equals("error")||remote_metadata.getMeta().toLowerCase().equals("error"))
+                        {
+                            Log.d(TAG,"[~"+path + '/' + filename + ext +"] Remote Metadata returned an error.");
+                            return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+                        }
 
                         String lmDat = null;
                         try
@@ -99,9 +116,7 @@ public class LocalComms
                             lmDat = LocalComms.getMetaRecord(context, file_id);
                         }catch (SQLiteException e)
                         {
-                            if(e.getMessage()!=null)
-                                Log.d(TAG,e.getMessage());
-                            else e.printStackTrace();
+                            LocalComms.logException(e);
                         }
 
                         /*
@@ -109,34 +124,39 @@ public class LocalComms
                          * It's fine to save it here because you've already loaded local
                          * Metadata to memory - if it exists.
                          */
+
                         LocalComms.addMetaRecord(context,remote_metadata.getEntry(),remote_metadata.getMeta());
 
                         if(lmDat!=null)//local file has metadata.
                         {
                             Metadata local_metadata = new Metadata(file_id,lmDat);
-
                             try
                             {
-                                //Bitmap bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, options);
-                                //Bitmap compressed =
-                                //bitmap.recycle();
                                 long r_dmd = Long.parseLong(remote_metadata.getAttribute(Config.META_DATE_MODIFIED.getValue()));
-                                Config mod = local_metadata.compareDateModified(r_dmd);
+                                long l_dmd = Long.parseLong(local_metadata.getAttribute(Config.META_DATE_MODIFIED.getValue()));
+
+                                if(l_dmd==r_dmd)//local file is up to date
+                                {
+                                    Log.d(TAG,"Local file[~"+path + '/' + filename + ext +"] is up to date.");
+                                    return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+                                }else return RemoteComms.getImage(context, filename, ext, path, options);
+                                /*Config mod = local_metadata.compareDateModified(r_dmd);
                                 if (mod.getValue().equals(Config.META_PARAM_NEWER.getValue()))//remote file is newer
                                     return RemoteComms.getImage(context, filename, ext, path, options);
                                 else if (mod.getValue().equals(Config.META_PARAM_EQUAL.getValue()))//local file is up to date
+                                {
+                                    Log.d(TAG,"Local file[~"+path + '/' + filename + ext +"] is up to date.");
                                     return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+                                }*/
 
                             } catch (NumberFormatException e)
                             {
-                                if (e.getMessage() != null)
-                                    Log.wtf(TAG, e.getMessage(), e);
-                                else
-                                    e.printStackTrace();
+                                LocalComms.logException(e);
                             }
                             return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
                         }else//local file doesn't have metadata yet if null
                         {
+                            Log.d(TAG,"Local file[~"+path + '/' + filename + ext +"] has no local metadata.");
                             return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
                         }
                     }else
@@ -155,6 +175,272 @@ public class LocalComms
                 return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
             }
         }
+    }
+
+    public static void addEvent(Context context, Event e) throws IOException
+    {
+        if(e.isValid())
+        {
+            //Event ev = getEvent(context, e.getId()); - causes an infinite loop
+            EventHelper dbHelper = new EventHelper(context);
+            SQLiteDatabase db = dbHelper.getReadableDatabase();
+            dbHelper.onCreate(db);//create table if it doesn't exist
+
+            String query = "SELECT * FROM " + EventContract.EventEntry.TABLE_NAME + " WHERE " +
+                    EventContract.EventEntry.COL_EVENT_ID+"=?";
+
+            Cursor c = db.rawQuery(query,new String[]{String.valueOf(e.getId())});
+
+            long rows = c.getCount();
+
+            if(!c.isClosed())
+                c.close();
+            if(db.isOpen())
+                db.close();
+
+            if(rows<=0)//Event DNE
+            {
+                db = dbHelper.getWritableDatabase();
+                dbHelper.onCreate(db);
+
+                ContentValues values = new ContentValues();
+                values.put(EventContract.EventEntry.COL_EVENT_ID, e.getId());
+                values.put(EventContract.EventEntry.COL_EVENT_TITLE, e.getTitle());
+                values.put(EventContract.EventEntry.COL_EVENT_ADDRESS, e.getAddress());
+                values.put(EventContract.EventEntry.COL_EVENT_DATE, e.getDate());
+                values.put(EventContract.EventEntry.COL_EVENT_DESCRIPTION, e.getDescription());
+                values.put(EventContract.EventEntry.COL_EVENT_END_DATE, e.getEndDate());
+
+                StringBuilder loc = new StringBuilder();
+                for (LatLng coord : e.getBoundary())
+                    loc.append(String.valueOf(coord.latitude) + "," + String.valueOf(coord.longitude) + ";");
+                String location = loc.toString();
+                if (location.length() > 0)
+                    location = (location.charAt(location.length() - 1) == ';' ? location.substring(0, location.length() - 1) : location);
+
+                values.put(EventContract.EventEntry.COL_EVENT_LOCATION, location);
+                String places = "";
+                for (String place : e.getMeetingPlaces())
+                    places += place + ';';
+                if (places.length() > 0)
+                    places = (places.charAt(places.length() - 1) == ';' ? places.substring(0, places.length() - 1) : places);
+                values.put(EventContract.EventEntry.COL_EVENT_MEETING_PLACES, places);
+                values.put(EventContract.EventEntry.COL_EVENT_ACCESS_CODE, e.getAccessCode());
+
+                db.insert(EventContract.EventEntry.TABLE_NAME, null, values);
+
+                if(db.isOpen())
+                    db.close();
+
+                Log.d(TAG, "Inserted new Event[" + e.getId() + "].");
+            }else updateEvent(context,e);//Event exists.
+        }
+        else
+        {
+            Log.d(TAG, "addEvent> Invalid Event.");
+        }
+    }
+
+    public static void updateEvent(Context context, Event e)
+    {
+        if(e.isValid())
+        {
+            EventHelper dbHelper = new EventHelper(context);
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+            ContentValues values = new ContentValues();
+            values.put(EventContract.EventEntry.COL_EVENT_ID,e.getId());
+            values.put(EventContract.EventEntry.COL_EVENT_TITLE,e.getTitle());
+            values.put(EventContract.EventEntry.COL_EVENT_ADDRESS,e.getAddress());
+            values.put(EventContract.EventEntry.COL_EVENT_DATE,e.getDate());
+            values.put(EventContract.EventEntry.COL_EVENT_DESCRIPTION,e.getDescription());
+            values.put(EventContract.EventEntry.COL_EVENT_END_DATE,e.getEndDate());
+            String loc="";
+            for(LatLng coord:e.getBoundary())
+                loc+=coord.latitude+','+coord.longitude+';';
+            if(loc.length()>0)
+                loc = (loc.charAt(loc.length()-1)==';'?loc.substring(0,loc.length()-1):loc);
+            values.put(EventContract.EventEntry.COL_EVENT_LOCATION,loc);
+            String places="";
+            for(String place:e.getMeetingPlaces())
+                places+=place+';';
+            if(places.length()>0)
+                places = (places.charAt(places.length()-1)==';'?places.substring(0,places.length()-1):places);
+            values.put(EventContract.EventEntry.COL_EVENT_MEETING_PLACES,places);
+            values.put(EventContract.EventEntry.COL_EVENT_ACCESS_CODE,e.getAccessCode());
+
+            String where = EventContract.EventEntry.COL_EVENT_ID+"=?";
+            String[] where_args = {String.valueOf(e.getId())};
+            db.update(EventContract.EventEntry.TABLE_NAME,values,where,where_args);
+
+            if(db.isOpen())
+                db.close();
+            Log.d(TAG,"Updated Event["+e.getId()+"].");
+        }
+        else
+        {
+            Log.d(TAG, "updateEvent> Invalid Event.");
+        }
+    }
+
+    public static Event getEvent(Context context, long id) throws IOException
+    {
+        Event event=null;
+
+        EventHelper dbHelper = new EventHelper(context);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        dbHelper.onCreate(db);//create table if it doesn't exist - special exception for this method
+
+        String query = "SELECT * FROM " + EventContract.EventEntry.TABLE_NAME + " WHERE " +
+                EventContract.EventEntry.COL_EVENT_ID+"=?";
+
+        Cursor c = db.rawQuery(query,new String[]{String.valueOf(id)});
+
+        if(c.getCount()>0)
+        {
+            //Record exists
+            if(c.moveToFirst())
+            {
+                //long id = c.getLong(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_ID));
+                String title = c.getString(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_TITLE));
+                String address = c.getString(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_ADDRESS));
+                String date = c.getString(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_DATE));
+                String description = c.getString(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_DESCRIPTION));
+                String end_date = c.getString(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_END_DATE));
+                String location = c.getString(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_LOCATION));
+                String places = c.getString(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_MEETING_PLACES));
+                int access_code = c.getInt(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_ACCESS_CODE));
+
+                event = new Event();
+                event.setId(id);
+                event.setTitle(title);
+                event.setAddress(address);
+                event.setDate(date);
+                event.setDescription(description);
+                event.setEndDate(end_date);
+                event.setBoundary(location);
+                if(places!=null)
+                    event.setMeetingPlaces(places.split(";"));
+                event.setAccessCode(access_code);
+
+                //Metadata stuff
+                String payload = RemoteComms.sendGetRequest("getMeta/event="+id);
+                if(payload!=null)
+                {
+                    if(!payload.isEmpty())
+                    {
+                        if(!payload.toLowerCase().equals("error"))
+                        {
+                            Metadata remote_metadata = new Metadata();
+                            JSON.getJsonable(payload, remote_metadata);
+
+                            if(remote_metadata.getEntry()==null||remote_metadata.getMeta()==null)
+                            {
+                                if(!c.isClosed())
+                                    c.close();
+                                if(db.isOpen())
+                                    db.close();
+                                return event;
+                            }
+
+                            if(remote_metadata.getEntry().toLowerCase().equals("null")||remote_metadata.getMeta().toLowerCase().equals("null"))
+                            {
+                                if(!c.isClosed())
+                                    c.close();
+                                if(db.isOpen())
+                                    db.close();
+                                return event;
+                            }
+
+                            if(remote_metadata.getEntry().toLowerCase().equals("error")||remote_metadata.getMeta().toLowerCase().equals("error"))
+                            {
+                                if(!c.isClosed())
+                                    c.close();
+                                if(db.isOpen())
+                                    db.close();
+                                return event;
+                            }
+
+                            String lmDat = null;
+                            try
+                            {
+                                lmDat = LocalComms.getMetaRecord(context, "event="+event.getId());
+                            }catch (SQLiteException e)
+                            {
+                                LocalComms.logException(e);
+                            }
+
+                            /*
+                             * Save Metadata to disk,
+                             * It's fine to save it here because you've already loaded local
+                             * Metadata to memory - if it exists.
+                             */
+
+                            LocalComms.addMetaRecord(context,remote_metadata.getEntry(),remote_metadata.getMeta());
+
+                            if(lmDat!=null)//local file has metadata.
+                            {
+                                Metadata local_metadata = new Metadata("event="+event.getId(),lmDat);
+
+                                try
+                                {
+
+                                    /*Config mod = local_metadata.compareDateModified(r_dmd);
+                                    if (mod.getValue().equals(Config.META_PARAM_NEWER.getValue()))//remote data is newer
+                                    {
+                                        event = RemoteComms.getEvent(id);
+                                        addEvent(context,event);//new Event
+                                    }
+                                    else if (mod.getValue().equals(Config.META_PARAM_EQUAL.getValue()))//local data is up-to-date
+                                        Log.d(TAG,"[event=" + event.getId()+"] is up-to-date.");*/
+
+
+                                    long r_dmd = Long.parseLong(remote_metadata.getAttribute(Config.META_DATE_MODIFIED.getValue()));
+                                    long l_dmd = Long.parseLong(local_metadata.getAttribute(Config.META_DATE_MODIFIED.getValue()));
+
+                                    if(l_dmd==r_dmd)//local file is up to date
+                                    {
+                                        Log.d(TAG,"[event=" + event.getId()+"] is up-to-date.");
+                                    }else
+                                    {
+                                        Log.d(TAG,"[event=" + event.getId()+"] is outdated.");
+                                        event = RemoteComms.getEvent(id);
+                                        addEvent(context,event);//new Event
+                                    }
+                                } catch (NumberFormatException e)
+                                {
+                                    LocalComms.logException(e);
+                                }
+                            }else{}//local file doesn't have metadata yet if null
+                        }else Log.wtf(TAG,">>>>>>"+payload);
+                    }else Log.wtf(TAG,">>>>>>"+payload);
+                }else Log.wtf(TAG,">>>>>>"+payload);
+            }else Log.wtf(TAG,"getEvent> Could not move Cursor to first result-set record.");
+        }
+        else//Event not in local DB check remote DB
+        {
+            event = RemoteComms.getEvent(id);
+            if(event!=null)
+                Log.d(TAG,"[event=" + event.getId()+"] is not in local records.");
+            addEvent(context,event);//new Event
+        }
+        if(!c.isClosed())
+            c.close();
+        if(db.isOpen())
+            db.close();
+
+        return event;
+    }
+
+    public static void logException(Exception e)
+    {
+        if(e!=null)
+        {
+            if (e.getMessage() != null)
+                Log.wtf(TAG, e.getMessage(), e);
+            else
+                e.printStackTrace();
+        }else Log.wtf(TAG,"Null exception.",e);
     }
 
     public static ProgressDialog showProgressDialog(Context context, String msg)
@@ -249,10 +535,42 @@ public class LocalComms
 
     public static boolean updateMetaEntry(Context context, String entry, String value, String meta) throws SQLiteException
     {
+        if(value==null)
+        {
+            Log.wtf(TAG,"Invalid entry value.");
+            return false;
+        }
+        if(!value.contains("="))
+        {
+            Log.wtf(TAG,"Invalid entry value.");
+            return false;
+        }
         MetadataHelper dbHelper = new MetadataHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        if(meta.contains("="))
+        Metadata m = new Metadata(entry,meta);
+        m.getAttribute(value.split("=")[0]);
+
+        //Search for attribute
+        String var,val;
+        StringBuilder sb = new StringBuilder();//stores attributes
+        if(!meta.isEmpty())
+        {
+            for (String attr : meta.split(";"))
+            {
+                if (attr.contains("="))
+                {
+                    var = attr.split("=")[0];
+                    if (var.equals(value.split("=")[0]))//look for attribute to be updated/added
+                        val = value.split("=")[1];//change that attribute to the new one
+                    else val = attr.split("=")[1];//keep the original value for that attribute
+
+                    sb.append(var + "=" + val);
+                }
+            }
+        }else sb.append(value);
+
+        /*if(meta.contains("="))
         {
             if(value.contains("="))
             {
@@ -262,7 +580,7 @@ public class LocalComms
                 } else
                 {
                     if (meta.isEmpty())
-                        meta = entry + '=' + value;
+                        meta = value;
                     else
                         meta = meta + ';' + entry + '=' + value;
                 }
@@ -277,17 +595,18 @@ public class LocalComms
                 meta = entry + '=' + value;
             else
                 meta = meta + ';' + entry + '=' + value;
-        }
+        }*/
 
         ContentValues values = new ContentValues();
-        values.put(MetadataContract.MetaEntry.COL_META_ENTRY,entry);
-        values.put(MetadataContract.MetaEntry.COL_META_ENTRY_DATA,meta);
+        //values.put(MetadataContract.MetaEntry.COL_META_ENTRY,entry);
+        values.put(MetadataContract.MetaEntry.COL_META_ENTRY_DATA,sb.toString());
 
         String where = MetadataContract.MetaEntry.COL_META_ENTRY+"=?";
         String[] where_args = {entry};
         db.update(MetadataContract.MetaEntry.TABLE_NAME,values,where,where_args);
 
-        db.close();
+        if(db.isOpen())
+            db.close();
 
         Log.d(TAG,"updateMetaRecord> Record["+entry+"] successfully updated to "+value+".");
         return true;
@@ -295,6 +614,8 @@ public class LocalComms
 
     public static String getMetaRecord(Context context, String entry) throws SQLiteException
     {
+        if(context==null)
+            return null;
         MetadataHelper dbHelper = new MetadataHelper(context);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         //no need for dbHelper.onCreate(db);
@@ -308,8 +629,10 @@ public class LocalComms
         {
             meta = c.getString(c.getColumnIndex(MetadataContract.MetaEntry.COL_META_ENTRY_DATA));
         }
-        c.close();
-        db.close();
+        if(!c.isClosed())
+            c.close();
+        if(db.isOpen())
+            db.close();
 
         return meta;
     }
@@ -397,7 +720,7 @@ public class LocalComms
         SQLiteDatabase db = null;
         try
         {
-            MessagePollHelper dbHelper = new MessagePollHelper(context);//getBaseContext());
+            MessageHelper dbHelper = new MessageHelper(context);//getBaseContext());
             db = dbHelper.getWritableDatabase();
             dbHelper.onCreate(db);
 
@@ -460,7 +783,7 @@ public class LocalComms
 
         try
         {
-            MessagePollHelper dbHelper = new MessagePollHelper(ctxt);
+            MessageHelper dbHelper = new MessageHelper(ctxt);
             db = dbHelper.getReadableDatabase();
             Cursor c =  db.rawQuery(query, new String[] {id});
             rowCount = c.getCount();
@@ -485,7 +808,7 @@ public class LocalComms
         SQLiteDatabase db = null;
         try
         {
-            MessagePollHelper dbHelper = new MessagePollHelper(context);//getBaseContext());
+            MessageHelper dbHelper = new MessageHelper(context);//getBaseContext());
             db = dbHelper.getWritableDatabase();
             //Didn't create DB here because when updating there should already be a DB
 
@@ -516,7 +839,7 @@ public class LocalComms
         SQLiteDatabase db = null;
         try
         {
-            MessagePollHelper dbHelper = new MessagePollHelper(context);//getBaseContext());
+            MessageHelper dbHelper = new MessageHelper(context);//getBaseContext());
             db = dbHelper.getWritableDatabase();
             //Didn't create DB here because when updating there should already be a DB
 
@@ -554,7 +877,7 @@ public class LocalComms
 
         try
         {
-            MessagePollHelper dbHelper = new MessagePollHelper(context);
+            MessageHelper dbHelper = new MessageHelper(context);
             db = dbHelper.getReadableDatabase();
             dbHelper.onCreate(db);
 
@@ -854,7 +1177,7 @@ public class LocalComms
         Message m = null;
         try
         {
-            MessagePollHelper dbHelper = new MessagePollHelper(context);
+            MessageHelper dbHelper = new MessageHelper(context);
             db = dbHelper.getReadableDatabase();
             dbHelper.onCreate(db);
 
@@ -900,20 +1223,20 @@ public class LocalComms
 
         ArrayList<Message> messages = new ArrayList<Message>();
 
-        String query = "SELECT * FROM " + MessagePollContract.MessageEntry.TABLE_NAME + " WHERE NOT "
-                + MessagePollContract.MessageEntry.COL_MESSAGE_STATUS + " = ? AND "
-                + MessagePollContract.MessageEntry.COL_MESSAGE_SENDER + " = ?";
+        String query = "SELECT * FROM " + MessagePollContract.MessageEntry.TABLE_NAME + " WHERE "
+                + MessagePollContract.MessageEntry.COL_MESSAGE_SENDER + " = ? AND NOT "
+                + MessagePollContract.MessageEntry.COL_MESSAGE_STATUS + " = ?";
 
         try
         {
-            MessagePollHelper dbHelper = new MessagePollHelper(context);
+            MessageHelper dbHelper = new MessageHelper(context);
             db = dbHelper.getReadableDatabase();
             dbHelper.onCreate(db);
 
             Cursor c = db.rawQuery(query, new String[]
                     {
-                            String.valueOf(MESSAGE_STATUSES.ICEBREAK_DONE.getStatus()),
-                            sender
+                            sender,
+                            String.valueOf(MESSAGE_STATUSES.ICEBREAK_DONE.getStatus())
                     });
 
             while (c.moveToNext())

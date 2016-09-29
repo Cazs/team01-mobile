@@ -259,7 +259,7 @@ public class SignUpActivity extends AppCompatActivity
                             "\n • Not include spaces" +
                             "\n • Have at least one\n\tUppercase character" +
                             "\n • Have at least one\n\tLowercase character" +
-                            "\n • Have at least one\n\tspecial characters, i.e.\n "+specials+
+                            //"\n • Have at least one\n\tspecial characters, i.e.\n "+specials+
                             "\n • Have 5-15 characters");
                     return;
                 }

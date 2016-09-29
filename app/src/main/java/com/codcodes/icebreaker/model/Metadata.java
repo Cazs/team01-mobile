@@ -3,6 +3,7 @@ package com.codcodes.icebreaker.model;
 import android.util.Log;
 
 import com.codcodes.icebreaker.auxilary.Config;
+import com.codcodes.icebreaker.auxilary.LocalComms;
 
 /**
  * Created by Casper on 2016/09/16.
@@ -47,7 +48,7 @@ public class Metadata implements IJsonable
         return null;
     }
 
-    public Config compareDateModified(long date_modified)
+    /*public Config compareDateModified(long date_modified)
     {
         String sdmd = getAttribute(Config.META_DATE_MODIFIED.getValue());
         if(sdmd!=null)
@@ -57,21 +58,19 @@ public class Metadata implements IJsonable
                 try
                 {
                     long dmd = Long.parseLong(sdmd);
+                    System.err.println("##################DMD=" + dmd);
                     if(date_modified>dmd)
                         return Config.META_PARAM_NEWER;
                     else return Config.META_PARAM_EQUAL;
                 }
                 catch (NumberFormatException e)
                 {
-                    if(e.getMessage()!=null)
-                        Log.d(TAG,e.getMessage(),e);
-                    else
-                        e.printStackTrace();
+                    LocalComms.logException(e);
                     return Config.META_CMP_ERR;
                 }
             }else return Config.META_CMP_ERR;
         }else return Config.META_CMP_ERR;
-    }
+    }*/
 
     public void setEntry(String entry){this.entry=entry;}
     public void setMeta(String meta){this.meta=meta;}

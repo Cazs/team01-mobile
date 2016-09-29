@@ -26,6 +26,7 @@
             android:background="@drawable/textbox"/>
 
         <Button
+            android:id="@+id/btnUpdate"
             android:layout_width="65dp"
             android:layout_height="63dp"
             android:layout_gravity="center"

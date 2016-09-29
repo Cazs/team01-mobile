@@ -198,6 +198,7 @@ public class ImageUtils
         }
         try {
             scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.ARGB_8888);
+            scaledBitmap.eraseColor(Color.WHITE);
 
         } catch (OutOfMemoryError e) {
             e.printStackTrace();

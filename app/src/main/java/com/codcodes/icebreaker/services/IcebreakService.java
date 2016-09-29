@@ -47,6 +47,7 @@ public class IcebreakService extends IntentService// implements LocationListener
     private double lat = 0;
     private double lng = 0;
     private static LatLng me = null;
+    private Event e;
     private final String TAG = "IB/IcebreakService";
     //private Handler mHandler;
 
@@ -92,7 +93,8 @@ public class IcebreakService extends IntentService// implements LocationListener
                         if (ev_id > 0)
                         {
                             //is at Event
-                            Event e = RemoteComms.getEvent(ev_id);
+                            if(e==null)
+                                e = RemoteComms.getEvent(ev_id);
                             if (e != null)
                             {
                                 if (e.getBoundary() != null)
@@ -225,7 +227,7 @@ public class IcebreakService extends IntentService// implements LocationListener
     public void checkForOutboundIceBreaks() throws IOException
     {
         ArrayList<Message> out_messages = LocalComms.getOutboundMessages(this,
-                SharedPreference.getUsername(this).toString());
+                SharedPreference.getUsername(this));
         //Check for cases where local user is sender
         if (out_messages.size() > 0)
         {

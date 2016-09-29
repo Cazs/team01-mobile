@@ -159,6 +159,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                     try
                     {
                         bitmap = LocalComms.getImage(getApplicationContext(),profilePicture,".png","/profile",options);
+
                         circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                         runOnUiThread(new Runnable() {
                             @Override

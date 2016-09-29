@@ -20,7 +20,7 @@ import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.Message;
 import com.codcodes.icebreaker.model.MessagePollContract;
-import com.codcodes.icebreaker.model.MessagePollHelper;
+import com.codcodes.icebreaker.model.MessageHelper;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -56,7 +56,7 @@ public class ChatActivity extends AppCompatActivity
 
         //Retrieve messages from local db
         final ArrayList<Message> messages = new ArrayList<Message>();
-        MessagePollHelper dbHelper = new MessagePollHelper(this);
+        MessageHelper dbHelper = new MessageHelper(this);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         dbHelper.onCreate(db);//Create table if it doesn't exist
 
@@ -118,7 +118,7 @@ public class ChatActivity extends AppCompatActivity
                             if(response_code == HttpURLConnection.HTTP_OK)
                             {
                                 //Save message to disk
-                                MessagePollHelper dbHelper = new MessagePollHelper(getBaseContext());
+                                MessageHelper dbHelper = new MessageHelper(getBaseContext());
                                 SQLiteDatabase db = dbHelper.getWritableDatabase();
                                 dbHelper.onCreate(db);
 

@@ -1,7 +1,6 @@
 package com.codcodes.icebreaker.screens;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -14,7 +13,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -30,7 +28,7 @@ import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.MessagePollContract;
-import com.codcodes.icebreaker.model.MessagePollHelper;
+import com.codcodes.icebreaker.model.MessageHelper;
 import com.codcodes.icebreaker.model.User;
 
 import java.io.IOException;
@@ -164,7 +162,7 @@ public class OtherUserProfileActivity extends AppCompatActivity
                         Looper.prepare();
 
                         //Store on local DB
-                        MessagePollHelper dbHelper = new MessagePollHelper(ctxt);
+                        MessageHelper dbHelper = new MessageHelper(ctxt);
                         SQLiteDatabase db = dbHelper.getWritableDatabase();
                         dbHelper.onCreate(db);//Create Message table if it doesn't exist
 

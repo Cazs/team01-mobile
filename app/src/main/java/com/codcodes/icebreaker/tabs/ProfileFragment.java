@@ -35,6 +35,7 @@ import com.codcodes.icebreaker.screens.MainActivity;
 import com.codcodes.icebreaker.screens.RewardsActivity;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.User;
+import com.codcodes.icebreaker.screens.SettingsActivity;
 import com.facebook.login.LoginManager;
 
 import java.io.File;
@@ -125,7 +126,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                         Toast.makeText(getActivity(),e1.getMessage(),Toast.LENGTH_LONG).show();
                         Log.d(TAG,"IOE: "+e1.getMessage(),e1);
                     }
-                    System.exit(-1);
+                    return;
                 } catch (java.lang.InstantiationException e)
                 {
                     Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_LONG).show();
@@ -171,8 +172,6 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                     try
                     {
                         bitmap = LocalComms.getImage(getActivity(), username, ".png", "/profile", options);
-                        if (bitmap == null)
-                            bitmap = RemoteComms.getImage(getActivity(), username, ".png", "/profile", options);
                         circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
                     }
                     catch (IOException e)
@@ -182,51 +181,6 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                         else
                             e.printStackTrace();
                     }
-                    //Look for user profile image
-                    /*if (!new File(Environment.getExternalStorageDirectory().getPath()
-                            + profilePicture).exists())
-                    {
-                        //if (imageDownload(u.getUsername() + ".png", "/profile")) {
-                        BitmapFactory.Options options = new BitmapFactory.Options();
-                        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                        Bitmap b = RemoteComms.getImage(getActivity(),username, ".png", "/profile", options);
-                        if (b!=null)
-                        {
-                            bitmap = ImageUtils.getInstance().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                    + profilePicture, getActivity());
-                            circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                        } else //user has no profile yet - attempt to load default profile image
-                        {
-                            if (!new File(Environment.getExternalStorageDirectory().getPath().toString()
-                                    + "/Icebreak/profile/default.png").exists())
-                            {
-                                //Attempt to download default profile image
-                                options = new BitmapFactory.Options();
-                                options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                                b = RemoteComms.getImage(getActivity(),"default", ".png", "/profile", options);
-                                if(b!=null)
-                                {
-                                    bitmap = ImageUtils.getInstance().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                            + "/Icebreak/profile/default.png", getActivity());
-                                    circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                                } else //Couldn't download default profile image
-                                {
-                                    Toast.makeText(getActivity(), "Could not download default profile images, please check your internet connection.",
-                                            Toast.LENGTH_LONG).show();
-                                }
-                            } else//default profile image exists
-                            {
-                                bitmap = ImageUtils.getInstance().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                        + "/Icebreak/profile/default.png", getActivity());
-                                circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                            }
-                        }
-                    } else//user profile image exists
-                    {
-                        bitmap = ImageUtils.getInstance().compressBitmapImage(Environment.getExternalStorageDirectory().getPath().toString()
-                                + profilePicture, getActivity());
-                        circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
-                    }*/
                 }
 
                 Runnable r = new Runnable()
@@ -271,7 +225,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
             @Override
             public void onClick(View view)
             {
-                Intent intent = new Intent(view.getContext(), InitialActivity.class);
+                Intent intent = new Intent(view.getContext(), SettingsActivity.class);
 
                 startActivity(intent);
             }
@@ -301,7 +255,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                 intent.putExtra("Catchphrase",Catchphrase);
                 intent.putExtra("Gender",Gender);
                 intent.putExtra("Picture",profilePicture);
-                intent.putExtra("Username", MainActivity.uhandle);
+                intent.putExtra("Username",SharedPreference.getUsername(getActivity()));
                 startActivity(intent);
             }
         });
@@ -313,7 +267,6 @@ public class ProfileFragment extends android.support.v4.app.Fragment
             public void onClick(View view)
             {
                 //Clean up
-                MainActivity.uhandle = "";
                 try
                 {
                     WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),"0");

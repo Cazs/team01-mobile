@@ -9,14 +9,8 @@
     tools:context=".screens.EventDetailActivity"
     tools:showIn="@layout/activity_event_detail">
 
-<ViewFlipper
-    android:id="@+id/viewFlipper"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:focusable="true"
-    android:focusableInTouchMode="true">
-
     <ScrollView
+        android:id="@+id/sv_detail_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:focusable="true"
@@ -44,17 +38,21 @@
                 android:fontFamily="monospace"
                 android:layout_below="@+id/event_image"
                 android:text="Event Name"
-                android:layout_centerHorizontal="true"/>
+                android:layout_centerInParent="true"
+                android:gravity="center"/>
 
             <TextView
                 android:id="@+id/event_description"
                 android:fontFamily="monospace"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="8pt"
+                android:textSize="10pt"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
                 android:text="Event Description"
                 android:layout_below="@+id/event_name"
-                android:layout_centerHorizontal="true"/>
+                android:layout_centerHorizontal="true"
+                android:gravity="center"/>
 
             <EditText
                 android:id="@+id/AccessCode"
@@ -96,26 +94,44 @@
 
             </RelativeLayout>
     </ScrollView>
+
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/hack_gps_container"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:focusable="true"
-        android:focusableInTouchMode="true">
-
-        <android.support.v7.widget.RecyclerView
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            xmlns:tools="http://schemas.android.com/tools"
-            android:id="@+id/users_at_event_list"
-            android:name="com.codcodes.icebreaker.tabs.dummy.UserContactsFragment"
+        android:visibility="gone"
+        android:background="@drawable/action_bar_background"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_centerInParent="true">
+        <RadioGroup
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="2dp"
-            android:layout_marginRight="2dp"
-            app:layoutManager="LinearLayoutManager"
-            tools:context=".tabs.UserContactsFragment"
-            tools:listitem="@layout/ib_list_item_1" />
+            android:layout_height="wrap_content">
 
+            <RadioButton
+                android:id="@+id/rbtn_student_center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Student Center"/>
+
+            <RadioButton
+                android:id="@+id/rbtn_auditorium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Auditorium"/>
+
+            <RadioButton
+                android:id="@+id/rbtn_pond"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pond"/>
+
+            <RadioButton
+                android:id="@+id/rbtn_library"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Library"/>
+        </RadioGroup>
     </LinearLayout>
-</ViewFlipper>
+
 </RelativeLayout>

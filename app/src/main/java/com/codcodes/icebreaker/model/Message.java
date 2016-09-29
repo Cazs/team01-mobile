@@ -10,8 +10,8 @@ import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
  */
 public class Message implements IJsonable, Parcelable
 {
-    private  String id;
-    private  String message;
+    private String id;
+    private String message;
     private String sender;
     private String receiver;
     private String time;
@@ -20,6 +20,25 @@ public class Message implements IJsonable, Parcelable
     public Message()
     {
 
+    }
+
+    public boolean isValid()
+    {
+        if(id.isEmpty())
+            return false;
+        if(message.isEmpty())
+            return false;
+        if(sender.isEmpty())
+            return false;
+        if(receiver.isEmpty())
+            return false;
+        if(time.isEmpty())
+            return false;
+        if(status<=0)
+            return false;
+
+        //Passes
+        return true;
     }
 
     public String getMessage()

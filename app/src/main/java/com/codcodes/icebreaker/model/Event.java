@@ -9,7 +9,7 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 
 /**
- * Created by tevin on 2016/07/25.
+ * Created by Casper on 2016/07/23.
  */
 public class Event implements IJsonable, Parcelable
 {
@@ -17,34 +17,44 @@ public class Event implements IJsonable, Parcelable
     private String title;
     private String description;
     private String address;
-    private int radius;
+    //private int radius;
     private int access_code;
     private ArrayList<LatLng> boundary = null;
-    private final String TAG = "IB/Event";
     private String[] places = null;
+    private long date=0;
+    private long end_date=0;
+
+    private final String TAG = "IB/Event";
 
     public Event() {}
 
-    public Event(int id, String title, String description, String address, int radius, String gps,int accessCode)
+    /*public Event(int id, String title, String description, String address, String gps,
+                 int accessCode, String places, long date, long end_date)
     {
         this.id = id;
         this.title=title;
         this.description = description;
         this.address = address;
-        this.radius =  radius;
+        //this.radius =  radius;
+        setBoundary(gps);
         this.access_code = accessCode;
-    }
+        setMeetingPlaces(places.split(";"));
+        this.date=date;
+        this.end_date=end_date;
+    }*/
 
     public long getId(){return this.id;}
     public String getTitle(){return this.title;}
     public String getDescription(){return this.description;}
     public String getAddress(){return this.address;}
-    public int getRadius(){return this.radius;}
+    //public int getRadius(){return this.radius;}
     public int getAccessCode() {
         return access_code;
     }
     public String[] getMeetingPlaces(){return this.places;}
     public ArrayList<LatLng> getBoundary(){return this.boundary;}
+    public long getDate(){return date;}
+    public long getEndDate(){return end_date;}
 
     public void setAccessCode(int accessCode) {
         this.access_code = accessCode;
@@ -53,9 +63,37 @@ public class Event implements IJsonable, Parcelable
     public void setTitle(String title){this.title = title;}
     public void setDescription(String description){this.description = description;}
     public void setAddress(String address){this.address = address;}
-    public void setRadius(int radius){this.radius = radius;}
+    //public void setRadius(int radius){this.radius = radius;}
     public void setBoundary(ArrayList<LatLng> boundary) {this.boundary = boundary;}
     public void setMeetingPlaces(String[] places){this.places=places;}
+    public void setDate(String date)
+    {
+        try
+        {
+            this.date = Long.parseLong(date);
+        }catch (NumberFormatException e)
+        {
+            if(e.getMessage()!=null)
+                Log.d(TAG,e.getMessage(),e);
+            else
+                e.printStackTrace();
+        }
+    }
+    public void setEndDate(String date)
+    {
+        try
+        {
+            this.end_date = Long.parseLong(date);
+        }catch (NumberFormatException e)
+        {
+            if(e.getMessage()!=null)
+                Log.d(TAG,e.getMessage(),e);
+            else
+                e.printStackTrace();
+        }
+    }
+    public void setDate(long date){this.date=date;}
+    public void setEndDate(long date){this.end_date=date;}
     public void setBoundary(String bounds)
     {
         if(bounds.contains(";"))
@@ -78,35 +116,97 @@ public class Event implements IJsonable, Parcelable
         }else Log.wtf(TAG,"Invalid 'lat,lng;lat,lng;lat,lng;...' format.");
     }
 
+    public boolean isValid()
+    {
+        if(this==null)
+            return false;
+        if(this.id<=0)
+            return false;
+        if (this.title==null)
+            return false;
+        if(this.title.isEmpty())
+            return false;
+        if (this.access_code<=0)
+            return false;
+        if(String.valueOf(this.access_code).length()<4)
+            return false;
+        if(this.address==null)
+            return false;
+        if (this.address.isEmpty())
+            return false;
+        if (this.date<=0)
+            return false;
+        if(this.end_date<=0)
+            return false;
+        if(this.date>end_date)
+            return false;
+        if(this.boundary==null)
+            return false;
+        if (this.boundary.isEmpty())
+            return false;
+        if (this.places==null)
+            return false;
+        if(this.places.length<=0)
+            return false;
+        if (this.description==null)
+            return false;
+        if (this.description.isEmpty())
+            return false;
+        //Passes
+        return true;
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder s = new StringBuilder();
+        s.append("ID: " + String.valueOf(id) + "\n");
+        s.append("Title: " + title + "\n");
+        s.append("Description: " + description + "\n");
+        s.append("Address: " + address + "\n");
+        s.append("Date: " + String.valueOf(date) + "\n");
+        s.append("End_Date: " + String.valueOf(end_date) + "\n");
+        s.append("Access_Code: " + String.valueOf(access_code) + "\n");
+        s.append("Meeting_Places: " + (places==null?"null":places.length) + "\n");
+        s.append("Boundary: " + (boundary==null?"null":boundary.toString()) + "\n");
+        return s.toString();
+    }
+
     @Override
     public void setVarValue(String var, String value)
     {
-        switch (var)
+        switch (var.toLowerCase())
         {
-            case "Id":
-                setId(Integer.valueOf(value));
+            case "id":
+                setId(Long.parseLong(value));
                 break;
-            case "Radius":
+            /*case "radius":
                 setRadius(Integer.valueOf(value));
-                break;
-            case "Address":
+                break;*/
+            case "address":
                 setAddress(value);
                 break;
-            case "Description":
+            case "description":
                 setDescription(value);
                 break;
-            case "Gps_location":
+            case "gps_location":
                 setBoundary(value);
                 break;
-            case "Title":
+            case "title":
                 setTitle(value);
                 break;
-            case "AccessCode":
+            case "accesscode":
                 setAccessCode(Integer.valueOf(value));
                 break;
-            case "Meeting_Places":
+            case "meeting_places":
                 if(value.contains(";"))
                     this.places = value.split(";");
+                break;
+            case "date":
+                setDate(value);
+                break;
+            case "end_date":
+                setEndDate(value);
                 break;
             default:
                 System.err.println("Event.class> Unknown attribute: " + var);
@@ -125,23 +225,28 @@ public class Event implements IJsonable, Parcelable
         {
             if(!boundary.isEmpty())
             {
+                if(boundary.size()==1)
+                    return new LatLng(boundary.get(0).latitude,boundary.get(0).longitude);
+
                 maxLat = boundary.get(0).latitude;
                 maxLng = boundary.get(0).longitude;
+                minLat = boundary.get(0).latitude;
+                minLng = boundary.get(0).longitude;
 
                 for (LatLng loc : boundary)
                 {
-                    if (loc.latitude > maxLat)
+                    if (loc.latitude < maxLat)
                         maxLat = loc.latitude;
+                    else if (loc.latitude > minLat)
+                        minLat = loc.latitude;
+
                     if (loc.longitude > maxLng)
                         maxLng = loc.longitude;
-                    if (loc.latitude < minLat)
-                        minLat = loc.latitude;
-                    if (loc.longitude < minLng)
+                    else if (loc.longitude < minLng)
                         minLng = loc.longitude;
                 }
             }
         }
-
         return new LatLng(minLat+((maxLat-minLat)/2),minLng+((maxLng-minLng)/2));
     }
 
@@ -160,7 +265,10 @@ public class Event implements IJsonable, Parcelable
         parcel.writeString(getAddress());
         parcel.writeInt(getAccessCode());
         parcel.writeList(getBoundary());
-        parcel.writeInt(getRadius());
+        parcel.writeLong(getDate());
+        parcel.writeLong(getEndDate());
+        parcel.writeArray(getMeetingPlaces());
+        //parcel.writeInt(getRadius());
     }
 
     //Used to regenerate Event object.
@@ -175,7 +283,17 @@ public class Event implements IJsonable, Parcelable
             e.setAddress(in.readString());
             e.setAccessCode(in.readInt());
             e.setBoundary(in.readArrayList(Event.class.getClassLoader()));
-            e.setRadius(in.readInt());
+            e.setDate(in.readLong());
+            e.setEndDate(in.readLong());
+            Object[] arr = in.readArray(Event.class.getClassLoader());
+            if(arr.length>0)
+            {
+                String[] plcs = new String[arr.length];
+                for(int i=0;i<arr.length;i++)
+                    plcs[i]=(String)(plcs[i]);
+                e.setMeetingPlaces(plcs);
+            }
+            //e.setRadius(in.readInt());
 
             return e;
         }

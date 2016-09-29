@@ -1,7 +1,6 @@
 package com.codcodes.icebreaker.screens;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -13,38 +12,33 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ViewFlipper;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.Config;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
-import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.LocationDetector;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.Event;
-import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.tabs.UserContactsFragment;
 import com.google.android.gms.common.api.CommonStatusCodes;
@@ -79,6 +73,64 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
         setContentView(R.layout.activity_event_detail);
         validatePermissions();
 
+        ImageView dbg_anim_logo = (ImageView)findViewById(R.id.imgLogo);
+
+        if(dbg_anim_logo!=null)
+        {
+            dbg_anim_logo.setOnLongClickListener(new View.OnLongClickListener()
+            {
+                @Override
+                public boolean onLongClick(View view)
+                {
+                    LinearLayout hack_gps = (LinearLayout)findViewById(R.id.hack_gps_container);
+                    if(hack_gps!=null)
+                        hack_gps.setVisibility(View.VISIBLE);
+
+                    RadioButton rbtnAud = (RadioButton)findViewById(R.id.rbtn_auditorium);
+                    RadioButton rbtnStud = (RadioButton)findViewById(R.id.rbtn_student_center);
+                    RadioButton rbtnPond = (RadioButton)findViewById(R.id.rbtn_pond);
+                    RadioButton rbtnLib = (RadioButton)findViewById(R.id.rbtn_library);
+
+                    rbtnAud.setOnClickListener(new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View view)
+                        {
+                            mockLocation(-26.183261, 27.996542);
+                        }
+                    });
+
+                    rbtnStud.setOnClickListener(new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View view)
+                        {
+                            mockLocation(-26.182587, 27.995996);
+                        }
+                    });
+
+                    rbtnPond.setOnClickListener(new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View view)
+                        {
+                            mockLocation(-26.183599, 27.997475);
+                        }
+                    });
+
+                    rbtnLib.setOnClickListener(new View.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(View view)
+                        {
+                            mockLocation(-26.182891, 27.997931);
+                        }
+                    });
+
+                    return true;
+                }
+            });
+        }
         Bundle extras = getIntent().getExtras();
 
         locationChecker = new LocationDetector();
@@ -87,11 +139,13 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
         {
             selected_event = extras.getParcelable("Event");
             TextView eventName = (TextView)findViewById(R.id.event_name);
-            eventName.setText(selected_event.getTitle());
-
             TextView eventDescription = (TextView)findViewById(R.id.event_description);
-            eventDescription.setText(selected_event.getDescription());
 
+            if(selected_event==null||eventName==null||eventDescription==null)
+                return;
+
+            eventName.setText(selected_event.getTitle());
+            eventDescription.setText(selected_event.getDescription());
             final BitmapFactory.Options options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.ALPHA_8;
             Thread tIconLoader = new Thread(new Runnable()
@@ -102,18 +156,18 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
                     try
                     {
                         Bitmap bitmap = LocalComms.getImage(EventDetailActivity.this, "event_icons-" + selected_event.getId(), ".png", "/events", options);
-                        if (bitmap == null)
-                            bitmap = RemoteComms.getImage(EventDetailActivity.this, "event_icons-" + selected_event.getId(), ".png", "/events", options);
+                        //if (bitmap == null)
+                        //    bitmap = RemoteComms.getImage(EventDetailActivity.this, "event_icons-" + selected_event.getId(), ".png", "/events", options);
 
                         if (bitmap != null)
                         {
+                            final ImageView eventImage = (ImageView) findViewById((R.id.event_image));
                             final Bitmap circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, 100);
                             runOnUiThread(new Runnable()
                             {
                                 @Override
                                 public void run()
                                 {
-                                    ImageView eventImage = (ImageView) findViewById((R.id.event_image));
                                     eventImage.setImageBitmap(circularbitmap);
                                 }
                             });
@@ -122,17 +176,14 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
                     }
                     catch (IOException e)
                     {
-                        if(e.getMessage()!=null)
-                            Log.wtf(TAG,e.getMessage(),e);
-                        else
-                            e.printStackTrace();
+                        LocalComms.logException(e);
                     }
                 }
             });
             tIconLoader.start();
         }else this.finish();
 
-        eventDetails = (TextView)findViewById(R.id.Event_Heading);
+        eventDetails = (TextView)findViewById(R.id.main_heading);
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         eventDetails.setTypeface(heading);
         eventDetails.setTextSize(29);
@@ -153,6 +204,23 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
                 return false;
             }
         });
+    }
+
+    public void mockLocation(double lat, double lng)
+    {
+        String msg="Going to ["+lat+","+lng+"]";
+        Toast.makeText(EventDetailActivity.this,msg,Toast.LENGTH_LONG).show();
+
+        Location mockLocation = new Location(MainActivity.mocLocationProvider); // a string
+        mockLocation.setLatitude(lat);
+        mockLocation.setLongitude(lng);
+        mockLocation.setTime(System.currentTimeMillis());
+
+        onLocationChanged(mockLocation);
+
+        LinearLayout hack_gps = (LinearLayout)findViewById(R.id.hack_gps_container);
+        if(hack_gps!=null)
+            hack_gps.setVisibility(View.GONE);
     }
 
     public void viewPosition(View view)
@@ -206,7 +274,6 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
         {
             if (matchAccessCode(code))
             {
-                //Log.d(TAG,"##############ELoc"+selected_event.getBoundary());
                 if (locationChecker.containsLocation(me, selected_event.getBoundary(), true))
                 {
                     Log.d(TAG,"Valid code and location");
@@ -409,7 +476,7 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
             else
                 e.printStackTrace();
         }
-        Log.d(TAG,"["+location.getLatitude()+","+location.getLongitude()+"]");
+        //Log.d(TAG,"["+location.getLatitude()+","+location.getLongitude()+"]");
     }
 
     @Override
