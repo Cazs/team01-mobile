@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
@@ -17,6 +18,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
@@ -109,6 +112,15 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
         View view = inflater.inflate(R.layout.fragment_usercontacts_list, container, false);
         View rview = null;
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_layout);
+
+        TextView txtNotEvent = (TextView)view.findViewById(R.id.txt_not_at_event);
+        Typeface ttfInfinity = Typeface.createFromAsset(getActivity().getAssets(), "Infinity.ttf");
+        if(txtNotEvent!=null)
+        {
+            txtNotEvent.setTextSize(28);
+            if (ttfInfinity != null)
+                txtNotEvent.setTypeface(ttfInfinity);
+        }
 
         swipeRefreshLayout.setOnRefreshListener(this);
 
@@ -265,7 +277,10 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 }
             }
         }
-        else contacts = new ArrayList<>();
+        else
+        {
+            contacts = new ArrayList<>();
+        }
 
         Runnable runnable = new Runnable()
         {
@@ -279,6 +294,16 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                     temp.setLastname("");
                     contacts.add(temp);
                     Log.d(TAG, "Contact list is empty.");
+
+                    LinearLayout contactsContainer = (LinearLayout)getActivity().findViewById(R.id.contcts_anim_container);
+                    if(contactsContainer!=null)
+                        contactsContainer.setVisibility(View.VISIBLE);
+                }
+                else
+                {
+                    LinearLayout contactsContainer = (LinearLayout)getActivity().findViewById(R.id.contcts_anim_container);
+                    if(contactsContainer!=null)
+                        contactsContainer.setVisibility(View.GONE);
                 }
                 if (recyclerView != null)
                 {
@@ -335,8 +360,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 }
                 catch (ConcurrentModificationException e)
                 {
-                    //TODO: Better logging.
-                    Log.wtf(TAG,e.getMessage(),e);
+                    LocalComms.logException(e);
                 }
             }
         });

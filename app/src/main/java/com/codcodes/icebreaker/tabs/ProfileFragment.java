@@ -73,7 +73,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
         v = inflater.inflate(R.layout.fragment_profile, container, false);
         mgr = getActivity().getAssets();
         //TODO: Use this information to send to database to see which user it is.
-        final String username = SharedPreference.getUsername(v.getContext()).toLowerCase();
+        final String username = SharedPreference.getUsername(v.getContext());
 
         pb_profile  = (ProgressBar) v.findViewById(R.id.pb_profile_pic);
         LocalComms.showImageProgressBar(pb_profile);

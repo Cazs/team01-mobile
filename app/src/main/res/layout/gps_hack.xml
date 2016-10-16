@@ -1,7 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+<LinearLayout
+    android:id="@+id/hack_gps_container"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    android:background="@color/iceblue"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Debugging Menu"
+        android:textSize="18sp"
+        android:gravity="center"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Override GPS"
+        android:textSize="16sp"
+        android:layout_marginTop="15dp"
+        android:gravity="center"/>
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/rbtn_student_center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Student Center"/>
+
+            <RadioButton
+                android:id="@+id/rbtn_auditorium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Auditorium"/>
+
+            <RadioButton
+                android:id="@+id/rbtn_pond"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pond"/>
+
+            <RadioButton
+                android:id="@+id/rbtn_library"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Library"/>
+        </RadioGroup>
 
 </LinearLayout>

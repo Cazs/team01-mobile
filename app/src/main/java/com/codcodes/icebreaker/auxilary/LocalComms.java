@@ -64,7 +64,7 @@ public class LocalComms
         {
             Log.d(TAG,MainActivity.rootDir + "/Icebreak" + path+ '/' + filename + ext + " does not exist.");
             //bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak"+path+"/default.png", options);
-            return null;
+            return RemoteComms.getImage(context, filename, ext, path, options);
         }
         else//exists
         {
@@ -138,7 +138,14 @@ public class LocalComms
                                 if(l_dmd==r_dmd)//local file is up to date
                                 {
                                     Log.d(TAG,"Local file[~"+path + '/' + filename + ext +"] is up to date.");
-                                    return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+                                    Bitmap bmp = ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+                                    if(bmp==null)
+                                    {
+                                        //if meta is up-to-date but image doesn't actually exist - delete record.
+                                        deleteMetaRecordById(context,local_metadata.getEntry());
+                                        return RemoteComms.getImage(context, filename, ext, path, options);
+                                    }
+                                    return bmp;
                                 }else return RemoteComms.getImage(context, filename, ext, path, options);
                                 /*Config mod = local_metadata.compareDateModified(r_dmd);
                                 if (mod.getValue().equals(Config.META_PARAM_NEWER.getValue()))//remote file is newer
@@ -177,6 +184,24 @@ public class LocalComms
         }
     }
 
+    public static void deleteMetaRecordById(Context context, String entry)  throws IOException
+    {
+        if(context!=null && entry!=null)
+        {
+            EventHelper dbHelper = new EventHelper(context);
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+            String where = MetadataContract.MetaEntry.COL_META_ENTRY+"=?";
+            String[] where_args = {entry};
+            db.delete(MetadataContract.MetaEntry.TABLE_NAME,where,where_args);
+
+            closeDB(db);
+        }else
+        {
+            Log.d(TAG,"Context or entry is null.");
+        }
+    }
+
     public static void addEvent(Context context, Event e) throws IOException
     {
         if(e.isValid())
@@ -193,10 +218,11 @@ public class LocalComms
 
             long rows = c.getCount();
 
-            if(!c.isClosed())
-                c.close();
-            if(db.isOpen())
-                db.close();
+            if(c!=null)
+                if(!c.isClosed())
+                    c.close();
+
+            closeDB(db);
 
             if(rows<=0)//Event DNE
             {
@@ -229,8 +255,7 @@ public class LocalComms
 
                 db.insert(EventContract.EventEntry.TABLE_NAME, null, values);
 
-                if(db.isOpen())
-                    db.close();
+                closeDB(db);
 
                 Log.d(TAG, "Inserted new Event[" + e.getId() + "].");
             }else updateEvent(context,e);//Event exists.
@@ -273,8 +298,7 @@ public class LocalComms
             String[] where_args = {String.valueOf(e.getId())};
             db.update(EventContract.EventEntry.TABLE_NAME,values,where,where_args);
 
-            if(db.isOpen())
-                db.close();
+            closeDB(db);
             Log.d(TAG,"Updated Event["+e.getId()+"].");
         }
         else
@@ -336,28 +360,28 @@ public class LocalComms
 
                             if(remote_metadata.getEntry()==null||remote_metadata.getMeta()==null)
                             {
-                                if(!c.isClosed())
-                                    c.close();
-                                if(db.isOpen())
-                                    db.close();
+                                if(c!=null)
+                                    if(!c.isClosed())
+                                        c.close();
+                                closeDB(db);
                                 return event;
                             }
 
                             if(remote_metadata.getEntry().toLowerCase().equals("null")||remote_metadata.getMeta().toLowerCase().equals("null"))
                             {
-                                if(!c.isClosed())
-                                    c.close();
-                                if(db.isOpen())
-                                    db.close();
+                                if(c!=null)
+                                    if(!c.isClosed())
+                                        c.close();
+                                closeDB(db);
                                 return event;
                             }
 
                             if(remote_metadata.getEntry().toLowerCase().equals("error")||remote_metadata.getMeta().toLowerCase().equals("error"))
                             {
-                                if(!c.isClosed())
-                                    c.close();
-                                if(db.isOpen())
-                                    db.close();
+                                if(c!=null)
+                                    if(!c.isClosed())
+                                        c.close();
+                                closeDB(db);
                                 return event;
                             }
 
@@ -424,10 +448,11 @@ public class LocalComms
                 Log.d(TAG,"[event=" + event.getId()+"] is not in local records.");
             addEvent(context,event);//new Event
         }
-        if(!c.isClosed())
-            c.close();
-        if(db.isOpen())
-            db.close();
+
+        if(c!=null)
+            if(!c.isClosed())
+                c.close();
+        closeDB(db);
 
         return event;
     }
@@ -516,7 +541,7 @@ public class LocalComms
 
                 db.insert(MetadataContract.MetaEntry.TABLE_NAME, null, values);
 
-                db.close();
+                closeDB(db);
 
                 Log.d(TAG,"addMetaRecord> Added new Meta Record.");
             }else
@@ -605,8 +630,7 @@ public class LocalComms
         String[] where_args = {entry};
         db.update(MetadataContract.MetaEntry.TABLE_NAME,values,where,where_args);
 
-        if(db.isOpen())
-            db.close();
+        closeDB(db);
 
         Log.d(TAG,"updateMetaRecord> Record["+entry+"] successfully updated to "+value+".");
         return true;
@@ -629,10 +653,10 @@ public class LocalComms
         {
             meta = c.getString(c.getColumnIndex(MetadataContract.MetaEntry.COL_META_ENTRY_DATA));
         }
-        if(!c.isClosed())
-            c.close();
-        if(db.isOpen())
-            db.close();
+        if(c!=null)
+            if(!c.isClosed())
+                c.close();
+        closeDB(db);
 
         return meta;
     }
@@ -649,7 +673,6 @@ public class LocalComms
 
         if(!messageIdExistsInDB(context,m.getId()))//Shouldn't technically ever happen
         {
-
             if (kv_pairs.size() > 0)
             {
                 long newRowId = db.insert(MessagePollContract.MessageEntry.TABLE_NAME, null, kv_pairs);
@@ -762,11 +785,7 @@ public class LocalComms
         }
         catch (SQLiteException e)
         {
-            if(e.getMessage()!=null)
-                Log.wtf(TAG,e.getMessage(),e);
-            else
-                e.printStackTrace();
-            //TODO: Better logging
+            LocalComms.logException(e);
         }
         finally
         {
@@ -822,11 +841,7 @@ public class LocalComms
         }
         catch (SQLiteException e)
         {
-            if(e.getMessage()!=null)
-                Log.wtf(TAG,e.getMessage(),e);
-            else
-                e.printStackTrace();
-            //TODO: Better logging
+            LocalComms.logException(e);
         }
         finally
         {
@@ -853,11 +868,7 @@ public class LocalComms
         }
         catch (SQLiteException e)
         {
-            if(e.getMessage()!=null)
-                Log.wtf(TAG,e.getMessage(),e);
-            else
-                e.printStackTrace();
-            //TODO: Better logging
+            LocalComms.logException(e);
         }
         finally
         {
@@ -908,6 +919,9 @@ public class LocalComms
 
                 messages.add(m);
             }
+            if(c!=null)
+                if(!c.isClosed())
+                    c.close();
         }
         catch (SQLiteException e)
         {
@@ -962,8 +976,7 @@ public class LocalComms
         }
         catch (SQLiteException e)
         {
-            Log.wtf(TAG,e.getMessage(),e);
-            //TODO: Better logging
+            LocalComms.logException(e);
         }
         finally
         {
@@ -1004,8 +1017,7 @@ public class LocalComms
         }
         catch (SQLiteException e)
         {
-            Log.wtf(TAG,e.getMessage(),e);
-            //TODO: Better logging
+            LocalComms.logException(e);
         }
         finally
         {
@@ -1071,11 +1083,13 @@ public class LocalComms
                 }else Log.wtf(TAG,"The impossible has happened, couldn't set DB cursor to first entry when trying get a User even though " +
                         "the username was found.");
             }
+            if(c!=null)
+                if(!c.isClosed())
+                    c.close();
         }
         catch (SQLiteException e)
         {
-            Log.wtf(TAG,e.getMessage(),e);
-            //TODO: Better logging
+            LocalComms.logException(e);
         }
         finally
         {
@@ -1122,11 +1136,14 @@ public class LocalComms
                 }
             }
             else Log.d(TAG,"No contacts were found.");
+
+            if(c!=null)
+                if(!c.isClosed())
+                    c.close();
         }
         catch (SQLiteException e)
         {
-            Log.wtf(TAG,e.getMessage(),e);
-            //TODO: Better logging
+            LocalComms.closeDB(db);
         }
         finally
         {
@@ -1151,6 +1168,10 @@ public class LocalComms
 
             Cursor c =  db.rawQuery(query, new String[] {username});
             rowCount = c.getCount();
+
+            if(c!=null)
+                if(!c.isClosed())
+                    c.close();
         }
         catch (SQLiteException e)
         {
@@ -1204,17 +1225,21 @@ public class LocalComms
                 m.setStatus(stat);
             }else Log.wtf(TAG,"The impossible has happened, couldn't set DB cursor to first entry when trying get Message even though " +
             "the Message_id was found.");
+
+            if(c!=null)
+                if(!c.isClosed())
+                    c.close();
         }
         catch (SQLiteException e)
         {
-            Log.wtf(TAG,e.getMessage(),e);
-            //TODO: Better logging
+            LocalComms.logException(e);
         }
         finally
         {
             closeDB(db);
+            return m;
         }
-        return m;
+
     }
 
     public static ArrayList<Message> getOutboundMessages(Context context, String sender)
@@ -1258,17 +1283,21 @@ public class LocalComms
 
                 messages.add(m);
             }
+
+            if(c!=null)
+                if(!c.isClosed())
+                    c.close();
         }
         catch (SQLiteException e)
         {
-            Log.wtf(TAG,e.getMessage(),e);
-            //TODO: Better logging
+            LocalComms.logException(e);
         }
         finally
         {
             closeDB(db);
+            return messages;
         }
-        return messages;
+
     }
 
     public static void validateStoragePermissions(Activity activity)

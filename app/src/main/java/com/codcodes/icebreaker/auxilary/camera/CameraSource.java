@@ -28,6 +28,7 @@ import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresPermission;
 import android.support.annotation.StringDef;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -132,9 +133,9 @@ public class CameraSource {
 
     // These values may be requested by the caller.  Due to hardware limitations, we may need to
     // select close, but not exactly the same values for these.
-    private float mRequestedFps = 30.0f;
-    private int mRequestedPreviewWidth = 640;
-    private int mRequestedPreviewHeight = 480;
+    private float mRequestedFps = 20.0f;
+    private int mRequestedPreviewWidth = 1080;
+    private int mRequestedPreviewHeight = 1366;
 
 
     private String mFocusMode = null;
@@ -223,8 +224,10 @@ public class CameraSource {
             if ((width <= 0) || (width > MAX) || (height <= 0) || (height > MAX)) {
                 throw new IllegalArgumentException("Invalid preview size: " + width + "x" + height);
             }
-            mCameraSource.mRequestedPreviewWidth = width;
-            mCameraSource.mRequestedPreviewHeight = height;
+            DisplayMetrics dm = new DisplayMetrics();
+            //dm.
+            mCameraSource.mRequestedPreviewWidth = 1920;//width;
+            mCameraSource.mRequestedPreviewHeight = 1600;//height;
             return this;
         }
 

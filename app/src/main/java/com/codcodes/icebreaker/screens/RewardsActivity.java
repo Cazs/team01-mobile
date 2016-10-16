@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Environment;
+import android.os.Looper;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 
@@ -28,6 +29,12 @@ import android.widget.TextView;
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.ImageUtils;
+import com.codcodes.icebreaker.auxilary.LocalComms;
+import com.codcodes.icebreaker.auxilary.RemoteComms;
+import com.codcodes.icebreaker.auxilary.SharedPreference;
+import com.codcodes.icebreaker.model.Rewards;
+
+import java.io.IOException;
 
 public class RewardsActivity extends AppCompatActivity
 {
@@ -94,6 +101,24 @@ public class RewardsActivity extends AppCompatActivity
                 + profilepic, getApplicationContext());
         circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
         circularImageView.setImageBitmap(circularbitmap);
+
+        Thread t = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Looper.prepare();
+
+                try
+                {
+                    String response = RemoteComms.sendGetRequest("getUserIcebreakCount/"+
+                            SharedPreference.getUsername(RewardsActivity.this));
+                } catch (IOException e)
+                {
+                    LocalComms.logException(e);
+                }
+            }
+        });
     }
 
     @Override
@@ -160,9 +185,9 @@ public class RewardsActivity extends AppCompatActivity
     public void onBackPressed()
     {
         super.onBackPressed();
-        Intent intent = new Intent(this,MainActivity.class);
+        /*Intent intent = new Intent(this,MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
-        finish();
+        startActivity(intent);*/
+        this.finish();
     }
 }

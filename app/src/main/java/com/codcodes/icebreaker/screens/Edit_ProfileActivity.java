@@ -418,18 +418,16 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
     private boolean isEmpty(String check)
     {
         if(check.isEmpty())
-        {
             return true;
-        }
         return false;
     }
 
     private boolean isInt(String check)
     {
-        if(check.matches("^\\d+$")) {
+        if(check.matches("^\\d+$"))
             return true;
-        }
-        return false;
+        else
+            return false;
     }
     @Override
     public void onBackPressed()
@@ -438,7 +436,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
         Intent intent = new Intent(this,MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
-        finish();
+        this.finish();
     }
 
 

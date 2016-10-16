@@ -5,17 +5,47 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.v7.widget.RecyclerView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/userContactList"
-        android:name="com.codcodes.icebreaker.tabs.dummy.UserContactsFragment"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="2dp"
-        android:layout_marginRight="2dp"
-        app:layoutManager="LinearLayoutManager"
-        tools:context=".tabs.UserContactsFragment"
-        tools:listitem="@layout/ib_list_item_1" />
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/userContactList"
+            android:name="com.codcodes.icebreaker.tabs.dummy.UserContactsFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            app:layoutManager="LinearLayoutManager"
+            tools:context=".tabs.UserContactsFragment"
+            tools:listitem="@layout/ib_list_item_1" />
+
+        <LinearLayout
+            android:id="@+id/contcts_anim_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignBaseline="@+id/userContactList"
+            android:background="@android:color/transparent"
+            android:orientation="vertical">
+
+            <ImageView
+            android:id="@+id/logo_broken"
+            android:layout_width="@dimen/dp_size_200"
+            android:layout_height="@dimen/dp_size_200"
+            android:src="@drawable/logo_broken"
+            android:layout_gravity="center"/>
+
+            <TextView
+                android:id="@+id/txt_not_at_event"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="You are currently not signed in to any event."
+                android:textSize="20sp"
+                android:layout_gravity="center"
+                android:gravity="center"/>
+        </LinearLayout>
+    </RelativeLayout>
 </android.support.v4.widget.SwipeRefreshLayout>

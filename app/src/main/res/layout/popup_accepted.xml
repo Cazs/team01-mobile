@@ -56,7 +56,7 @@
 
         <RadioButton
             android:id="@+id/popup_accepted_radbtn1"
-            android:layout_width="170dp"
+            android:layout_width="250dp"
             android:layout_height="32dp"
             android:layout_gravity="center"
             android:layout_marginTop="10dp"
@@ -79,7 +79,7 @@
 
         <RadioButton
             android:id="@+id/popup_accepted_radbtn2"
-            android:layout_width="170dp"
+            android:layout_width="250dp"
             android:layout_height="32dp"
             android:layout_marginTop="10dp"
             android:text="Option B"
@@ -102,9 +102,9 @@
 
         <RadioButton
             android:id="@+id/popup_accepted_radbtn3"
-            android:layout_width="170dp"
+            android:layout_width="250dp"
             android:layout_height="32dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="10dp"o
             android:text="Option C"
             android:fontFamily="monospace"
             android:textSize="10pt"

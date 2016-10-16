@@ -10,12 +10,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -29,10 +29,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,6 +50,9 @@ import com.codcodes.icebreaker.tabs.ProfileFragment;
 import com.codcodes.icebreaker.tabs.UserContactsFragment;
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -61,7 +61,7 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 
 public class MainActivity extends AppCompatActivity implements IOnListFragmentInteractionListener,
-                                                                                    LocationListener
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
 {
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
      * {@link FragmentPagerAdapter} derivative, which will keep every
      * loaded fragment in memory. If this becomes too memory intensive, it
      * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
+     * {@link android.support.v4.app.FragmentStatePagerAdapter}.L
      */
 
     /**
@@ -80,16 +80,16 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     private Typeface ttfInfinity, ttfAilerons;
 
     public static String rootDir = Environment.getExternalStorageDirectory().getPath();
-    public static double range=40.0;
-    private Location location=null;
-    public static boolean is_reloading_events=false;
+    public static double range = 40.0;
+    public static Location mLastKnownLoc;
+    public static boolean is_reloading_events = false;
     public static final String mocLocationProvider = "Icebreak_Mock_Loc";
     private static final String TAG = "IB/MainActivity";
-
-    private static ArrayList<Event> events;
-    private ArrayList<Bitmap> bitmaps;
-
+    public static ArrayList<Event> events;
+    public static ArrayList<Bitmap> bitmaps;
     private EventsFragment eventsFragment;
+
+    private GoogleApiClient mGoogleApiClient;
 
     private int[] viewPagerIcons =
             {
@@ -102,7 +102,11 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        validatePermissions();
+
+        //Init Facebook
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(getApplication());
+
         //Get and set hash
         try
         {
@@ -115,142 +119,66 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 md.update(signature.toByteArray());
                 //Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
             }
-        }catch (PackageManager.NameNotFoundException e)
+        } catch (PackageManager.NameNotFoundException e)
         {
-            //TODO: Better logging
             toastHandler("PackageManager name not found.").obtainMessage().sendToTarget();
             LocalComms.logException(e);
         } catch (NoSuchAlgorithmException e)
         {
-            //TODO: Better logging
             toastHandler("No such algorithm.").obtainMessage().sendToTarget();
             LocalComms.logException(e);
         }
 
-        //Init Facebook
-        FacebookSdk.sdkInitialize(getApplicationContext());
-        AppEventsLogger.activateApp(getApplication());
-
         setContentView(R.layout.activity_main);
-
-        ImageView dbg_anim_logo = (ImageView)findViewById(R.id.imgLogo);
-
-        if(dbg_anim_logo!=null)
-        {
-            dbg_anim_logo.setOnLongClickListener(new View.OnLongClickListener()
-            {
-                @Override
-                public boolean onLongClick(View view)
-                {
-                    LinearLayout hack_gps = (LinearLayout)findViewById(R.id.hack_gps_container);
-                    if(hack_gps!=null)
-                        hack_gps.setVisibility(View.VISIBLE);
-
-                    RadioButton rbtnAud = (RadioButton)findViewById(R.id.rbtn_auditorium);
-                    RadioButton rbtnStud = (RadioButton)findViewById(R.id.rbtn_student_center);
-                    RadioButton rbtnPond = (RadioButton)findViewById(R.id.rbtn_pond);
-                    RadioButton rbtnLib = (RadioButton)findViewById(R.id.rbtn_library);
-
-                    rbtnAud.setOnClickListener(new View.OnClickListener()
-                    {
-                        @Override
-                        public void onClick(View view)
-                        {
-                            mockLocation(-26.183261, 27.996542);
-                        }
-                    });
-
-                    rbtnStud.setOnClickListener(new View.OnClickListener()
-                    {
-                        @Override
-                        public void onClick(View view)
-                        {
-                            mockLocation(-26.182587, 27.995996);
-                        }
-                    });
-
-                    rbtnPond.setOnClickListener(new View.OnClickListener()
-                    {
-                        @Override
-                        public void onClick(View view)
-                        {
-                            mockLocation(-26.183599, 27.997475);
-                        }
-                    });
-
-                    rbtnLib.setOnClickListener(new View.OnClickListener()
-                    {
-                        @Override
-                        public void onClick(View view)
-                        {
-                            mockLocation(-26.182891, 27.997931);
-                        }
-                    });
-
-                    return true;
-                }
-            });
-        }
-        //Load User data.
-        try
-        {
-            loadUserData();
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        }
 
         ttfInfinity = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
         ttfAilerons = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
 
-        //Start Icebreak checker service that checks the local DB for Icebreaks
-        Intent icebreakChecker = new Intent(this,IcebreakService.class);
-        startService(icebreakChecker);
-        Log.d(TAG,"Started IcebreakService");
-
-        //Start Message listener service
-        Intent intMsgService = new Intent(this, MessageFcmService.class);
-        startService(intMsgService);
-        Log.d(TAG,"Started MessageFcmService");
-
-        //Start token registration service
-        Intent intTokenService = new Intent(this, IbTokenRegistrationService.class);
-        startService(intTokenService);
-        Log.d(TAG,"Started IbTokenRegistrationService");
-
         //Load UI components
-        actionBar = (LinearLayout)findViewById(R.id.actionBar);
+        actionBar = (LinearLayout) findViewById(R.id.actionBar);
         mViewPager = (ViewPager) findViewById(R.id.container);
-        //contextMenuPager = (ViewPager) findViewById(R.id.context_menu_container);
 
         TabLayout tablayout = (TabLayout) findViewById(R.id.tab_layout);
         TextView headingTextView = (TextView) findViewById(R.id.main_heading);
-        ttfInfinity = Typeface.createFromAsset(this.getAssets(),"Ailerons-Typeface.otf");
 
         //Setup UI components
-        mViewPager.setAdapter(new FragmentAdapter(getSupportFragmentManager(),MainActivity.this));
-        //contextMenuPager.setAdapter(new ContextMenuFragmentAdapter(getSupportFragmentManager(),MainActivity.this));
+        mViewPager.setAdapter(new FragmentAdapter(getSupportFragmentManager(), MainActivity.this));
 
         tablayout.setupWithViewPager(mViewPager);// Set up the ViewPager with the sections adapter.
         tablayout.getTabAt(0).setIcon(viewPagerIcons[0]);
         tablayout.getTabAt(1).setIcon(viewPagerIcons[1]);
         tablayout.getTabAt(2).setIcon(viewPagerIcons[2]);
-        headingTextView.setTypeface(ttfInfinity);
+        headingTextView.setTypeface(ttfAilerons);
         headingTextView.setTextSize(30);
 
+        //Start Icebreak checker service that checks the local DB for Icebreaks
+        Intent icebreakChecker = new Intent(this, IcebreakService.class);
+        startService(icebreakChecker);
+        Log.d(TAG, "Started IcebreakService");
+
+        //Start Message listener service
+        Intent intMsgService = new Intent(this, MessageFcmService.class);
+        startService(intMsgService);
+        Log.d(TAG, "Started MessageFcmService");
+
+        //Start token registration service
+        Intent intTokenService = new Intent(this, IbTokenRegistrationService.class);
+        startService(intTokenService);
+        Log.d(TAG, "Started IbTokenRegistrationService");
+
         Intent i = getIntent();
-        String frag=i.getStringExtra("Fragment");
-        if(frag!=null)
+        String frag = i.getStringExtra("Fragment");
+        if (frag != null)
         {
-            if(frag.equals(EventsFragment.class.getName()))
+            if (frag.equals(EventsFragment.class.getName()))
             {
                 mViewPager.setCurrentItem(0, true);
             }
-            if(frag.equals(UserContactsFragment.class.getName()))
+            if (frag.equals(UserContactsFragment.class.getName()))
             {
                 mViewPager.setCurrentItem(1, true);
             }
-            if(frag.equals(ProfileFragment.class.getName()))
+            if (frag.equals(ProfileFragment.class.getName()))
             {
                 mViewPager.setCurrentItem(2, true);
             }
@@ -261,14 +189,13 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
             {
-                TextView title = (TextView)MainActivity.this.findViewById(R.id.main_heading);
+                TextView title = (TextView) MainActivity.this.findViewById(R.id.main_heading);
 
-                if(position == 2)
+                if (position == 2)
                 {
                     title.setText("Your Profile");
                     title.setTextSize(25);
-                }
-                else
+                } else
                 {
                     title.setTextSize(35);
                     title.setText("IceBreak");
@@ -286,30 +213,26 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
             }
         });
+
+        // Create an instance of GoogleAPIClient.
+        if (mGoogleApiClient == null)
+        {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
     }
 
-    public void mockLocation(double lat, double lng)
-    {
-        String msg="Going to ["+lat+","+lng+"]";
-        Toast.makeText(MainActivity.this,msg,Toast.LENGTH_LONG).show();
 
-        Location mockLocation = new Location(mocLocationProvider); // a string
-        mockLocation.setLatitude(lat);
-        mockLocation.setLongitude(lng);
-        mockLocation.setTime(System.currentTimeMillis());
-
-        onLocationChanged(mockLocation);
-
-        LinearLayout hack_gps = (LinearLayout)findViewById(R.id.hack_gps_container);
-        if(hack_gps!=null)
-            hack_gps.setVisibility(View.GONE);
-    }
 
     public void reloadEvents()
     {
         is_reloading_events=true;
         if(eventsFragment!=null)
             eventsFragment.startPulsator();
+        else Log.d(TAG,"EventsFragment object is null.");
 
         final Thread eventsThread = new Thread(new Runnable()
         {
@@ -318,15 +241,15 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             {
                 Looper.prepare();
                 //progress = LocalComms.showProgressDialog(getActivity(),"Loading Events...");
-                while (location==null){}//wait for location
+                while (mLastKnownLoc==null){}//wait for location
 
                 //Attempt to load Events
-                if(events==null)
-                    events = new ArrayList<>();
+                events = new ArrayList<>();
+
                 try
                 {
-                    String eventIds = RemoteComms.sendGetRequest("getNearbyEventIds/" + location.getLatitude()
-                            + '/' + location.getLongitude() + '/' + MainActivity.range);
+                    String eventIds = RemoteComms.sendGetRequest("getNearbyEventIds/" + mLastKnownLoc.getLatitude()
+                            + '/' + mLastKnownLoc.getLongitude() + '/' + MainActivity.range);
                     eventIds=eventIds.replaceAll("\\[","");
                     eventIds=eventIds.replaceAll("\\]","");
                     eventIds=eventIds.replaceAll("\"","");
@@ -366,18 +289,23 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                     Log.d(TAG,"No events were found.");
                 }
 
-                if(bitmaps==null)
-                    bitmaps = new ArrayList<Bitmap>();
+                bitmaps = new ArrayList<>();
+
                 try
                 {
                     String iconName = "";
                     BitmapFactory.Options options = null;
-                    int i=0;
                     for (Event e : events)
                     {
                         iconName = "event_icons-" + e.getId();
                         options = new BitmapFactory.Options();
                         options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+
+                        bitmaps.add(LocalComms.getImage(getApplicationContext(), iconName, ".png", "/events", options));
+                    }
+
+                    if(eventsFragment!=null)
+                        eventsFragment.setAdapter();
 
                         //check bitmaps only if the number of Events has changed
                         //TODO: Do more in-depth check in case number didn't change but Events changed
@@ -385,7 +313,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                         {
                             Log.d(TAG,"Bitmap list is populated.");
                         }
-                        else*/
+                        else*
                         {
                             try
                             {
@@ -397,7 +325,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                                 LocalComms.logException(ex);
                             }
                         }
-                        i++;
                     }
                     runOnUiThread(new Runnable()
                     {
@@ -411,76 +338,29 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                                 eventsFragment.setLat(location==null?0.0:location.getLatitude());
                                 eventsFragment.setLng(location==null?0.0:location.getLongitude());
                                 eventsFragment.setAdapter();
+                            }else
+                            {
+                                eventsFragment = EventsFragment.newInstance(MainActivity.this,
+                                        getIntent().getExtras(),events,bitmaps,
+                                        location==null?0.0:location.getLatitude(),
+                                        location==null?0.0:location.getLongitude()
+                                        );
+                                eventsFragment.setAdapter();
                             }
                         }
-                    });
+                    });*/
                 }
                 catch(ConcurrentModificationException e)
+                {
+                    LocalComms.logException(e);
+                }
+                catch (IOException e)
                 {
                     LocalComms.logException(e);
                 }
             }
         });
         eventsThread.start();
-    }
-
-    private void loadUserData() throws IOException
-    {
-        //Load last Event User was at if it exists.
-        /*String tmp = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
-        if(tmp!=null)
-            if(!tmp.isEmpty() && !tmp.equals("null"))
-                event_id = Long.valueOf(tmp);
-        if(event_id>0)
-        {
-            Thread tEventLoader = new Thread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    try
-                    {
-                        event = RemoteComms.getEvent(event_id);
-                    }
-                    catch (IOException e)
-                    {
-                        Log.wtf(TAG,"IOE (on event init): " + e.getMessage());
-                        toastHandler("Could not load your current Event.").obtainMessage().sendToTarget();
-                    }
-                }
-            });
-            tEventLoader.start();
-        }*/
-        /*
-        //Try to get local user from DB
-        lcl = LocalComms.getContact(this,SharedPreference.getUsername(this).toString());
-        uhandle = SharedPreference.getUsername(this).toString();
-        if(lcl==null)//not in local DB, get from remote DB
-        {
-            Thread tLocalUserLoader = new Thread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    try
-                    {
-                        lcl = RemoteComms.getUser(getApplicationContext(), SharedPreference.getUsername(getBaseContext()).toString());
-                        if(lcl==null)
-                        {
-                            Log.d(TAG, "Could not get user from remote DB.");
-                            toastHandler("Could not get user from remote DB. Check your Internet connection.").obtainMessage().sendToTarget();
-                        }
-                        else
-                            Log.d(TAG,"Added a user to local DB.");
-                    } catch (IOException e)
-                    {
-                        Log.d(TAG,"Couldn't add local user to local DB: " + e.getMessage());
-                        toastHandler("Couldn't add local user to local DB: " + e.getMessage()).obtainMessage().sendToTarget();
-                    }
-                }
-            });
-            tLocalUserLoader.start();
-        }else Log.d(TAG,"Local user already in local DB.");*/
     }
 
     private Handler toastHandler(final String text)
@@ -524,9 +404,9 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     @Override
     public void onListFragmentInteraction(IJsonable item)
     {
-        if(item!=null)
+        if (item != null)
         {
-            if(item instanceof User)
+            if (item instanceof User)
             {
                 if (!((User) item).getFirstname().equals(getString(R.string.msg_not_in_event)))
                 {
@@ -540,12 +420,12 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                     toastHandler("Either there are no IceBreak users at this event or you don't have an internet connection or you don't have any contacts.").obtainMessage().sendToTarget();
                 }
             }
-            if(item instanceof Event)
+            if (item instanceof Event)
             {
                 if (!((Event) item).getTitle().equals(getString(R.string.msg_no_events)))
                 {
-                    Intent intent = new Intent(this,EventDetailActivity.class);
-                    intent.putExtra("Event",((Event) item));
+                    Intent intent = new Intent(this, EventDetailActivity.class);
+                    intent.putExtra("Event", ((Event) item));
 
                     startActivity(intent);
                 } else
@@ -554,12 +434,54 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                     Toast.makeText(this, "Either there are no IceBreak events matching your criteria or you don't have an internet connection.", Toast.LENGTH_LONG).show();
                 }
             }
-        }
-        else
+        } else
         {
-            Log.d(TAG,"User object is null.");
+            Log.d(TAG, "User object is null.");
             Toast.makeText(this, "User object is null.", Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle)
+    {
+        Toast.makeText(this, "Connected to GPS provider.", Toast.LENGTH_SHORT).show();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        mLastKnownLoc = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+        if(mLastKnownLoc!=null)
+        {
+            try
+            {
+                WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(), String.valueOf(mLastKnownLoc.getLatitude()));
+                WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(), String.valueOf(mLastKnownLoc.getLongitude()));
+            } catch (IOException e)
+            {
+                LocalComms.logException(e);
+            }
+        }else Log.wtf(TAG,"Last known location is null.");
+        reloadEvents();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i)
+    {
+        Toast.makeText(this,"Connection to GPS provider suspended ["+i+"]. Could not get last known location.",Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult)
+    {
+        Toast.makeText(this,"Connection to GPS provider failed. Could not get last known location.",Toast.LENGTH_LONG).show();
     }
 
     public class FragmentAdapter extends FragmentPagerAdapter
@@ -579,20 +501,10 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             switch (position)
             {
                 case 0:
-                    if(events==null||events.isEmpty())
-                        reloadEvents();
-                    if (eventsFragment==null)
-                        return eventsFragment = EventsFragment.newInstance(
-                                context,
-                                getIntent().getExtras(),
-                                events,
-                                bitmaps,
-                                location==null?0.0:location.getLatitude(),
-                                location==null?0.0:location.getLongitude());
-                    else
-                    {
-                        return eventsFragment;
-                    }
+                    eventsFragment = EventsFragment.newInstance(
+                            context,
+                            getIntent().getExtras());
+                    return eventsFragment;
                 case 1:
                     return UserContactsFragment.newInstance(context, getIntent().getExtras());
                 case 2:
@@ -624,6 +536,16 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     }
 
     @Override
+    protected void onStart()
+    {
+        if(mGoogleApiClient!=null)
+            mGoogleApiClient.connect();
+        super.onStart();
+        if(eventsFragment!=null)
+            eventsFragment.setAdapter();
+    }
+
+    @Override
     public void onPause()
     {
         super.onPause();
@@ -644,6 +566,8 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     @Override
     protected void onStop()
     {
+        if(mGoogleApiClient!=null)
+            mGoogleApiClient.disconnect();
         super.onStop();
     }
 
@@ -683,29 +607,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         }
     }
 
-    private void validatePermissions()
-    {
-        LocationManager locationMgr;
-        locationMgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        if (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-        {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        int min_metres=50;
-        long refresh_interval=10;
-        locationMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, min_metres, refresh_interval, this);
-    }
-
     @Override
     public void onDetachedFromWindow()
     {
@@ -716,16 +617,8 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     public void onResume()
     {
         super.onResume();
-        try
-        {
-            loadUserData();
-        } catch (IOException e)
-        {
-            if(e.getMessage()!=null)
-                Log.d(TAG,e.getMessage(),e);
-            else
-                e.printStackTrace();
-        }
+        if(eventsFragment!=null)
+            eventsFragment.setAdapter();
     }
 
     @Override
@@ -736,26 +629,5 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
          if(back_click_count>=3)
          this.finish();**/
         Toast.makeText(this,"Clicked back from MainActivity, will close app when clicked twice in the future.",Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onLocationChanged(Location location)
-    {
-        this.location=location;
-    }
-
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle)
-    {
-    }
-
-    @Override
-    public void onProviderEnabled(String s)
-    {
-    }
-
-    @Override
-    public void onProviderDisabled(String s)
-    {
     }
 }

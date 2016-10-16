@@ -148,5 +148,6 @@ public class ExtendedEventInfoActivity extends AppCompatActivity
         Intent i = new Intent(this,EventDetailActivity.class);
         i.putExtra("Event",event);
         startActivity(i);
+        finish();
     }
 }

@@ -13,37 +13,22 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:background="@android:color/transparent"
         android:weightSum="100">
 
         <LinearLayout
-            android:id="@+id/actionBar"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginBottom="-5dp"
-            android:layout_weight="11"
+            android:layout_weight="15"
             android:background="@drawable/action_bar_background">
-
-            <ImageView
-                android:layout_width="@dimen/logo_w"
-                android:layout_height="match_parent"
-                android:layout_gravity="center_vertical"
-                android:src="@mipmap/ic_launcher" />
-
-            <TextView
-                android:id="@+id/main_heading"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:text="@string/app_name"
-                android:textSize="29pt"
-                android:textColor="@color/white" />
-
+            <include
+                layout="@layout/appbar"/>
         </LinearLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="75">
+            android:layout_weight="70">
 
             <android.support.v4.view.ViewPager
                 android:id="@+id/container"
@@ -86,7 +71,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="14"
+            android:layout_weight="15"
             android:background="@color/iceblue"
             android:orientation="vertical">
 

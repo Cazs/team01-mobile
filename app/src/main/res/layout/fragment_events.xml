@@ -29,7 +29,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_alignBaseline="@+id/eventsList"
-            android:background="@color/white">
+            android:background="@android:color/transparent">
 
             <pl.bclogic.pulsator4droid.library.PulsatorLayout
                 android:id="@+id/pulsator"
@@ -49,47 +49,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:src="@mipmap/ic_launcher"
-                        android:layout_gravity="center"
-                        android:onClick="animLogoClick"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/hack_gps_container"
-                    android:layout_width="300dp"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone"
-                    android:background="@drawable/action_bar_background"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:layout_centerInParent="true">
-                    <RadioGroup
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <RadioButton
-                            android:id="@+id/rbtn_student_center"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Student Center"/>
-
-                        <RadioButton
-                            android:id="@+id/rbtn_auditorium"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Auditorium"/>
-
-                        <RadioButton
-                            android:id="@+id/rbtn_pond"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Pond"/>
-
-                        <RadioButton
-                            android:id="@+id/rbtn_library"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Library"/>
-                    </RadioGroup>
+                        android:layout_gravity="center"/>
                 </LinearLayout>
 
             </pl.bclogic.pulsator4droid.library.PulsatorLayout>

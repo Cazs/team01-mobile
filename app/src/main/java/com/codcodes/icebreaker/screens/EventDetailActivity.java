@@ -1,6 +1,7 @@
 package com.codcodes.icebreaker.screens;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -40,6 +41,7 @@ import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.model.User;
+import com.codcodes.icebreaker.tabs.EventsFragment;
 import com.codcodes.icebreaker.tabs.UserContactsFragment;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.maps.model.LatLng;
@@ -47,22 +49,21 @@ import com.google.android.gms.vision.barcode.Barcode;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 
-public class EventDetailActivity extends AppCompatActivity implements LocationListener
+public class EventDetailActivity extends AppCompatActivity
 {
     private final String TAG = "IB/EventDetailActivity";
 
+    private LatLng me;
     private Event selected_event;
 
-    private LatLng me;
     private LocationDetector locationChecker;
 
+    private Dialog dlgGpsHack;
     private TextView eventDetails;
     private ProgressDialog progress;
-
-    private double lat = 0;
-    private double lng = 0;
 
     private static final int RC_BARCODE_CAPTURE = 9001;
 
@@ -71,7 +72,6 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
-        validatePermissions();
 
         ImageView dbg_anim_logo = (ImageView)findViewById(R.id.imgLogo);
 
@@ -82,21 +82,30 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
                 @Override
                 public boolean onLongClick(View view)
                 {
-                    LinearLayout hack_gps = (LinearLayout)findViewById(R.id.hack_gps_container);
-                    if(hack_gps!=null)
-                        hack_gps.setVisibility(View.VISIBLE);
+                    dlgGpsHack = new Dialog(EventDetailActivity.this);
+                    if(dlgGpsHack==null)
+                        return false;
 
-                    RadioButton rbtnAud = (RadioButton)findViewById(R.id.rbtn_auditorium);
-                    RadioButton rbtnStud = (RadioButton)findViewById(R.id.rbtn_student_center);
-                    RadioButton rbtnPond = (RadioButton)findViewById(R.id.rbtn_pond);
-                    RadioButton rbtnLib = (RadioButton)findViewById(R.id.rbtn_library);
+                    dlgGpsHack.setContentView(R.layout.gps_hack);
+                    if(!dlgGpsHack.isShowing())
+                        dlgGpsHack.show();
+
+                    RadioButton rbtnAud = (RadioButton)dlgGpsHack.findViewById(R.id.rbtn_auditorium);
+                    RadioButton rbtnStud = (RadioButton)dlgGpsHack.findViewById(R.id.rbtn_student_center);
+                    RadioButton rbtnPond = (RadioButton)dlgGpsHack.findViewById(R.id.rbtn_pond);
+                    RadioButton rbtnLib = (RadioButton)dlgGpsHack.findViewById(R.id.rbtn_library);
+
+                    if (EventsFragment.debug_locations==null)
+                        EventsFragment.debug_locations=new ArrayList<>();
+                    if(EventsFragment.debug_locations.isEmpty())
+                        EventsFragment.populateOverrideLocations();
 
                     rbtnAud.setOnClickListener(new View.OnClickListener()
                     {
                         @Override
                         public void onClick(View view)
                         {
-                            mockLocation(-26.183261, 27.996542);
+                            mockLocation(EventsFragment.debug_locations.get(0).getValue().latitude,EventsFragment.debug_locations.get(0).getValue().longitude);
                         }
                     });
 
@@ -105,7 +114,7 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
                         @Override
                         public void onClick(View view)
                         {
-                            mockLocation(-26.182587, 27.995996);
+                            mockLocation(EventsFragment.debug_locations.get(1).getValue().latitude,EventsFragment.debug_locations.get(0).getValue().longitude);
                         }
                     });
 
@@ -114,7 +123,7 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
                         @Override
                         public void onClick(View view)
                         {
-                            mockLocation(-26.183599, 27.997475);
+                            mockLocation(EventsFragment.debug_locations.get(2).getValue().latitude,EventsFragment.debug_locations.get(0).getValue().longitude);
                         }
                     });
 
@@ -123,7 +132,7 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
                         @Override
                         public void onClick(View view)
                         {
-                            mockLocation(-26.182891, 27.997931);
+                            mockLocation(EventsFragment.debug_locations.get(3).getValue().latitude,EventsFragment.debug_locations.get(0).getValue().longitude);
                         }
                     });
 
@@ -195,11 +204,19 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
             @Override
             public boolean onEditorAction(TextView v, int actionID, KeyEvent event)
             {
-                validatePermissions();
                 if (actionID== EditorInfo.IME_ACTION_DONE)
                 {
                     //Event e = RemoteComms.getEvent(Eventid);
-                    validateEventLogin(Integer.parseInt(accessCode.getText().toString()));
+                    int code=0;
+                    try
+                    {
+                        code = Integer.parseInt(accessCode.getText().toString());
+                        validateEventLogin(code);
+                    }catch (NumberFormatException e)
+                    {
+                        LocalComms.logException(e);
+                        Toast.makeText(EventDetailActivity.this,"Code is not a valid number!",Toast.LENGTH_LONG).show();
+                    }
                 }
                 return false;
             }
@@ -216,41 +233,20 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
         mockLocation.setLongitude(lng);
         mockLocation.setTime(System.currentTimeMillis());
 
-        onLocationChanged(mockLocation);
+        //onLocationChanged(mockLocation);
 
-        LinearLayout hack_gps = (LinearLayout)findViewById(R.id.hack_gps_container);
-        if(hack_gps!=null)
-            hack_gps.setVisibility(View.GONE);
+        if(dlgGpsHack!=null)
+            if(dlgGpsHack.isShowing())
+                dlgGpsHack.hide();
     }
 
     public void viewPosition(View view)
     {
         Intent i = new Intent(this,ExtendedEventInfoActivity.class);
-        i.putExtra("Location_lat",String.valueOf(lat));
-        i.putExtra("Location_lng",String.valueOf(lng));
+        i.putExtra("Location_lat",String.valueOf(MainActivity.mLastKnownLoc.getLatitude()));
+        i.putExtra("Location_lng",String.valueOf(MainActivity.mLastKnownLoc.getLongitude()));
         i.putExtra("Event",selected_event);
         startActivity(i);
-    }
-
-    private void validatePermissions()
-    {
-        LocationManager locationMgr;
-        locationMgr = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-        {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        int min_metres=50;
-        long refresh_interval=10;
-        locationMgr.requestLocationUpdates(LocationManager.GPS_PROVIDER, min_metres, refresh_interval, this);
     }
 
     private Handler toastHandler(final String text)
@@ -269,7 +265,8 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
 
     private void validateEventLogin(int code)
     {
-        me = new LatLng(lat,lng);
+        me = new LatLng(MainActivity.mLastKnownLoc.getLatitude(),
+                            MainActivity.mLastKnownLoc.getLongitude());
         if(me!=null)
         {
             if (matchAccessCode(code))
@@ -277,7 +274,8 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
                 if (locationChecker.containsLocation(me, selected_event.getBoundary(), true))
                 {
                     Log.d(TAG,"Valid code and location");
-                    progress = LocalComms.showProgressDialog(EventDetailActivity.this, "Signing in to event...");
+                    progress = LocalComms.showProgressDialog(EventDetailActivity.this,
+                                                                "Signing in to event...");
                     Thread tEventDataLoader = new Thread(new Runnable()
                     {
                         @Override
@@ -433,11 +431,8 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
                             Math.sin(dLng / 2) * Math.sin(dLng / 2);
             double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             float dist = (float) (earthRadius * c);
-            Log.d("Testing","Distance: " + String.valueOf(dist));
             if(dist<=4)
-            {
                 return true;
-            }
         }
         return false;
     }
@@ -457,43 +452,6 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
         i.putExtra("com.codcodes.icebreaker.Back",true);
         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(i);
-        finish();
-    }
-
-    @Override
-    public void onLocationChanged(Location location)
-    {
-        lat = location.getLatitude();
-        lng = location.getLongitude();
-        try
-        {
-            WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(),String.valueOf(location.getLatitude()));
-            WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(),String.valueOf(location.getLongitude()));
-        } catch (IOException e)
-        {
-            if(e.getMessage()!=null)
-                Log.d(TAG,e.getMessage(),e);
-            else
-                e.printStackTrace();
-        }
-        //Log.d(TAG,"["+location.getLatitude()+","+location.getLongitude()+"]");
-    }
-
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle)
-    {
-        Log.d(TAG,"onStatusChanged Status: " + s + "> " + i);
-    }
-
-    @Override
-    public void onProviderEnabled(String s)
-    {
-        Log.d(TAG,"onProviderEnabled Status: " + s);
-    }
-
-    @Override
-    public void onProviderDisabled(String s)
-    {
-        Log.d(TAG,"onProviderDisabled Status: " + s);
+        this.finish();
     }
 }

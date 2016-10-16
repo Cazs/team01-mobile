@@ -2,6 +2,7 @@ package com.codcodes.icebreaker.tabs;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -19,10 +20,12 @@ import android.os.Environment;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +34,7 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,6 +54,7 @@ import com.codcodes.icebreaker.screens.EventDetailActivity;
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.screens.MainActivity;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -61,6 +66,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Scanner;
@@ -75,33 +81,128 @@ import pl.bclogic.pulsator4droid.library.PulsatorLayout;
 public class EventsFragment extends android.support.v4.app.Fragment implements SwipeRefreshLayout.OnRefreshListener
 {
     private static AssetManager mgr;
-    private static ArrayList<Event> events;
     private SwipeRefreshLayout swipeRefreshLayout;
     public static final String TAG = "IB/EventsFragment";
-    private double location_lat=0.0;
-    private double location_lng=0.0;
     private LinearLayout animContainer;
-    private static EventsFragment e;
-    //private ProgressDialog progress = null;
+    private static EventsFragment eventsFrag;
 
-    private IOnListFragmentInteractionListener mListener;
     private RecyclerView recyclerView;
     private int mColumnCount = 1;
-    private ArrayList<Bitmap> bitmaps = new ArrayList<Bitmap>();
-    //private ImageView imgAnim;
     private PulsatorLayout pulsator;
+    private IOnListFragmentInteractionListener mListener;
+
+    private Dialog dlgGpsHack;
+    public static ArrayList<AbstractMap.SimpleEntry<String,LatLng>> debug_locations=new ArrayList<>();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+
+        populateOverrideLocations();
+
+        setLogoClickListener();
+    }
+
+    public void setLogoClickListener()
+    {
+        if(getActivity()!=null)
+        {
+            ImageView dbg_anim_logo = (ImageView) getActivity().findViewById(R.id.imgLogo);
+
+            if (dbg_anim_logo != null)
+            {
+                dbg_anim_logo.setOnLongClickListener(new View.OnLongClickListener()
+                {
+                    @Override
+                    public boolean onLongClick(View view)
+                    {
+                        dlgGpsHack = new Dialog(getActivity());
+                        if (dlgGpsHack == null)
+                            return false;
+
+                        dlgGpsHack.setContentView(R.layout.gps_hack);
+                        if (!dlgGpsHack.isShowing())
+                            dlgGpsHack.show();
+
+                        RadioButton rbtnAud = (RadioButton) dlgGpsHack.findViewById(R.id.rbtn_auditorium);
+                        RadioButton rbtnStud = (RadioButton) dlgGpsHack.findViewById(R.id.rbtn_student_center);
+                        RadioButton rbtnPond = (RadioButton) dlgGpsHack.findViewById(R.id.rbtn_pond);
+                        RadioButton rbtnLib = (RadioButton) dlgGpsHack.findViewById(R.id.rbtn_library);
+
+                        rbtnAud.setOnClickListener(new View.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(View view)
+                            {
+                                mockLocation(debug_locations.get(0).getValue().latitude, debug_locations.get(0).getValue().longitude);
+                            }
+                        });
+
+                        rbtnStud.setOnClickListener(new View.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(View view)
+                            {
+                                mockLocation(debug_locations.get(1).getValue().latitude, debug_locations.get(0).getValue().longitude);
+                            }
+                        });
+
+                        rbtnPond.setOnClickListener(new View.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(View view)
+                            {
+                                mockLocation(debug_locations.get(2).getValue().latitude, debug_locations.get(0).getValue().longitude);
+                            }
+                        });
+
+                        rbtnLib.setOnClickListener(new View.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(View view)
+                            {
+                                mockLocation(debug_locations.get(3).getValue().latitude, debug_locations.get(0).getValue().longitude);
+                            }
+                        });
+
+                        return true;
+                    }
+                });
+            }
+        }else Log.wtf(TAG,"MainActivity is null.");
+    }
+
+    public static void populateOverrideLocations()
+    {
+        debug_locations.add(new AbstractMap.SimpleEntry<>("Auditorium",new LatLng(-26.183261, 27.996542)));
+        debug_locations.add(new AbstractMap.SimpleEntry<>("Student Center",new LatLng(-26.182587, 27.995996)));
+        debug_locations.add(new AbstractMap.SimpleEntry<>("Pond",new LatLng(-26.183599, 27.997475)));
+        debug_locations.add(new AbstractMap.SimpleEntry<>("Library",new LatLng(-26.182891, 27.997931)));
+        debug_locations.add(new AbstractMap.SimpleEntry<>("Mill Junction",new LatLng(-26.182891, 27.997931)));
+    }
+
+    public void mockLocation(double lat, double lng)
+    {
+        String msg="Going to ["+lat+","+lng+"]";
+        Toast.makeText(getActivity(),msg,Toast.LENGTH_LONG).show();
+
+        Location mockLocation = new Location(MainActivity.mocLocationProvider); // a string
+        mockLocation.setLatitude(lat);
+        mockLocation.setLongitude(lng);
+        mockLocation.setTime(System.currentTimeMillis());
+
+        //onLocationChanged(mockLocation);
+
+        if(dlgGpsHack!=null)
+            if(dlgGpsHack.isShowing())
+                dlgGpsHack.hide();
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         final View v = inflater.inflate(R.layout.fragment_events,container,false);
 
-        //imgAnim = (ImageView)v.findViewById(R.id.eventAnim);
         animContainer = (LinearLayout)v.findViewById(R.id.animContainer);
 
         swipeRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_layout);
@@ -127,42 +228,47 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
             }
         }
 
-        /*if(recyclerView.getAdapter()==null)
-            setAdapter();
-        else Log.d(TAG,"Event Adapter is set.");
-
-        beginLoadingAnim();*/
         Bundle extras = getArguments();
         pulsator = (PulsatorLayout) v.findViewById(R.id.pulsator);
-        pulsator.setInterpolator(PulsatorLayout.INTERP_ACCELERATE_DECELERATE);
-        pulsator.setDuration(2000);
+        pulsator.setInterpolator(PulsatorLayout.INTERP_LINEAR);
+        pulsator.setDuration(4000);
+        //pulsator.start();
 
-        if(extras!=null)
+        //reloadEvents();
+
+        /*if(extras!=null)
         {
             boolean check = extras.getBoolean("com.codcodes.icebreaker.Back");
             if (check)
-                setAdapter();
+                reloadEvents();
         }
         else
         {
             if(MainActivity.is_reloading_events)
                 pulsator.start();
             else setAdapter();
-        }
-        return v;
-    }
+        }*/
 
-    public void animLogoClick(View view)
-    {
-        Toast.makeText(getContext(),"On click",Toast.LENGTH_LONG).show();
+        setAdapter();
+        return v;
     }
 
     public void setAdapter()
     {
-        if(animContainer!=null)
-            animContainer.setVisibility(View.GONE);
-        if(pulsator!=null)
-            pulsator.stop();
+        if(getActivity()!=null)
+        {
+            getActivity().runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    if (animContainer != null)
+                        animContainer.setVisibility(View.GONE);
+                    if (pulsator != null)
+                        pulsator.stop();
+                }
+            });
+        }
 
         MainActivity.is_reloading_events=false;
 
@@ -172,10 +278,10 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
             {
                 if (recyclerView != null)
                 {
-                    if(events==null)
-                        events = new ArrayList<>();
+                    if(MainActivity.events==null)
+                        MainActivity.events = new ArrayList<>();
 
-                    if(events.isEmpty())
+                    if(MainActivity.events.isEmpty())
                     {
                         Event temp = new Event();
                         temp.setTitle(getString(R.string.msg_no_events));
@@ -188,7 +294,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                                 @Override
                                 public void run()
                                 {
-                                    recyclerView.setAdapter(new EventsRecyclerViewAdapter(temp_lst, bitmaps, mListener));
+                                    recyclerView.setAdapter(new EventsRecyclerViewAdapter(temp_lst, MainActivity.bitmaps, mListener));
                                 }
                             });
                         }else Log.wtf(TAG,"MainActivity is null.");
@@ -197,15 +303,15 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                     else
                     {
                         BitmapFactory.Options options = new BitmapFactory.Options();
-                        if(bitmaps==null)
-                            bitmaps=new ArrayList<>();
+                        if(MainActivity.bitmaps==null)
+                            MainActivity.bitmaps=new ArrayList<>();
                         try
                         {
-                            if (bitmaps.isEmpty())
+                            if (MainActivity.bitmaps.isEmpty())
                             {
 
-                                for (Event e : events)
-                                    bitmaps.add(LocalComms.getImage(getContext(), "event_icons-" + e.getId(), ".png", "/events", options));
+                                for (Event e : MainActivity.events)
+                                    MainActivity.bitmaps.add(LocalComms.getImage(getContext(), "event_icons-" + e.getId(), ".png", "/events", options));
                             }
                             if(getActivity()!=null)
                             {
@@ -214,7 +320,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                                     @Override
                                     public void run()
                                     {
-                                        recyclerView.setAdapter(new EventsRecyclerViewAdapter(events, bitmaps, mListener));
+                                        recyclerView.setAdapter(new EventsRecyclerViewAdapter(MainActivity.events, MainActivity.bitmaps, mListener));
                                     }
                                 });
                             }else Log.wtf(TAG,"MainActivity is null.");
@@ -257,43 +363,34 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
             throw new RuntimeException(context.toString()
                     + " must implement IOnListFragmentInteractionListener");
         }
+        Toast.makeText(getActivity(),"EventsFragment has been attached.",Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onDetach()
     {
         super.onDetach();
-        mListener = null;
+        mListener=null;
     }
 
-    public void setEvents(ArrayList<Event> events){this.events=events;}
-
-    public void setBitmaps(ArrayList<Bitmap> bitmaps){this.bitmaps=bitmaps;}
-
-    public void setLat(double lat){this.location_lat=lat;}
-
-    public void setLng(double lng){this.location_lng=lng;}
-
-    public static EventsFragment newInstance(Context context, Bundle b, ArrayList<Event> events,
-                                             ArrayList<Bitmap> bitmaps,double lat, double lng)
+    public static EventsFragment newInstance(Context context, Bundle b)
     {
-        if(e==null)
-            e = new EventsFragment();
-        e.setEvents(events);
-        e.setBitmaps(bitmaps);
-        e.setLat(lat);
-        e.setLng(lng);
+        if(eventsFrag==null)
+            eventsFrag = new EventsFragment();
+        if(context==null)
+            return null;
+
         mgr = context.getAssets();
-        if(!e.isAdded())
-            e.setArguments(b);
-        return e;
+
+        if(eventsFrag.isHidden())
+            eventsFrag.setArguments(b);
+
+        return eventsFrag;
     }
 
     public void reloadEvents()
     {
         MainActivity.is_reloading_events=true;
-        if(animContainer!=null)
-            animContainer.setVisibility(View.VISIBLE);
         startPulsator();
 
 
@@ -303,18 +400,23 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
             public void run()
             {
                 Looper.prepare();
-                //progress = LocalComms.showProgressDialog(getActivity(),"Loading Events...");
-                while (location_lat==0.0||location_lng==0.0){}//wait for location
+
+                while (MainActivity.mLastKnownLoc==null)
+                {
+                    //wait for location
+                    Log.d(TAG,"Waiting for GPS location...");
+                }
 
                 //Attempt to load Events
-                events = new ArrayList<>();
+                MainActivity.events = new ArrayList<>();
                 try
                 {
-                    String eventIds = RemoteComms.sendGetRequest("getNearbyEventIds/" + location_lat
-                            + '/' + location_lng + '/' + MainActivity.range);
+                    String eventIds = RemoteComms.sendGetRequest("getNearbyEventIds/" + MainActivity.mLastKnownLoc.getLatitude()
+                            + '/' + MainActivity.mLastKnownLoc.getLongitude() + '/' + MainActivity.range);
                     eventIds=eventIds.replaceAll("\\[","");
                     eventIds=eventIds.replaceAll("\\]","");
-                    eventIds=eventIds.replaceAll("\"","");
+                    eventIds=eventIds.replace("\"","");
+                    eventIds=eventIds.replace('"','\0');
                     eventIds=eventIds.replaceAll("\\{","");
                     eventIds=eventIds.replaceAll("\\}","");
 
@@ -325,7 +427,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                         {
                             long ev_id = Long.parseLong(id);
                             Event event = LocalComms.getEvent(getContext(), ev_id);
-                            events.add(event);
+                            MainActivity.events.add(event);
                         }
                         catch (NumberFormatException e)
                         {
@@ -339,24 +441,24 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                 }
 
                 //Attempt to load bitmaps and set adapter
-                if(events==null)
+                if(MainActivity.events==null)
                 {
                     Toast.makeText(getContext(),"Something went wrong while we were trying to read the events. Please reload.",Toast.LENGTH_LONG).show();
                     Log.d(TAG,"Something went wrong while we were trying to read the events.");
-                    events = new ArrayList<>();
+                    MainActivity.events = new ArrayList<>();
                 }
-                if(events.isEmpty())
+                if(MainActivity.events.isEmpty())
                 {
                     Toast.makeText(getContext(),"No events were found.",Toast.LENGTH_LONG).show();
                     Log.d(TAG,"No events were found.");
                 }
 
-                bitmaps = new ArrayList<Bitmap>();
+                MainActivity.bitmaps = new ArrayList<Bitmap>();
                 try
                 {
                     String iconName = "";
                     BitmapFactory.Options options = null;
-                    for (Event e : events)
+                    for (Event e : MainActivity.events)
                     {
                         iconName = "event_icons-" + e.getId();
                         //Download the file only if it has not been cached
@@ -367,21 +469,24 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                         {
                             Bitmap bitmap = LocalComms.getImage(getContext(), iconName, ".png", "/events", options);
 
-                            bitmaps.add(bitmap);
+                            MainActivity.bitmaps.add(bitmap);
                         }
                         catch (IOException ex)
                         {
                             LocalComms.logException(ex);
                         }
                     }
-                    getActivity().runOnUiThread(new Runnable()
+                    if(getActivity()!=null)
                     {
-                        @Override
-                        public void run()
+                        getActivity().runOnUiThread(new Runnable()
                         {
-                            setAdapter();
-                        }
-                    });
+                            @Override
+                            public void run()
+                            {
+                                setAdapter();
+                            }
+                        });
+                    }
                 }
                 catch(ConcurrentModificationException e)
                 {
@@ -394,8 +499,21 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
 
     public void startPulsator()
     {
-        if(this.pulsator!=null)
-            this.pulsator.start();
+        if(getActivity()!=null)
+        {
+            getActivity().runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    if(animContainer!=null)
+                        animContainer.setVisibility(View.VISIBLE);
+                    if(pulsator!=null)
+                        pulsator.start();
+                    else Log.wtf(TAG,"***Pulsator is null.");
+                }
+            });
+        }
     }
 
     @Override

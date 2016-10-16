@@ -452,6 +452,8 @@ public class RemoteComms
         if(!ext.contains("."))//add dot to image extension if it's not there
             ext = '.' + ext;
 
+        Log.d(TAG,"***Downloading image [~"+path+'/'+filename+ext+"]***");
+
         if (RemoteComms.imageDownloader(filename, ext, path, context))
             bitmap = LocalComms.getImage(context,filename,ext,path,options);
         else Log.d(TAG,"Image could not be downloaded.");//TODO: better logging
@@ -473,7 +475,6 @@ public class RemoteComms
         if(response_code != HttpURLConnection.HTTP_OK)
         {
             Log.d(TAG,"Could not send request: " + response_code);
-            //TODO: Better logging
             return false;
         }
         else

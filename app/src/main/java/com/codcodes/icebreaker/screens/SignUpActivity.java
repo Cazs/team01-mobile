@@ -440,6 +440,8 @@ public class SignUpActivity extends AppCompatActivity
             editScreen.putExtra("Username", new_user.getUsername());
 
             startActivity(editScreen);
+
+            this.finish();
         }else Log.d(TAG,"User object from remote server is null.");
     }
 
