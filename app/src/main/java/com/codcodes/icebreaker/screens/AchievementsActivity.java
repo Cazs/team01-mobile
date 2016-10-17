@@ -17,18 +17,7 @@ public class AchievementsActivity extends Activity
 {
     private AchievementsAdapter adapter;
     private ListView lstAchievements;
-    private Achievement[] achievements = new Achievement[]
-            {
-                new Achievement("Popular Kid",false,"**Insert description here**"),
-                new Achievement("Smooth Criminal",false,"**Insert description here**"),
-                new Achievement("Star Of The Night/Day",false,"**Insert description here**"),//TODO: Programmatically figure out whether it should say Night/Day
-                new Achievement("IceBreak Queen",false,"**Insert description here**"),
-                new Achievement("Heart-breaker",false,"**Insert description here**"),
-                new Achievement("Friendly",false,"**Insert description here**"),
-                new Achievement("Popular Kid",false,"**Insert description here**"),
-                new Achievement("Popular Kid",false,"**Insert description here**"),
-                new Achievement("Popular Kid",false,"**Insert description here**"),
-            };
+
 
     @Override
     //public void onCreate(Bundle savedInstanceState, PersistableBundle persistentState)

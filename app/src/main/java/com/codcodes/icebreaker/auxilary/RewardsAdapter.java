@@ -48,12 +48,12 @@ public class RewardsAdapter extends ArrayAdapter
     public View getView(int position, View convertView, ViewGroup parent)
     {
         if(convertView==null)
-            convertView = inflater.inflate(R.layout.ach_list_row_item, parent, false);//inflater.inflate(R.layout.ach_list_row_item,null);
-        TextView ach = (TextView) convertView.findViewById(R.id.achName);
+            convertView = inflater.inflate(R.layout.rw_list_row_item, parent, false);//inflater.inflate(R.layout.ach_list_row_item,null);
+        TextView rw = (TextView) convertView.findViewById(R.id.rwName);
 
-        ach.setText("\n" +data.get(position).getRwName() + "\n" + data.get(position).getRwDescription());
+        rw.setText("\n" +data.get(position).getRwName() + "\n" + data.get(position).getRwDescription());
 
-        ImageView imgAch = (ImageView)convertView.findViewById(R.id.imgAch);
+        ImageView imgAch = (ImageView)convertView.findViewById(R.id.imgRw);
 
         if(position==0)
             imgAch.setImageResource(R.drawable.rw);

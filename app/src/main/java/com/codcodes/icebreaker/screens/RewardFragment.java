@@ -10,11 +10,14 @@ import android.widget.ListView;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.AchievementsAdapter;
+import com.codcodes.icebreaker.auxilary.Config;
 import com.codcodes.icebreaker.auxilary.RewardsAdapter;
+import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.Achievement;
 import com.codcodes.icebreaker.model.Rewards;
 import com.google.android.gms.ads.reward.RewardItem;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +44,7 @@ public class RewardFragment extends android.support.v4.app.Fragment
         rewads.add(new Rewards("Free Hamper",false,"Star Of The Night"));
         adapter = new RewardsAdapter(getContext(),rewads,0);
         rewardList.setAdapter(adapter);
+
         return v;
     }
 

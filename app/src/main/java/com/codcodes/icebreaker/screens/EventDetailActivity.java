@@ -318,15 +318,20 @@ public class EventDetailActivity extends AppCompatActivity implements LocationLi
                                             startActivity(i);
                                         } else
                                         {
+                                            WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),
+                                                    String.valueOf(selected_event.getId()));
                                             message = toastHandler("Could not login to event, server response: " + resp).obtainMessage();
                                             message.sendToTarget();
                                             Log.d(TAG, resp);
                                         }
                                     } else
                                     {
+                                        WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),
+                                                String.valueOf(selected_event.getId()));
                                         Message message = toastHandler("Event is null for some reason.").obtainMessage();
                                         message.sendToTarget();
                                         Log.wtf(TAG, "Event is null for some reason.");
+
                                     }
                                 } else
                                 {

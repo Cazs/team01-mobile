@@ -24,18 +24,17 @@ public class AchievementFragment extends android.support.v4.app.Fragment
     private AchievementsAdapter adapter;
     private ArrayList<Achievement> achList;
 
-
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View v = inflater.inflate(R.layout.fragment_achievement,container,false);
 
         achList = new ArrayList<Achievement>();
-        achList.add(new Achievement("Popular Kid",false,"**Insert description here**"));
-        achList.add(new Achievement("Party Animal",false,"**Insert description here**"));
-        achList.add(new Achievement("Star Of The Night/Day",false,"**Insert description here**"));
-        achList.add(new Achievement("IceBreak Queen/King",false,"**Insert description here**"));
-        achList.add(new Achievement("Heart-breaker",false,"**Insert description here**"));
-        achList.add(new Achievement("Friendly",false,"**Insert description here**"));
+        achList.add(new Achievement("Ice Breaker",false,"first time Successful icebreake",1,15,15));
+        achList.add(new Achievement("Heart breaken",false,"get Rejected 4 times",1,15,25));
+        achList.add(new Achievement("Popular",false,"get 10 Successful Icebreakes at an event",1,10,50));
+        achList.add(new Achievement("Star Of The Night/Day",false,"**Insert description here**",1,10,3));
+        achList.add(new Achievement("IceBreak Queen/King",false,"**Insert description here**",1,4,10));
+        achList.add(new Achievement("Friendly",false,"**Insert description here**",1,10,14));
         list = (ListView) v.findViewById(R.id.achievementList);
         adapter = new AchievementsAdapter(getContext(),achList,0);
         list.setAdapter(adapter);
@@ -50,4 +49,5 @@ public class AchievementFragment extends android.support.v4.app.Fragment
         e.setArguments(b);
         return e;
     }
+
 }
