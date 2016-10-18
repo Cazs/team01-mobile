@@ -675,7 +675,8 @@ public class LocalComms
         if(ach.getAchId().isEmpty())
             return false;
 
-        if(getAchievementFromDB(context,ach.getAchId())==null)//if the achievement doesn't exist in DB
+        Achievement tmp_ach = getAchievementFromDB(context,ach.getAchId());
+        if(tmp_ach==null)//if the achievement doesn't exist in DB
         {
             Log.d(TAG, "Inserting new Achievement["+ach.getAchName()+"]");
 
@@ -691,13 +692,14 @@ public class LocalComms
             kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET, ach.getAchTarget());
             kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE, ach.getAchValue());
             kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED, 0);
+            kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS, ach.getUserPoints());
 
             db.insert(AchievementContract.AchievementEntry.TABLE_NAME, null, kv_pairs);
 
             closeDB(db);
 
             return true;
-        }else return updateAchievementOnDB(context,ach);
+        }else return updateAchievementOnDB(context,tmp_ach);
     }
 
     public static boolean updateAchievementOnDB(Context context, Achievement ach) throws SQLiteException
@@ -724,6 +726,7 @@ public class LocalComms
         kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET, ach.getAchTarget());
         kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE, ach.getAchValue());
         kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED, ach.getNotified());
+        kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS, ach.getUserPoints());
 
         String where = AchievementContract.AchievementEntry.COL_ACHIEVEMENT_ID+"=?";
         String[] where_args = {ach.getAchId()};
@@ -734,7 +737,7 @@ public class LocalComms
         return true;
     }
 
-    public static ArrayList<Achievement> getUnnotifiedAchievementsFromDB(Context context, String ach_id) throws SQLiteException
+    public static ArrayList<Achievement> getUnnotifiedAchievementsFromDB(Context context) throws SQLiteException
     {
         if (context == null)
             return null;
@@ -761,8 +764,9 @@ public class LocalComms
                 int target = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET));
                 int value = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE));
                 int notifd = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED));
+                int pts = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS));
 
-                Achievement ach = new Achievement(id, name, desc, date, target, value, notifd);
+                Achievement ach = new Achievement(id, name, desc, date, target, value, notifd, pts);
                 achievements.add(ach);
             }
             if(!c.isClosed())
@@ -806,8 +810,9 @@ public class LocalComms
                 int target = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET));
                 int value = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE));
                 int notifd = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED));
+                int pts = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS));
 
-                Achievement ach = new Achievement(id, name, desc, date, target, value, notifd);
+                Achievement ach = new Achievement(id, name, desc, date, target, value, notifd, pts);
                 achievements.add(ach);
             }
             if(!c.isClosed())
@@ -850,8 +855,9 @@ public class LocalComms
             int target = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET));
             int value = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE));
             int notifd = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED));
+            int pts = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS));
 
-            Achievement ach = new Achievement(id,name,desc,date,target,value,notifd);
+            Achievement ach = new Achievement(id,name,desc,date,target,value,notifd, pts);
 
             if(!c.isClosed())
                 c.close();

@@ -8,7 +8,12 @@ import android.widget.ListView;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.AchievementsAdapter;
+import com.codcodes.icebreaker.auxilary.LocalComms;
+import com.codcodes.icebreaker.auxilary.RemoteComms;
+import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.Achievement;
+
+import java.io.IOException;
 
 /**
  * Created by Casper on 2016/04/09.
@@ -17,18 +22,7 @@ public class AchievementsActivity extends Activity
 {
     private AchievementsAdapter adapter;
     private ListView lstAchievements;
-    private Achievement[] achievements = new Achievement[]
-            {
-                new Achievement("Popular Kid",false,"**Insert description here**"),
-                new Achievement("Smooth Criminal",false,"**Insert description here**"),
-                new Achievement("Star Of The Night/Day",false,"**Insert description here**"),//TODO: Programmatically figure out whether it should say Night/Day
-                new Achievement("IceBreak Queen",false,"**Insert description here**"),
-                new Achievement("Heart-breaker",false,"**Insert description here**"),
-                new Achievement("Friendly",false,"**Insert description here**"),
-                new Achievement("Popular Kid",false,"**Insert description here**"),
-                new Achievement("Popular Kid",false,"**Insert description here**"),
-                new Achievement("Popular Kid",false,"**Insert description here**"),
-            };
+
 
     @Override
     //public void onCreate(Bundle savedInstanceState, PersistableBundle persistentState)

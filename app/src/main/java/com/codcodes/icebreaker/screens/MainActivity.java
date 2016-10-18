@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,6 +40,7 @@ import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
+import com.codcodes.icebreaker.model.Achievement;
 import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.model.IJsonable;
 import com.codcodes.icebreaker.services.IbTokenRegistrationService;
@@ -185,6 +187,8 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         });
         tPing.start();
 
+        checkAchievements();
+
         Intent i = getIntent();
         String frag = i.getStringExtra("Fragment");
         fromBackPress = i.getBooleanExtra("com.codcodes.icebreaker.Back",fromBackPress);
@@ -248,7 +252,14 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
     public void checkAchievements()
     {
-        
+        TextView title = (TextView)findViewById(R.id.msg_title);
+        TextView msg = (TextView)findViewById(R.id.msg);
+        ImageView icon = (ImageView)findViewById(R.id.msg_icon);
+
+        ArrayList<Achievement> unnotifd = LocalComms.getUnnotifiedAchievementsFromDB(this);
+
+        msg.setText(unnotifd.get(0).getAchName());
+        title.setText("Achievement Unlocked");
     }
 
     public void reloadEvents()

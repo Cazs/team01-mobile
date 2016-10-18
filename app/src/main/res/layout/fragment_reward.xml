@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:scrollbars="vertical"
-    android:id="@+id/RewarList">
-
+    android:id="@+id/RewarList"
+    android:focusable="false">
 </ListView>
 </LinearLayout>

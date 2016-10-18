@@ -17,7 +17,8 @@ public class AchievementContract
                 AchievementEntry.COL_ACHIEVEMENT_VALUE + " " + TYPE_INT + " NOT NULL," +
                 AchievementEntry.COL_ACHIEVEMENT_TARGET + " " + TYPE_INT + " NOT NULL," +
                 AchievementEntry.COL_ACHIEVEMENT_DATE + " " + TYPE_INT + " NOT NULL," +
-                AchievementEntry.COL_ACHIEVEMENT_NOTIFIED + " " + TYPE_INT + " NOT NULL" +
+                AchievementEntry.COL_ACHIEVEMENT_NOTIFIED + " " + TYPE_INT + " NOT NULL," +
+                AchievementEntry.COL_ACHIEVEMENT_USR_PTS + " " + TYPE_INT + " NOT NULL" +
                 ")";
 
         public static final String SQL_DELETE_tblAchievements = "DROP TABLE IF EXISTS " + AchievementEntry.TABLE_NAME;
@@ -34,6 +35,7 @@ public class AchievementContract
             public static final String COL_ACHIEVEMENT_TARGET = "Achievement_target";
             public static final String COL_ACHIEVEMENT_NOTIFIED = "Achievement_notified";
             public static final String COL_ACHIEVEMENT_DATE = "Achievement_date";
+            public static final String COL_ACHIEVEMENT_USR_PTS = "Achievement_usr_pts";
 
             public static final String COL_ACHIEVEMENT_NULLABLE = "nulls";
         }

@@ -1,33 +1,19 @@
 package com.codcodes.icebreaker.services;
 
-import android.app.AlarmManager;
-import android.app.IntentService;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
-import com.codcodes.icebreaker.R;
-import com.codcodes.icebreaker.auxilary.INTERVALS;
 import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.auxilary.LocalComms;
-import com.codcodes.icebreaker.auxilary.MESSAGE_STATUSES;
 import com.codcodes.icebreaker.auxilary.NOTIFICATION_ID;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.Achievement;
 import com.codcodes.icebreaker.model.Message;
 import com.codcodes.icebreaker.model.User;
-import com.codcodes.icebreaker.screens.MainActivity;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -73,12 +59,10 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
         try
         {
             String json_msg = RemoteComms.sendGetRequest("getAchievement/" + kv_pair[1]);
-            //ArrayList<Message> msgs = new ArrayList<Message>();
-            //JSON.<Message>getJsonableObjectsFromJson(json_msg, msgs, Message.class);
-            //Message msg = msgs.get(0);
 
             Achievement achievement = new Achievement();
             JSON.getJsonable(json_msg, achievement);
+            achievement.setNotified(0);
 
             LocalComms.addAchievementToDB(this,achievement);
 

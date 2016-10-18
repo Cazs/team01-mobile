@@ -38,6 +38,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.codcodes.icebreaker.auxilary.Config;
 import com.codcodes.icebreaker.auxilary.ContactListSwitches;
 import com.codcodes.icebreaker.auxilary.CustomListAdapter;
 import com.codcodes.icebreaker.auxilary.EventsRecyclerViewAdapter;
@@ -246,8 +247,15 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
         }
         else
         {
-            if(MainActivity.is_reloading_events)
+            if(MainActivity.is_reloading_events) {
+
+                try {
+                    WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),null);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
                 pulsator.start();
+            }
             else setAdapter();
         }*/
 

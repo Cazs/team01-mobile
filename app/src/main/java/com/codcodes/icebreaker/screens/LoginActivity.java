@@ -111,6 +111,7 @@ public class LoginActivity extends AppCompatActivity {
                             if(response.contains("404"))
                                 found = false;
 
+
                             if(found)
                             {
                                 SharedPreference.setUsername(LoginActivity.this,u);

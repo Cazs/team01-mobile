@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_size_150"
+        android:id="@+id/rwImage"
+        android:src="@drawable/hampers"
+        android:layout_marginTop="@dimen/dp_size_5"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/retriveLbl"
+        android:layout_below="@+id/rwImage"
+        android:text="REDEEM AT"
+        android:layout_marginLeft="@dimen/dp_size_10"
+        android:layout_marginTop="@dimen/dp_size_5"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/retriveLoc"
+        android:layout_below="@+id/retriveLbl"
+        android:text="ICEBREAK STAND"
+        android:layout_marginLeft="@dimen/dp_size_10"
+        android:textSize="8pt"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/expireLbl"
+        android:layout_below="@+id/rwImage"
+        android:layout_toRightOf="@+id/retriveLbl"
+        android:layout_marginLeft="@dimen/dp_size_100"
+        android:text="EXPIRES ON "
+        android:layout_marginTop="@dimen/dp_size_5"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/expireDate"
+        android:layout_below="@+id/expireLbl"
+        android:layout_toRightOf="@+id/retriveLbl"
+        android:text="05 FEB 2016"
+        android:layout_marginLeft="@dimen/dp_size_110"
+        android:textSize="8pt"
+        />
+    <ImageView
+        android:layout_width="@dimen/dp_size_150"
+        android:layout_height="@dimen/dp_size_140"
+        android:layout_marginTop="@dimen/dp_size_250"
+        android:layout_marginLeft="@dimen/dp_size_80"
+        android:id="@+id/rwQRcode"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="12345678"
+        android:layout_below="@+id/rwQRcode"
+        android:layout_marginLeft="@dimen/dp_size_120"
+        android:textSize="8pt"
+        android:id="@+id/rwCode"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:lines="4"
+        android:layout_below="@+id/rwCode"/>
+
+</RelativeLayout>

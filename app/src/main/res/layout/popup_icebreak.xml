@@ -121,7 +121,6 @@
                 android:text="Reject"
                 android:gravity="center"
                 android:background="@drawable/buttonshape" />
-
         </LinearLayout>
 
     </ScrollView>
