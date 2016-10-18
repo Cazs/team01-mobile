@@ -27,6 +27,9 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.model.Achievement;
+import com.codcodes.icebreaker.model.AchievementContract;
+import com.codcodes.icebreaker.model.AchievementHelper;
 import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.model.EventContract;
 import com.codcodes.icebreaker.model.EventHelper;
@@ -659,6 +662,210 @@ public class LocalComms
         closeDB(db);
 
         return meta;
+    }
+
+    public static boolean addAchievementToDB(Context context, Achievement ach) throws SQLiteException
+    {
+        if(context==null)
+            return false;
+        if(ach==null)
+            return false;
+        if(ach.getAchId()==null)
+            return false;
+        if(ach.getAchId().isEmpty())
+            return false;
+
+        if(getAchievementFromDB(context,ach.getAchId())==null)//if the achievement doesn't exist in DB
+        {
+            Log.d(TAG, "Inserting new Achievement["+ach.getAchName()+"]");
+
+            AchievementHelper dbHelper = new AchievementHelper(context);
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+            dbHelper.onCreate(db);
+
+            ContentValues kv_pairs = new ContentValues();
+            kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_ID, ach.getAchId());
+            kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NAME, ach.getAchName());
+            kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DESCRIPTION, ach.getAchDescription());
+            kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DATE, ach.getAchDate());
+            kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET, ach.getAchTarget());
+            kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE, ach.getAchValue());
+            kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED, 0);
+
+            db.insert(AchievementContract.AchievementEntry.TABLE_NAME, null, kv_pairs);
+
+            closeDB(db);
+
+            return true;
+        }else return updateAchievementOnDB(context,ach);
+    }
+
+    public static boolean updateAchievementOnDB(Context context, Achievement ach) throws SQLiteException
+    {
+        if(context==null)
+            return false;
+        if(ach==null)
+            return false;
+        if(ach.getAchId()==null)
+            return false;
+        if(ach.getAchId().isEmpty())
+            return false;
+
+        Log.d(TAG, "Achievement["+ach.getAchName()+"] exists on local DB, updating it.");
+        AchievementHelper dbHelper = new AchievementHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        //dbHelper.onCreate(db);
+
+        ContentValues kv_pairs = new ContentValues();
+        kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_ID, ach.getAchId());
+        kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NAME, ach.getAchName());
+        kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DESCRIPTION, ach.getAchDescription());
+        kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DATE, ach.getAchDate());
+        kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET, ach.getAchTarget());
+        kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE, ach.getAchValue());
+        kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED, ach.getNotified());
+
+        String where = AchievementContract.AchievementEntry.COL_ACHIEVEMENT_ID+"=?";
+        String[] where_args = {ach.getAchId()};
+        db.update(AchievementContract.AchievementEntry.TABLE_NAME, kv_pairs, where, where_args);
+
+        closeDB(db);
+
+        return true;
+    }
+
+    public static ArrayList<Achievement> getUnnotifiedAchievementsFromDB(Context context, String ach_id) throws SQLiteException
+    {
+        if (context == null)
+            return null;
+
+        ArrayList<Achievement> achievements = new ArrayList<Achievement>();
+        AchievementHelper dbHelper = new AchievementHelper(context);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        //no need for dbHelper.onCreate(db);
+
+        String q = "SELECT * FROM " + AchievementContract.AchievementEntry.TABLE_NAME +
+                " WHERE " + AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED + "=?";
+        String[] where_args = {"0"};
+        Cursor c =db.rawQuery(q,where_args);
+
+        if(c.getCount()>0)
+        {
+            while (c.moveToNext())
+            {
+
+                String id = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_ID));
+                String name = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NAME));
+                String desc = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DESCRIPTION));
+                long date = c.getLong(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DATE));
+                int target = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET));
+                int value = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE));
+                int notifd = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED));
+
+                Achievement ach = new Achievement(id, name, desc, date, target, value, notifd);
+                achievements.add(ach);
+            }
+            if(!c.isClosed())
+                c.close();
+            closeDB(db);
+            return achievements;
+        }else
+        {
+            Log.wtf(TAG,"No unnotified Achievements were not found.");
+            if(c!=null)
+                if(!c.isClosed())
+                    c.close();
+            closeDB(db);
+            return null;
+        }
+    }
+
+    public static ArrayList<Achievement> getAllAchievementsFromDB(Context context) throws SQLiteException
+    {
+        if (context == null)
+            return null;
+
+        ArrayList<Achievement> achievements = new ArrayList<Achievement>();
+        AchievementHelper dbHelper = new AchievementHelper(context);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        //no need for dbHelper.onCreate(db);
+
+        String q = "SELECT * FROM " + AchievementContract.AchievementEntry.TABLE_NAME;
+
+        Cursor c =db.rawQuery(q,null);
+
+        if(c.getCount()>0)
+        {
+            while (c.moveToNext())
+            {
+
+                String id = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_ID));
+                String name = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NAME));
+                String desc = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DESCRIPTION));
+                long date = c.getLong(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DATE));
+                int target = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET));
+                int value = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE));
+                int notifd = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED));
+
+                Achievement ach = new Achievement(id, name, desc, date, target, value, notifd);
+                achievements.add(ach);
+            }
+            if(!c.isClosed())
+                c.close();
+            closeDB(db);
+            return achievements;
+        }else
+        {
+            Log.wtf(TAG,"No Achievements were not found.");
+            if(c!=null)
+                if(!c.isClosed())
+                    c.close();
+            closeDB(db);
+            return null;
+        }
+    }
+
+    public static Achievement getAchievementFromDB(Context context, String ach_id) throws SQLiteException
+    {
+        if (context == null)
+            return null;
+        AchievementHelper dbHelper = new AchievementHelper(context);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        //no need for dbHelper.onCreate(db);
+
+        String q = "SELECT * FROM " + AchievementContract.AchievementEntry.TABLE_NAME +
+                " WHERE " + AchievementContract.AchievementEntry.COL_ACHIEVEMENT_ID + "=?";
+        String[] args = {ach_id};
+
+        Cursor c =db.rawQuery(q,args);
+
+        if(c.getCount()>0)
+        {
+            c.moveToFirst();
+
+            String id = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_ID));
+            String name = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NAME));
+            String desc = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DESCRIPTION));
+            long date = c.getLong(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DATE));
+            int target = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET));
+            int value = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE));
+            int notifd = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED));
+
+            Achievement ach = new Achievement(id,name,desc,date,target,value,notifd);
+
+            if(!c.isClosed())
+                c.close();
+            closeDB(db);
+            return ach;
+        }else
+        {
+            Log.wtf(TAG,"Achievement["+ach_id+"] was not found.");
+            if(c!=null)
+                if(!c.isClosed())
+                    c.close();
+            closeDB(db);
+            return null;
+        }
     }
 
     public static  void updateLocalMessage(Context context, SQLiteDatabase db, Message m)

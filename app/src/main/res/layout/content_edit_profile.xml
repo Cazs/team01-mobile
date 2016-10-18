@@ -59,8 +59,8 @@
                 android:fontFamily="monospace"
                 android:maxLines="1"
                 android:inputType="text"
-                android:drawableLeft="@drawable/ic_perm_identity_black_24dp"
-                />
+                android:drawableLeft="@drawable/ic_perm_identity_black_24dp"/>
+
             <EditText
                 android:layout_width="@dimen/text_box_size"
                 android:layout_height="match_parent"
@@ -72,8 +72,8 @@
                 android:layout_centerHorizontal="true"
                 android:fontFamily="monospace"
                 android:drawableLeft="@drawable/ic_date_range_black_24dp"
-                android:inputType="number"
-                />
+                android:inputType="number"/>
+
             <EditText
                 android:layout_width="@dimen/text_box_size"
                 android:layout_height="match_parent"
@@ -85,16 +85,15 @@
                 android:fontFamily="monospace"
                 android:maxLines="1"
                 android:inputType="text"
-                android:drawableLeft="@drawable/ic_local_library_black_24dp"
-                />
+                android:drawableLeft="@drawable/ic_local_library_black_24dp"/>
+
             <Spinner
                 android:id="@+id/spinner1"
                 android:layout_width="@dimen/text_box_size"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:layout_marginTop="430dp"
-                >
-            </Spinner>
+                android:layout_marginTop="430dp"/>
+
             <EditText
                 android:layout_width="@dimen/text_box_size"
                 android:layout_height="match_parent"
@@ -107,9 +106,8 @@
                 android:layout_centerHorizontal="true"
                 android:scrollbars="vertical"
                 android:layout_marginTop="480dp"
-                android:drawableLeft="@drawable/ic_description_black_24dp"
+                android:drawableLeft="@drawable/ic_description_black_24dp"/>
 
-                />
             <EditText
                 android:id="@+id/editbio"
                 android:inputType="textMultiLine"
@@ -122,8 +120,7 @@
                 android:layout_centerHorizontal="true"
                 android:scrollbars="vertical"
                 android:layout_marginTop="@dimen/dp_size_540dp"
-                android:drawableLeft="@drawable/ic_description_black_24dp"
-                />
+                android:drawableLeft="@drawable/ic_description_black_24dp"/>
         </RelativeLayout>
     </ScrollView>
 </RelativeLayout>

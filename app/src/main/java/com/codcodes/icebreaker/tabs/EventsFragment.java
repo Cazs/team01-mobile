@@ -102,6 +102,8 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
         populateOverrideLocations();
 
         setLogoClickListener();
+
+        setAdapter();
     }
 
     public void setLogoClickListener()

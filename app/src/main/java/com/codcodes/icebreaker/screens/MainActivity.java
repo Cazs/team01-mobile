@@ -37,6 +37,7 @@ import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.Config;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
+import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.Event;
 import com.codcodes.icebreaker.model.IJsonable;
@@ -81,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
     public static String rootDir = Environment.getExternalStorageDirectory().getPath();
     public static double range = 40.0;
+    public static boolean fromBackPress = false;
     public static Location mLastKnownLoc;
     public static boolean is_reloading_events = false;
     public static final String mocLocationProvider = "Icebreak_Mock_Loc";
@@ -166,21 +168,40 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         startService(intTokenService);
         Log.d(TAG, "Started IbTokenRegistrationService");
 
+        //Ping server - server will then update last seen and check for Achievements, Icebreaks and Rewards
+        Thread tPing = new Thread(new Runnable() {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    boolean svr_res = RemoteComms.pingServer(SharedPreference.getUsername(MainActivity.this));
+                    Log.d(TAG, "Pinged server, successful? " + svr_res);
+                } catch (IOException e)
+                {
+                    LocalComms.logException(e);
+                }
+            }
+        });
+        tPing.start();
+
         Intent i = getIntent();
         String frag = i.getStringExtra("Fragment");
+        fromBackPress = i.getBooleanExtra("com.codcodes.icebreaker.Back",fromBackPress);
+
         if (frag != null)
         {
             if (frag.equals(EventsFragment.class.getName()))
             {
-                mViewPager.setCurrentItem(0, true);
+                mViewPager.setCurrentItem(0);
             }
             if (frag.equals(UserContactsFragment.class.getName()))
             {
-                mViewPager.setCurrentItem(1, true);
+                mViewPager.setCurrentItem(1);
             }
             if (frag.equals(ProfileFragment.class.getName()))
             {
-                mViewPager.setCurrentItem(2, true);
+                mViewPager.setCurrentItem(2);
             }
         }
 
@@ -225,14 +246,20 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         }
     }
 
-
+    public void checkAchievements()
+    {
+        
+    }
 
     public void reloadEvents()
     {
         is_reloading_events=true;
-        if(eventsFragment!=null)
-            eventsFragment.startPulsator();
-        else Log.d(TAG,"EventsFragment object is null.");
+        if(!fromBackPress)
+        {
+            if (eventsFragment != null)
+                eventsFragment.startPulsator();
+            else Log.d(TAG, "EventsFragment object is null.");
+        }
 
         final Thread eventsThread = new Thread(new Runnable()
         {

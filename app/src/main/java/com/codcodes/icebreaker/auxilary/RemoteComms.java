@@ -82,6 +82,14 @@ public class RemoteComms
         return response;
     }
 
+    public static boolean pingServer(String username) throws IOException
+    {
+        String response = sendGetRequest("ping/" + username);
+        if(response.toLowerCase().contains("success"))
+            return true;
+        else return false;
+    }
+
     public ArrayList<Event> getNearbyEvents(double lat, double lng, double range) throws InstantiationException, IllegalAccessException, IOException
     {
 

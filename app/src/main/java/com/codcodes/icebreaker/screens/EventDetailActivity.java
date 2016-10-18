@@ -273,9 +273,8 @@ public class EventDetailActivity extends AppCompatActivity
             {
                 if (locationChecker.containsLocation(me, selected_event.getBoundary(), true))
                 {
-                    Log.d(TAG,"Valid code and location");
-                    progress = LocalComms.showProgressDialog(EventDetailActivity.this,
-                                                                "Signing in to event...");
+                    Log.d(TAG,"Valid code and location.");
+                    progress = LocalComms.showProgressDialog(EventDetailActivity.this, "Signing in to event...");
                     Thread tEventDataLoader = new Thread(new Runnable()
                     {
                         @Override
@@ -313,6 +312,7 @@ public class EventDetailActivity extends AppCompatActivity
 
                                             Intent i = new Intent(EventDetailActivity.this,MainActivity.class);
                                             i.putExtra("Fragment", UserContactsFragment.class.getName());
+                                            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                             startActivity(i);
                                         } else
                                         {

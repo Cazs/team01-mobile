@@ -231,7 +231,7 @@
         <activity
             android:name=".screens.SettingsActivity"
             android:parentActivityName=".screens.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/IBTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.codcodes.icebreaker.screens.MainActivity"/>

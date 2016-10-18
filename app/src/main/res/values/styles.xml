@@ -16,7 +16,6 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowActionBar">false</item>
         <item name="windowActionBar">false</item>
-        <item name="android:background">@color/iceblue</item>
         <item name="windowNoTitle">true</item>
     </style>
 
