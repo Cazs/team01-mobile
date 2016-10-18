@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                     checkAchievements();
                     try
                     {
-                        Thread.sleep(10000);
+                        Thread.sleep(30000);
                     } catch (InterruptedException e)
                     {
                         LocalComms.logException(e);
@@ -312,17 +312,19 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                             {
                                 msg.setText(unnotifd.get(0).getAchName());
                                 title.setText("Achievement Unlocked");
+                                //TODO: set icon
                             }
                         });
                     }
                     //Pause bg thread for a bit
                     try
                     {
-                        Thread.sleep(5000);
+                        Thread.sleep(7000);
                     } catch (InterruptedException e)
                     {
                         e.printStackTrace();
                     }
+                    //Hide popup message box
                     if (this != null)
                     {
                         this.runOnUiThread(new Runnable()
@@ -336,6 +338,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                             }
                         });
                     }
+                    //TODO: Change Achievement notification state
                 }
                 else
                 {
