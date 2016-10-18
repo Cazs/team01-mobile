@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
@@ -29,6 +30,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -187,7 +189,25 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         });
         tPing.start();
 
-        checkAchievements();
+        Thread tAchChecker = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                while (true)
+                {
+                    checkAchievements();
+                    try
+                    {
+                        Thread.sleep(10000);
+                    } catch (InterruptedException e)
+                    {
+                        LocalComms.logException(e);
+                    }
+                }
+            }
+        });
+        tAchChecker.start();
 
         Intent i = getIntent();
         String frag = i.getStringExtra("Fragment");
@@ -214,6 +234,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
             {
+
                 TextView title = (TextView) MainActivity.this.findViewById(R.id.main_heading);
 
                 if (position == 2)
@@ -252,14 +273,79 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
     public void checkAchievements()
     {
-        TextView title = (TextView)findViewById(R.id.msg_title);
-        TextView msg = (TextView)findViewById(R.id.msg);
-        ImageView icon = (ImageView)findViewById(R.id.msg_icon);
+        try
+        {
+            final ArrayList<Achievement> unnotifd = LocalComms.getUnnotifiedAchievementsFromDB(this);
+            if (unnotifd != null)
+            {
+                if(!unnotifd.isEmpty())
+                {
+                    final LinearLayout popup_notif = (LinearLayout)findViewById(R.id.popup_notif);
 
-        ArrayList<Achievement> unnotifd = LocalComms.getUnnotifiedAchievementsFromDB(this);
+                    if (this != null)
+                    {
+                        this.runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                if(popup_notif!=null)
+                                    popup_notif.setVisibility(View.VISIBLE);
+                                else return;
+                            }
+                        });
+                    }
 
-        msg.setText(unnotifd.get(0).getAchName());
-        title.setText("Achievement Unlocked");
+                    final TextView title = (TextView) findViewById(R.id.msg_title);
+                    final TextView msg = (TextView) findViewById(R.id.msg);
+                    final ImageView icon = (ImageView) findViewById(R.id.msg_icon);
+
+                    if(title==null||msg==null||icon==null)
+                        return;
+
+                    if (this != null)
+                    {
+                        this.runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                msg.setText(unnotifd.get(0).getAchName());
+                                title.setText("Achievement Unlocked");
+                            }
+                        });
+                    }
+                    //Pause bg thread for a bit
+                    try
+                    {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    if (this != null)
+                    {
+                        this.runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                //Hide popup notif
+                                if(popup_notif!=null)
+                                    popup_notif.setVisibility(View.GONE);
+                            }
+                        });
+                    }
+                }
+                else
+                {
+                    Log.d(TAG,"All Achievements have been notified.");
+                }
+            }
+        }catch (SQLiteException e)
+        {
+            LocalComms.logException(e);
+        }
     }
 
     public void reloadEvents()

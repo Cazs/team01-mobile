@@ -59,9 +59,11 @@
                     android:src="@drawable/translucent_circle"/>-->
 
                 <LinearLayout
+                    android:id="@+id/popup_notif"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
+                    android:visibility="gone"
                     android:layout_alignBottom="@+id/container"
                     android:layout_marginBottom="50dp">
 
@@ -77,7 +79,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textSize="16sp"
-                            android:text="Achievement Unlocked"
+                            android:text=""
                             android:layout_gravity="center"/>
 
                         <LinearLayout
@@ -97,7 +99,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textSize="16sp"
-                                android:text="Achievement Unlocked"
+                                android:text=""
                                 android:gravity="center"/>
 
                         </LinearLayout>

@@ -1,5 +1,6 @@
 package com.codcodes.icebreaker.services;
 
+import android.database.sqlite.SQLiteException;
 import android.util.Log;
 
 import com.codcodes.icebreaker.auxilary.JSON;
@@ -21,7 +22,7 @@ import java.util.Map;
  */
 public class MessageFcmService extends FirebaseMessagingService//IntentService
 {
-    private final String TAG="IB/MsgPollService";
+    private final String TAG="IB/MsgFcmService";
 
     public MessageFcmService()
     {
@@ -59,12 +60,17 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
         try
         {
             String json_msg = RemoteComms.sendGetRequest("getAchievement/" + kv_pair[1]);
-
             Achievement achievement = new Achievement();
             JSON.getJsonable(json_msg, achievement);
             achievement.setNotified(0);
 
-            LocalComms.addAchievementToDB(this,achievement);
+            try
+            {
+                LocalComms.addAchievementToDB(this, achievement);
+            }catch (SQLiteException e)
+            {
+                LocalComms.logException(e);
+            }
 
             LocalComms.showNotification(this,"New achievement, " + achievement.getAchName(),NOTIFICATION_ID.NOTIF_REQUEST.getId());
 

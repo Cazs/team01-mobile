@@ -17,6 +17,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
@@ -651,14 +652,19 @@ public class LocalComms
 
         String meta=null;
         Cursor c = db.rawQuery(query,new String[]{entry});
-        if(c.moveToFirst())
-        //if(c.getCount()>0)
-        {
-            meta = c.getString(c.getColumnIndex(MetadataContract.MetaEntry.COL_META_ENTRY_DATA));
-        }
         if(c!=null)
+        {
+            if (c.getCount() > 0)
+            {
+                if (c.moveToFirst())
+                //if(c.getCount()>0)
+                {
+                    meta = c.getString(c.getColumnIndex(MetadataContract.MetaEntry.COL_META_ENTRY_DATA));
+                }
+            }
             if(!c.isClosed())
                 c.close();
+        }
         closeDB(db);
 
         return meta;
@@ -675,7 +681,14 @@ public class LocalComms
         if(ach.getAchId().isEmpty())
             return false;
 
-        Achievement tmp_ach = getAchievementFromDB(context,ach.getAchId());
+        Achievement tmp_ach=null;
+        try
+        {
+            tmp_ach = getAchievementFromDB(context, ach.getAchId());
+        }catch (SQLiteException e)
+        {
+            Log.d(TAG,"Achievements table doesn't exist yet: " + e.getMessage());
+        }
         if(tmp_ach==null)//if the achievement doesn't exist in DB
         {
             Log.d(TAG, "Inserting new Achievement["+ach.getAchName()+"]");
@@ -751,37 +764,48 @@ public class LocalComms
                 " WHERE " + AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED + "=?";
         String[] where_args = {"0"};
         Cursor c =db.rawQuery(q,where_args);
-
-        if(c.getCount()>0)
+        if(c!=null)
         {
-            while (c.moveToNext())
+            if (c.getCount() > 0)
             {
+                while (c.moveToNext())
+                {
 
-                String id = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_ID));
-                String name = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NAME));
-                String desc = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DESCRIPTION));
-                long date = c.getLong(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DATE));
-                int target = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET));
-                int value = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE));
-                int notifd = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED));
-                int pts = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS));
+                    String id = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_ID));
+                    String name = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NAME));
+                    String desc = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DESCRIPTION));
+                    long date = c.getLong(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DATE));
+                    int target = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET));
+                    int value = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE));
+                    int notifd = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED));
+                    int pts = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS));
 
-                Achievement ach = new Achievement(id, name, desc, date, target, value, notifd, pts);
-                achievements.add(ach);
+                    Achievement ach = new Achievement(id, name, desc, date, target, value, notifd, pts);
+                    achievements.add(ach);
+                }
+                if (!c.isClosed())
+                    c.close();
+                closeDB(db);
+                return achievements;
+            } else
+            {
+                Log.wtf(TAG, "No unnotified Achievements were not found.");
+                if (c != null)
+                    if (!c.isClosed())
+                        c.close();
+                closeDB(db);
+                return null;
             }
-            if(!c.isClosed())
-                c.close();
-            closeDB(db);
-            return achievements;
         }else
         {
-            Log.wtf(TAG,"No unnotified Achievements were not found.");
-            if(c!=null)
-                if(!c.isClosed())
+            Log.wtf(TAG, "No unnotified Achievements were not found.");
+            if (c != null)
+                if (!c.isClosed())
                     c.close();
             closeDB(db);
             return null;
         }
+
     }
 
     public static ArrayList<Achievement> getAllAchievementsFromDB(Context context) throws SQLiteException
@@ -798,32 +822,43 @@ public class LocalComms
 
         Cursor c =db.rawQuery(q,null);
 
-        if(c.getCount()>0)
+        if(c!=null)
         {
-            while (c.moveToNext())
+            if (c.getCount() > 0)
             {
+                while (c.moveToNext())
+                {
 
-                String id = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_ID));
-                String name = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NAME));
-                String desc = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DESCRIPTION));
-                long date = c.getLong(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DATE));
-                int target = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET));
-                int value = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE));
-                int notifd = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED));
-                int pts = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS));
+                    String id = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_ID));
+                    String name = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NAME));
+                    String desc = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DESCRIPTION));
+                    long date = c.getLong(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DATE));
+                    int target = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET));
+                    int value = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE));
+                    int notifd = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED));
+                    int pts = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS));
 
-                Achievement ach = new Achievement(id, name, desc, date, target, value, notifd, pts);
-                achievements.add(ach);
+                    Achievement ach = new Achievement(id, name, desc, date, target, value, notifd, pts);
+                    achievements.add(ach);
+                }
+                if (!c.isClosed())
+                    c.close();
+                closeDB(db);
+                return achievements;
+            } else
+            {
+                Log.wtf(TAG, "No Achievements were not found.");
+                if (c != null)
+                    if (!c.isClosed())
+                        c.close();
+                closeDB(db);
+                return null;
             }
-            if(!c.isClosed())
-                c.close();
-            closeDB(db);
-            return achievements;
         }else
         {
-            Log.wtf(TAG,"No Achievements were not found.");
-            if(c!=null)
-                if(!c.isClosed())
+            Log.wtf(TAG, "No Achievements were not found.");
+            if (c != null)
+                if (!c.isClosed())
                     c.close();
             closeDB(db);
             return null;
@@ -844,30 +879,41 @@ public class LocalComms
 
         Cursor c =db.rawQuery(q,args);
 
-        if(c.getCount()>0)
+        if(c!=null)
         {
-            c.moveToFirst();
+            if (c.getCount() > 0)
+            {
+                c.moveToFirst();
 
-            String id = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_ID));
-            String name = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NAME));
-            String desc = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DESCRIPTION));
-            long date = c.getLong(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DATE));
-            int target = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET));
-            int value = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE));
-            int notifd = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED));
-            int pts = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS));
+                String id = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_ID));
+                String name = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NAME));
+                String desc = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DESCRIPTION));
+                long date = c.getLong(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DATE));
+                int target = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_TARGET));
+                int value = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE));
+                int notifd = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED));
+                int pts = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS));
 
-            Achievement ach = new Achievement(id,name,desc,date,target,value,notifd, pts);
+                Achievement ach = new Achievement(id, name, desc, date, target, value, notifd, pts);
 
-            if(!c.isClosed())
-                c.close();
-            closeDB(db);
-            return ach;
+                if (!c.isClosed())
+                    c.close();
+                closeDB(db);
+                return ach;
+            } else
+            {
+                Log.wtf(TAG, "Achievement[" + ach_id + "] was not found.");
+                if (c != null)
+                    if (!c.isClosed())
+                        c.close();
+                closeDB(db);
+                return null;
+            }
         }else
         {
-            Log.wtf(TAG,"Achievement["+ach_id+"] was not found.");
-            if(c!=null)
-                if(!c.isClosed())
+            Log.wtf(TAG, "Achievement[" + ach_id + "] was not found.");
+            if (c != null)
+                if (!c.isClosed())
                     c.close();
             closeDB(db);
             return null;
@@ -919,17 +965,26 @@ public class LocalComms
         NotificationManager mNotificationManager = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        Uri soundUri = Uri.parse("android.resource://" + context.getPackageName() + "/assets/sounds/notif.wav");
+        //Uri soundUri = Uri.parse("android.resource://" + context.getPackageName() + "/assets/sounds/notif.wav");
+        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        /*
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+            r.play();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }*/
 
         notif = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_notification_icon)
                 .setContentTitle("IceBreak")
-                .setVibrate(new long[]{500})
+                .setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
+                .setLights(Color.CYAN, 3000, 3000)
                 .setContentText(msg)
-                .setSound(soundUri)
+                .setSound(notification)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
                 .setContentIntent(resultPendingIntent)
-                .setLights(Color.CYAN,700,1000)
                 .build();
 
         mNotificationManager.notify(notifId, notif);
