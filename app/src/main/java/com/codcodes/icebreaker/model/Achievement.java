@@ -3,36 +3,36 @@ package com.codcodes.icebreaker.model;
 /**
  * Created by Casper on 2016/04/12.
  */
-public class Achievement
+public class Achievement implements IJsonable
 {
     private String achName;
     private boolean achAchieved;
     private String achId;
     private String achDescription;
-    private int achLevel;
+    private int score;
     private int achTarget;
     private int achReward;
 
-    public Achievement(String achName,boolean achAchieved,String achDescription,int achLevel,int achTarget,int achReward)
+    public Achievement(String achName,boolean achAchieved,String achDescription,int score,int achTarget,int achReward)
     {
         this.achName = achName;
         this.achAchieved = achAchieved;
         this.achDescription = achDescription;
-        this.achLevel = achLevel;
         this.achTarget = achTarget;
         this.achReward = achReward;
+        this.score = score;
         //TODO: achId = stripVowels(achName);
     }
 
-    public Achievement(String achName,boolean achAchieved,String achId,String achDescription,int achLevel,int achTarget)
+    public Achievement(String achName,boolean achAchieved,String achId,String achDescription,int score,int achTarget,int achReward)
     {
         this.achName = achName;
         this.achAchieved = achAchieved;
         this.achId = achId;
         this.achDescription = achDescription;
-        this.achLevel = achLevel;
         this.achTarget = achTarget;
         this.achReward = achReward;
+        this.score = score;
     }
 
     //Accessors
@@ -99,16 +99,8 @@ public class Achievement
         this.achTarget = achTarget;
     }
 
-    public void setAchLevel(int achLevel) {
-        this.achLevel = achLevel;
-    }
-
     public int getAchTarget() {
         return achTarget;
-    }
-
-    public int getAchLevel() {
-        return achLevel;
     }
 
     public int getAchReward() {
@@ -117,5 +109,38 @@ public class Achievement
 
     public void setAchReward(int achReward) {
         this.achReward = achReward;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    public int getScore() {return score;}
+
+    @Override
+    public void setVarValue(String var, String value) {
+        switch (var)
+        {
+            case "Name":
+            {
+                setAchName(value);
+                break;
+            }
+            case "Description":
+            {
+                setAchDescription(value);
+                break;
+            }
+            case "Value":
+            {
+                setAchReward(Integer.valueOf(value));
+                break;
+            }
+            case "Target":
+            {
+                setAchTarget(Integer.valueOf(value));
+                break;
+            }
+        }
     }
 }

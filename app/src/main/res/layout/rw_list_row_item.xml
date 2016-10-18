@@ -11,23 +11,60 @@
         android:layout_marginLeft="@dimen/activity_horizontal_margin"/>
     <TextView
         android:id="@+id/rwName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="90"
-        android:text="Popular Kid"
-        android:lines="3"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_toRightOf="@+id/imgRw"/>
-    <TextView
-        android:id="@+id/rwDescription"
-        android:layout_width="wrap_content"
+        android:layout_width="@dimen/dp_size_150"
         android:layout_height="@dimen/dp_size_40"
         android:layout_weight="90"
-        android:text="Popular Kid"
+        android:text="name"
+        android:lines="2"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_toRightOf="@+id/imgRw"
+        />
+
+    <TextView
+        android:id="@+id/rwDescription"
+        android:layout_width="@dimen/dp_size_150"
+        android:layout_height="@dimen/dp_size_40"
+        android:layout_weight="90"
+        android:text="Desciption"
         android:lines="2"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_below="@+id/rwName"
         android:layout_toRightOf="@+id/imgRw"
         />
-
+    <Button
+        android:id="@+id/btnClaim"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/dp_size_35"
+        android:fontFamily="monospace"
+        android:textSize="8pt"
+        android:text="CLAIM"
+        android:background="@drawable/icebreak_button"
+        android:layout_toRightOf="@+id/rwName"
+        android:layout_marginTop="@dimen/dp_size_10"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="COST :"
+        android:layout_toRightOf="@+id/rwDescription"
+        android:layout_marginTop="@dimen/dp_size_50"
+        android:id="@+id/costlbl"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="FREE"
+        android:layout_marginTop="@dimen/dp_size_50"
+        android:layout_toRightOf="@+id/costlbl"
+        android:layout_marginLeft="@dimen/dp_size_5"
+        android:id="@+id/rwValue"/>
+    <ImageView
+        android:id="@+id/imgValue"
+        android:layout_marginLeft="@dimen/dp_size_2"
+        android:layout_width="@dimen/dp_size_40"
+        android:layout_height="@dimen/dp_size_40"
+        android:layout_weight="15"
+        android:layout_toRightOf="@+id/rwValue"
+        android:layout_marginTop="@dimen/dp_size_40"
+        android:src="@drawable/coins"
+        />
 </RelativeLayout>

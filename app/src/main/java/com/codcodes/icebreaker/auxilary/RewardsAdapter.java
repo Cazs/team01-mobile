@@ -1,17 +1,23 @@
 package com.codcodes.icebreaker.auxilary;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.model.Achievement;
 import com.codcodes.icebreaker.model.Rewards;
+import com.google.zxing.WriterException;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 
 public class RewardsAdapter extends ArrayAdapter
@@ -45,13 +51,17 @@ public class RewardsAdapter extends ArrayAdapter
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent)
+    public View getView(final int position, View convertView, ViewGroup parent)
     {
         if(convertView==null)
             convertView = inflater.inflate(R.layout.rw_list_row_item, parent, false);//inflater.inflate(R.layout.ach_list_row_item,null);
-        TextView rw = (TextView) convertView.findViewById(R.id.rwName);
+        TextView rwName = (TextView) convertView.findViewById(R.id.rwName);
+        TextView rwDescription = (TextView) convertView.findViewById(R.id.rwDescription);
+        final Button claimBtn = (Button)  convertView.findViewById(R.id.btnClaim);
 
-        rw.setText("\n" +data.get(position).getRwName() + "\n" + data.get(position).getRwDescription());
+        rwName.setTypeface(null, Typeface.BOLD);
+        rwName.setText("\n" + data.get(position).getRwName());
+        rwDescription.setText(data.get(position).getRwDescription());
 
         ImageView imgAch = (ImageView)convertView.findViewById(R.id.imgRw);
 
@@ -65,6 +75,40 @@ public class RewardsAdapter extends ArrayAdapter
             imgAch.setImageResource(R.drawable.vip);
         else
             imgAch.setImageResource(R.drawable.trophy);
+
+       claimBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                rwClaimWindow(position);
+            }
+        });
         return convertView;
+    }
+    private void rwClaimWindow(int position)
+    {
+        Dialog dialog = new Dialog(getContext());
+        dialog.setContentView(R.layout.activity_claim_reward);
+        TextView redimLbl = (TextView)  dialog.findViewById(R.id.retriveLbl);
+        redimLbl.setTypeface(null,Typeface.BOLD);
+
+        TextView expireLbl = (TextView)  dialog.findViewById(R.id.expireLbl);
+        expireLbl.setTypeface(null,Typeface.BOLD);
+
+        TextView expireDate = (TextView)  dialog.findViewById(R.id.expireDate);
+        TextView code = (TextView)  dialog.findViewById(R.id.rwCode);
+        code.setTypeface(null,Typeface.BOLD_ITALIC);
+        code.setText(data.get(position).getRwCode());
+
+        ImageView qrCode = (ImageView) dialog.findViewById(R.id.rwQRcode);
+        QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(data.get(position).getRwCode(), 500);
+
+        try {
+            Bitmap bitmap = qrCodeEncoder.encodeAsBitmap();
+            qrCode.setImageBitmap(bitmap);
+        } catch (WriterException e) {
+            e.printStackTrace();
+        }
+        dialog.show();
     }
 }

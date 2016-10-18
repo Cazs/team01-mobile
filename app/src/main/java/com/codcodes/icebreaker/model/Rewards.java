@@ -9,21 +9,24 @@ public class Rewards {
     private boolean rwAchieved;
     private String rwId;
     private String rwDescription;
+    private String rwCode;
 
-    public Rewards(String rwName,boolean rwAchieved,String rwId,String rwDescription)
+    public Rewards(String rwName,boolean rwAchieved,String rwId,String rwDescription,String rwCode)
     {
         this.rwName = rwName;
         this.rwAchieved = rwAchieved;
         this.rwId = rwId;
         this.rwDescription = rwDescription;
+        this.rwCode = rwCode;
         //TODO: achId = stripVowels(achName);
     }
 
-    public Rewards(String rwName,boolean rwAchieved,String rwDescription)
+    public Rewards(String rwName,boolean rwAchieved,String rwDescription,String rwCode)
     {
         this.rwName = rwName;
         this.rwAchieved = rwAchieved;
         this.rwDescription = rwDescription;
+        this.rwCode = rwCode;
         //TODO: achId = stripVowels(achName);
     }
     public String getRwDescription() {
@@ -57,4 +60,13 @@ public class Rewards {
     public void setRwName(String rwName) {
         this.rwName = rwName;
     }
+
+    public void setRwCode(String rwCode) {
+        this.rwCode = rwCode;
+    }
+
+    public String getRwCode() {
+        return rwCode;
+    }
+
 }
