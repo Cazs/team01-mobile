@@ -275,7 +275,17 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     {
         try
         {
-            final ArrayList<Achievement> unnotifd = LocalComms.getUnnotifiedAchievementsFromDB(this);
+            ArrayList<Achievement> tmp_unnotifd = null;
+            try
+            {
+                tmp_unnotifd = LocalComms.getUnnotifiedAchievementsFromDB(this);
+            }catch (SQLiteException e)
+            {
+                Log.d(TAG,e.getMessage());
+            }
+
+            final ArrayList<Achievement> unnotifd = tmp_unnotifd;
+
             if (unnotifd != null)
             {
                 if(!unnotifd.isEmpty())

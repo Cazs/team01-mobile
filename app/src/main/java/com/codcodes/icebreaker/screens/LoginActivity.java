@@ -7,9 +7,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -35,10 +38,11 @@ import java.util.regex.Pattern;
 
 public class LoginActivity extends AppCompatActivity {
 
-    EditText username;
-    EditText password;
-    Button btnLogin;
-    ProgressBar loginbar;
+    private EditText username;
+    private EditText password;
+    private Button btnLogin;
+    private ProgressBar loginbar;
+    private CheckBox showPwd;
 
     private final String TAG = "IB/LoginActivity";
 
@@ -58,7 +62,23 @@ public class LoginActivity extends AppCompatActivity {
         username = (EditText) findViewById(R.id.username_login);
         password = (EditText) findViewById(R.id.password_login);
         btnLogin=(Button) findViewById(R.id.btn_login);
+        showPwd = (CheckBox) findViewById(R.id.cbx_show_pwd);
 
+        showPwd.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+            {
+                if(!isChecked)
+                {
+                    password.setInputType(129);
+                }
+                else
+                {
+                    password.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                }
+            }
+        });
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override

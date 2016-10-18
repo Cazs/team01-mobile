@@ -59,14 +59,29 @@
                 android:typeface="monospace"
                 android:inputType="text"/>
 
-            <EditText
-                android:id="@+id/password_login"
-                android:layout_width="@dimen/text_box_size"
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
-                android:hint="@string/reg_password"
-                android:typeface="monospace"
-                android:inputType="textPassword"/>
+                android:gravity="center"
+                android:layout_marginTop="15dp">
+
+                <EditText
+                    android:id="@+id/password_login"
+                    android:layout_width="@dimen/text_box_size"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:hint="@string/reg_password"
+                    android:typeface="monospace"
+                    android:inputType="textPassword"/>
+
+                <CheckBox
+                    android:id="@+id/cbx_show_pwd"
+                    android:layout_width="@dimen/dp_size_40"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/password_login"
+                    android:layout_alignRight="@+id/password_login"/>
+
+            </RelativeLayout>
 
             <Button
                 android:id="@+id/btn_login"

@@ -28,6 +28,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Point;
 import android.graphics.Typeface;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraDevice;
@@ -39,6 +40,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -230,9 +232,15 @@ public final class BarcodeCaptureActivity extends Activity
     // to other detection examples to enable the barcode detector to detect small barcodes
     // at long distances.
 
+    Display display = getWindowManager().getDefaultDisplay();
+    Point size = new Point();
+    display.getSize(size);
+    int w = size.x;
+    int h = size.y;
+
   CameraSource.Builder builder = new CameraSource.Builder(getApplicationContext(), barcodeDetector)
             .setFacing(CameraSource.CAMERA_FACING_BACK)
-            .setRequestedPreviewSize(1600, 1024)
+            .setRequestedPreviewSize(w, h)
             .setRequestedFps(15.0f);
 
 

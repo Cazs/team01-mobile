@@ -20,6 +20,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.ImageFormat;
+import android.graphics.Point;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
@@ -30,6 +31,7 @@ import android.support.annotation.RequiresPermission;
 import android.support.annotation.StringDef;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -224,10 +226,9 @@ public class CameraSource {
             if ((width <= 0) || (width > MAX) || (height <= 0) || (height > MAX)) {
                 throw new IllegalArgumentException("Invalid preview size: " + width + "x" + height);
             }
-            DisplayMetrics dm = new DisplayMetrics();
-            //dm.
-            mCameraSource.mRequestedPreviewWidth = 1920;//width;
-            mCameraSource.mRequestedPreviewHeight = 1600;//height;
+
+            mCameraSource.mRequestedPreviewWidth = width;
+            mCameraSource.mRequestedPreviewHeight = height;
             return this;
         }
 

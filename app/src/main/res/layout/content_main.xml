@@ -70,33 +70,33 @@
                     <LinearLayout
                         android:layout_width="250dp"
                         android:layout_height="75dp"
-                        android:background="@color/iceblue"
-                        android:orientation="vertical"
+                        android:background="@drawable/popup_notif_bg"
+                        android:orientation="horizontal"
                         android:layout_gravity="center">
 
-                        <TextView
-                            android:id="@+id/msg_title"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="16sp"
-                            android:text=""
-                            android:layout_gravity="center"/>
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            xmlns:app="http://schemas.android.com/apk/res-auto"
+                            android:id="@+id/msg_icon"
+                            android:layout_width="75dp"
+                            android:layout_height="75dp"
+                            android:src="@drawable/achived"
+                            app:civ_border_width="1dp"
+                            app:civ_border_color="#FF000000"
+                            />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
+                            android:orientation="vertical"
                             android:layout_gravity="center">
 
-                            <de.hdodenhof.circleimageview.CircleImageView
-                                xmlns:app="http://schemas.android.com/apk/res-auto"
-                                android:id="@+id/msg_icon"
-                                android:layout_width="55dp"
-                                android:layout_height="55dp"
-                                android:src="@drawable/achived"
-                                app:civ_border_width="1dp"
-                                app:civ_border_color="#FF000000"
-                                />
+                            <TextView
+                                android:id="@+id/msg_title"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="16sp"
+                                android:text=""
+                                android:layout_gravity="center"/>
 
                             <TextView
                                 android:id="@+id/msg"
@@ -104,7 +104,7 @@
                                 android:layout_height="wrap_content"
                                 android:textSize="16sp"
                                 android:text=""
-                                android:gravity="center"/>
+                                android:layout_gravity="center"/>
 
                         </LinearLayout>
 

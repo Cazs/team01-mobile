@@ -28,15 +28,15 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_alignBaseline="@+id/userContactList"
-            android:background="@android:color/transparent"
+            android:background="@android:color/white"
             android:orientation="vertical">
 
             <ImageView
-            android:id="@+id/logo_broken"
-            android:layout_width="@dimen/dp_size_200"
-            android:layout_height="@dimen/dp_size_200"
-            android:src="@drawable/logo_broken"
-            android:layout_gravity="center"/>
+                android:id="@+id/logo_broken"
+                android:layout_width="@dimen/dp_size_200"
+                android:layout_height="@dimen/dp_size_200"
+                android:src="@drawable/logo_broken"
+                android:layout_gravity="center"/>
 
             <TextView
                 android:id="@+id/txt_not_at_event"
