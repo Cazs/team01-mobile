@@ -231,9 +231,9 @@ public class CameraSource {
                 throw new IllegalArgumentException("Invalid preview size: " + width + "x" + height);
             }
 
-            mCameraSource.mRequestedPreviewWidth = width;
+            /*mCameraSource.mRequestedPreviewWidth = width;
             mCameraSource.mRequestedPreviewHeight = height;
-            mPreviewSize = new Size(width,height);
+            mPreviewSize = new Size(width,height);*/
             return this;
         }
 
@@ -756,6 +756,7 @@ public class CameraSource {
         Camera camera = Camera.open(requestedCameraId);
 
         SizePair sizePair = selectSizePair(camera, mRequestedPreviewWidth, mRequestedPreviewHeight);
+        //SizePair sizePair = selectSizePair(camera, 4000, 4000);
         if (sizePair == null) {
             throw new RuntimeException("Could not find suitable preview size.");
         }

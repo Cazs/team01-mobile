@@ -77,19 +77,19 @@
 
                 <Button
                     android:id="@+id/btnQr"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
                     android:background="@drawable/qr_code_scanner_btn_bg"
                     android:onClick="startQRscanner"
                     android:layout_centerHorizontal="true"/>
 
                 <Button
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
                     android:background="@drawable/ic_gps_fixed_black_24dp"
                     android:onClick="viewPosition"
-                    android:layout_centerHorizontal="true"/>
-
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginLeft="15dp"/>
             </LinearLayout>
 
             </RelativeLayout>

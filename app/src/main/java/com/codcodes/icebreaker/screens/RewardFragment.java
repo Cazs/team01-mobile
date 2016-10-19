@@ -9,18 +9,11 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.codcodes.icebreaker.R;
-import com.codcodes.icebreaker.auxilary.AchievementsAdapter;
-import com.codcodes.icebreaker.auxilary.Config;
 import com.codcodes.icebreaker.auxilary.RewardsAdapter;
-import com.codcodes.icebreaker.auxilary.WritersAndReaders;
-import com.codcodes.icebreaker.model.Achievement;
-import com.codcodes.icebreaker.model.Rewards;
-import com.google.android.gms.ads.reward.RewardItem;
+import com.codcodes.icebreaker.model.Reward;
 
-import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by tevin on 2016/07/13.
@@ -30,19 +23,19 @@ public class RewardFragment extends android.support.v4.app.Fragment
     private static AssetManager mgr;
     private ListView rewardList;
     private RewardsAdapter adapter;
-    private ArrayList<Rewards> rewads;
+    private ArrayList<Reward> rewads;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
 
         View v = inflater.inflate(R.layout.fragment_reward,container,false);
         rewardList = (ListView) v.findViewById(R.id.RewarList);
-        rewads = new ArrayList<Rewards>();
-        rewads.add(new Rewards("Free Icebreak Event Ticket",false,"Party Animal Achievement reward",randromCodeGenerator()));
-        rewads.add(new Rewards("Free Shot",false,"Most Rejected",randromCodeGenerator()));
-        rewads.add(new Rewards("Free VIP pass",false,"IceBreak Queen/King",randromCodeGenerator()));
-        rewads.add(new Rewards("Free drink ",false,"Populer Kids",randromCodeGenerator()));
-        rewads.add(new Rewards("Free Hamper",false,"Star Of The Night",randromCodeGenerator()));
+        rewads = new ArrayList<Reward>();
+        rewads.add(new Reward("Free Icebreak Event Ticket",false,"Party Animal Achievement reward",randromCodeGenerator()));
+        rewads.add(new Reward("Free Shot",false,"Most Rejected",randromCodeGenerator()));
+        rewads.add(new Reward("Free VIP pass",false,"IceBreak Queen/King",randromCodeGenerator()));
+        rewads.add(new Reward("Free drink ",false,"Populer Kids",randromCodeGenerator()));
+        rewads.add(new Reward("Free Hamper",false,"Star Of The Night",randromCodeGenerator()));
         adapter = new RewardsAdapter(getContext(),rewads,0);
         rewardList.setAdapter(adapter);
         return v;

@@ -92,7 +92,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
 
         final TextView rewards = (TextView) v.findViewById(R.id.profile_Rewards);
         rewards.setTypeface(h);
-        rewards.setText("Rewards");
+        rewards.setText("Reward");
 
         TextView settings = (TextView) v.findViewById(R.id.profile_settings);
         settings.setTypeface(h);

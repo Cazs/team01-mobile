@@ -15,6 +15,20 @@ public class Achievement implements IJsonable
     private int achValue;
     private int notified;
     private int user_points;
+    private String method;
+
+    public Achievement(String achId, String achName, String achDescription, long achDate, int achTarget, int achValue, int notified, int pts, String method)
+    {
+        this.achId=achId;
+        this.achName = achName;
+        this.achDescription = achDescription;
+        this.achDate=achDate;
+        this.achTarget=achTarget;
+        this.achValue=achValue;
+        this.notified=notified;
+        this.user_points=pts;
+        this.method=method;
+    }
 
     public Achievement(String achId, String achName, String achDescription, long achDate, int achTarget, int achValue, int notified, int pts)
     {
@@ -55,6 +69,11 @@ public class Achievement implements IJsonable
     public int getNotified() {return notified;}
 
     public int getUserPoints(){return this.user_points;}
+
+    public String getAchMethod()
+    {
+        return this.method;
+    }
 
     public boolean isAchieved() { return this.achDate>0;}
 
@@ -112,6 +131,11 @@ public class Achievement implements IJsonable
         this.notified = notified;
     }
 
+    public void setAchMethod(String method)
+    {
+        this.method = method;
+    }
+
     @Override
     public void setVarValue(String var, String value)
     {
@@ -150,6 +174,11 @@ public class Achievement implements IJsonable
             case "pts":
             {
                 setAchUserPoints(Integer.valueOf(value));
+                break;
+            }
+            case "method":
+            {
+                setAchMethod(value);
                 break;
             }
             default:

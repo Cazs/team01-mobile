@@ -195,7 +195,7 @@ public class EventDetailActivity extends AppCompatActivity
         eventDetails = (TextView)findViewById(R.id.main_heading);
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         eventDetails.setTypeface(heading);
-        eventDetails.setTextSize(29);
+        eventDetails.setTextSize(40);
 
         final EditText accessCode = (EditText) findViewById(R.id.AccessCode);
 

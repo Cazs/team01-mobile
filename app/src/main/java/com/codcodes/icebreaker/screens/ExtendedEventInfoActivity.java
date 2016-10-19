@@ -62,13 +62,13 @@ public class ExtendedEventInfoActivity extends AppCompatActivity
                 return;
 
             int len = event.getTitle().length();
-            if(len>0 && len<=5)hsize=30;
-            if(len>5 && len<=10)hsize=26;
-            if(len>10 && len<=15)hsize=22;
-            if(len>15 && len<=20)hsize=18;
-            if(len>20 && len<=25)hsize=14;
-            if(len>25 && len<=30)hsize=10;
-            if(len>30)hsize=8;
+            if(len>0 && len<=5)hsize=40;
+            if(len>5 && len<=10)hsize=32;
+            if(len>10 && len<=15)hsize=30;
+            if(len>15 && len<=20)hsize=28;
+            if(len>20 && len<=25)hsize=26;
+            if(len>25 && len<=30)hsize=20;
+            if(len>30)hsize=14;
 
             title.setTextSize(hsize);
             title.setText(event.getTitle());

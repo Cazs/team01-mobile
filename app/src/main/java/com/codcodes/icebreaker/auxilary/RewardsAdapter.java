@@ -13,19 +13,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.codcodes.icebreaker.R;
-import com.codcodes.icebreaker.model.Rewards;
+import com.codcodes.icebreaker.model.Reward;
 import com.google.zxing.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class RewardsAdapter extends ArrayAdapter
 {
     private Context context;
-    private ArrayList<Rewards> data;
+    private ArrayList<Reward> data;
     private static LayoutInflater inflater = null;
 
-    public RewardsAdapter(Context context, ArrayList<Rewards> data,int resource) {
+    public RewardsAdapter(Context context, ArrayList<Reward> data, int resource) {
         super(context, resource);
         this.data = data;
         this.context = context;
@@ -38,7 +37,7 @@ public class RewardsAdapter extends ArrayAdapter
     }
 
     @Override
-    public Rewards getItem(int position)
+    public Reward getItem(int position)
     {
         return data.get(position);
     }

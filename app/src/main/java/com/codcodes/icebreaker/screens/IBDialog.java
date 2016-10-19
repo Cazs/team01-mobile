@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -113,6 +114,10 @@ public class IBDialog extends Activity
             closeActivity();
 
         request_code = Integer.valueOf(s);
+
+        Vibrator vibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
+        if(vibrator.hasVibrator())
+            vibrator.vibrate(5000);
 
         if(request_code==INCOMING_REQUEST)//IceBreak request
         {

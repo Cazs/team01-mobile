@@ -100,6 +100,26 @@ public class RemoteComms
         return events;
     }
 
+    public static void logOutUserFromEvent(Context context) throws IOException
+    {
+        //Update status on server
+        User u = LocalComms.getContact(context,SharedPreference.getUsername(context));
+        if(u==null)
+            u = RemoteComms.getUser(context,SharedPreference.getUsername(context));
+        if(u!=null)
+        {
+            Event e = new Event();
+            e.setId(0);
+            u.setEvent(e);
+            String res = RemoteComms.postData("userUpdate/"+u.getUsername(),u.toString());
+            if(res.contains("200"))
+            {
+                WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),"0");
+                Log.d(TAG,"Successfully updated user Event status locally and remotely.");
+            }else Log.wtf(TAG,"Could not update Event status of User on remote DB.");
+        }
+    }
+
     public static Drawable getGoogleMapsBitmap(double lat, double lng, int zoom, int w, int h, Event event) throws IOException
     {
         if(event.isValid())

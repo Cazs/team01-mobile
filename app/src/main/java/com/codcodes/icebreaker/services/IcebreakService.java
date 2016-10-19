@@ -119,8 +119,11 @@ public class IcebreakService extends IntentService// implements LocationListener
                                             {
                                                 try {
                                                     lng = Double.parseDouble(str_lng);
-                                                }catch (NumberFormatException ex){
-                                                    Log.wtf(TAG,"Not a number",ex);}
+                                                }catch (NumberFormatException ex)
+                                                {
+                                                    Log.wtf(TAG,"Not a number",ex);
+                                                    RemoteComms.logOutUserFromEvent(this);
+                                                }
                                             }
                                         }
                                         if(lat!=0&&lng!=0)
@@ -129,14 +132,34 @@ public class IcebreakService extends IntentService// implements LocationListener
                                             if (!LocationDetector.containsLocation(me, e.getBoundary(), true))
                                             {
                                                 System.out.println("Logging out of Event.");
-                                                logOutUserFromEvent();
+                                                RemoteComms.logOutUserFromEvent(this);
                                             } else Log.d(TAG, "**User location valid.");
-                                        }else Log.d(TAG, "User location hasn't been updated yet.");//TODO: if has been 0 for too long kickOut()
+                                        }else
+                                        {
+                                            Log.d(TAG, "User location hasn't been updated yet.");//TODO: if has been 0 for too long kickOut()
+                                            System.out.println("Logging out of Event.");
+                                            RemoteComms.logOutUserFromEvent(this);
+                                        }
                                     } //else Log.d(TAG, "Last known User location is null.");
-                                } else Log.d(TAG, "Boundary for Event: " + ev_id + " is null.");
-                            } else Log.d(TAG, "Event: " + ev_id + " is null.");
+                                } else
+                                {
+                                    Log.d(TAG, "Boundary for Event: " + ev_id + " is null.");
+                                    System.out.println("Logging out of Event.");
+                                    RemoteComms.logOutUserFromEvent(this);
+                                }
+                            } else
+                            {
+                                Log.d(TAG, "Event: " + ev_id + " is null.");
+                                System.out.println("Logging out of Event.");
+                                RemoteComms.logOutUserFromEvent(this);
+                            }
                             checkForIceBreaks();
-                        } else Log.d(TAG, "User not at a valid Event. Skipping IceBreak checks.");
+                        } else
+                        {
+                            Log.d(TAG, "User not at a valid Event. Skipping IceBreak checks.");
+                            System.out.println("Logging out of Event.");
+                            RemoteComms.logOutUserFromEvent(this);
+                        }
                     }else{Log.d(TAG,"UI is active, skipping checks.");}
                     //Take a break, take a KatKit
                     Thread.sleep(INTERVALS.IB_CHECK_DELAY.getValue());
@@ -144,17 +167,11 @@ public class IcebreakService extends IntentService// implements LocationListener
             }
             catch (IOException e)
             {
-                if(e.getMessage()!=null)
-                    Log.d(TAG,e.getMessage());
-                else
-                    e.printStackTrace();
+                LocalComms.logException(e);
             }
             catch (InterruptedException e)
             {
-                if(e.getMessage()!=null)
-                    Log.d(TAG,e.getMessage());
-                else
-                    e.printStackTrace();
+                LocalComms.logException(e);
             }
         }
         else
@@ -163,8 +180,7 @@ public class IcebreakService extends IntentService// implements LocationListener
 
     public void checkForInboundIceBreaks() throws IOException
     {
-        ArrayList<Message> messages = LocalComms.getInboundMessages(this,
-                SharedPreference.getUsername(this).toString());
+        ArrayList<Message> messages = LocalComms.getInboundMessages(this, SharedPreference.getUsername(this).toString());
 
         //If there are IceBreaks
         if (messages.size() > 0)
@@ -279,26 +295,6 @@ public class IcebreakService extends IntentService// implements LocationListener
         Log.d(TAG, "Checking for local inbound and outbound Icebreaks.");
         checkForInboundIceBreaks();
         checkForOutboundIceBreaks();
-    }
-
-    public void logOutUserFromEvent() throws IOException
-    {
-        //Update status on server
-        User u = LocalComms.getContact(this,SharedPreference.getUsername(this));
-        if(u==null)
-            u = RemoteComms.getUser(this,SharedPreference.getUsername(this));
-        if(u!=null)
-        {
-            Event e = new Event();
-            e.setId(0);
-            u.setEvent(e);
-            String res = RemoteComms.postData("userUpdate/"+u.getUsername(),u.toString());
-            if(res.contains("200"))
-            {
-                WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),"0");
-                Log.d(TAG,"Successfully updated user Event status locally and remotely.");
-            }else Log.wtf(TAG,"Could not update Event status of User on remote DB.");
-        }
     }
 
     /*@Override

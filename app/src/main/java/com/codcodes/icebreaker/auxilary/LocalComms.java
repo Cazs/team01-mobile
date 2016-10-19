@@ -40,6 +40,9 @@ import com.codcodes.icebreaker.model.MessageHelper;
 import com.codcodes.icebreaker.model.Metadata;
 import com.codcodes.icebreaker.model.MetadataContract;
 import com.codcodes.icebreaker.model.MetadataHelper;
+import com.codcodes.icebreaker.model.Reward;
+import com.codcodes.icebreaker.model.RewardContract;
+import com.codcodes.icebreaker.model.RewardHelper;
 import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.model.UserContract;
 import com.codcodes.icebreaker.model.UserHelper;
@@ -680,6 +683,8 @@ public class LocalComms
             return false;
         if(ach.getAchId().isEmpty())
             return false;
+        if(ach.getAchId().equals("0"))
+            return false;
 
         Achievement tmp_ach=null;
         try
@@ -706,6 +711,7 @@ public class LocalComms
             kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE, ach.getAchValue());
             kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED, 0);
             kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS, ach.getUserPoints());
+            kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_METHOD, ach.getAchMethod());
 
             db.insert(AchievementContract.AchievementEntry.TABLE_NAME, null, kv_pairs);
 
@@ -713,6 +719,87 @@ public class LocalComms
 
             return true;
         }else return updateAchievementOnDB(context,tmp_ach);
+    }
+
+    public static boolean addRewardToDB(Context context, Reward reward) throws SQLiteException
+    {
+        if(context==null)
+            return false;
+        if(reward==null)
+            return false;
+        if(reward.getRwId()==null)
+            return false;
+        if(reward.getRwId().isEmpty())
+            return false;
+        if(reward.getRwId().equals("0"))
+            return false;
+
+        Reward tmp_rw=null;
+        try
+        {
+            tmp_rw = getRewardFromDB(context, reward.getRwId());
+        }catch (SQLiteException e)
+        {
+            Log.d(TAG,"Rewards table doesn't exist yet: " + e.getMessage());
+        }
+        if(tmp_rw==null)//if the Reward doesn't exist in DB
+        {
+            Log.d(TAG, "Inserting new Reward["+reward.getRwName()+"]");
+
+            RewardHelper dbHelper = new RewardHelper(context);
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+            dbHelper.onCreate(db);
+
+            ContentValues kv_pairs = new ContentValues();
+            kv_pairs.put(RewardContract.RewardEntry.COL_REWARD_ID, reward.getRwId());
+            kv_pairs.put(RewardContract.RewardEntry.COL_REWARD_NAME, reward.getRwName());
+            kv_pairs.put(RewardContract.RewardEntry.COL_REWARD_DESCRIPTION, reward.getRwDescription());
+            kv_pairs.put(RewardContract.RewardEntry.COL_REWARD_VALUE, reward.getRwCost());
+            kv_pairs.put(RewardContract.RewardEntry.COL_REWARD_EVENT_ID, reward.getRwEventID());
+            kv_pairs.put(RewardContract.RewardEntry.COL_REWARD_CODE, reward.getRwCode());
+
+            db.insert(RewardContract.RewardEntry.TABLE_NAME, null, kv_pairs);
+
+            closeDB(db);
+
+            return true;
+        }else return updateRewardOnDB(context,tmp_rw);
+    }
+
+    public static boolean updateRewardOnDB(Context context, Reward reward) throws SQLiteException
+    {
+        if(context==null)
+            return false;
+        if(reward==null)
+            return false;
+        if(reward.getRwId()==null)
+            return false;
+        if(reward.getRwId().isEmpty())
+            return false;
+        if(reward.getRwId().equals("0"))
+            return false;
+
+        Log.d(TAG, "Reward["+reward.getRwName()+"] exists on local DB, updating it.");
+        AchievementHelper dbHelper = new AchievementHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        //dbHelper.onCreate(db);
+
+        ContentValues kv_pairs = new ContentValues();
+        kv_pairs.put(RewardContract.RewardEntry.COL_REWARD_ID, reward.getRwId());
+        kv_pairs.put(RewardContract.RewardEntry.COL_REWARD_NAME, reward.getRwName());
+        kv_pairs.put(RewardContract.RewardEntry.COL_REWARD_DESCRIPTION, reward.getRwDescription());
+        kv_pairs.put(RewardContract.RewardEntry.COL_REWARD_VALUE, reward.getRwCost());
+        kv_pairs.put(RewardContract.RewardEntry.COL_REWARD_EVENT_ID, reward.getRwEventID());
+        kv_pairs.put(RewardContract.RewardEntry.COL_REWARD_CODE, reward.getRwCode());
+
+        String where = RewardContract.RewardEntry.COL_REWARD_ID+"=?";
+        String[] where_args = {reward.getRwId()};
+
+        db.update(RewardContract.RewardEntry.TABLE_NAME, kv_pairs, where, where_args);
+
+        closeDB(db);
+
+        return true;
     }
 
     public static boolean updateAchievementOnDB(Context context, Achievement ach) throws SQLiteException
@@ -740,6 +827,7 @@ public class LocalComms
         kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE, ach.getAchValue());
         kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED, ach.getNotified());
         kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS, ach.getUserPoints());
+        kv_pairs.put(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_METHOD, ach.getAchMethod());
 
         String where = AchievementContract.AchievementEntry.COL_ACHIEVEMENT_ID+"=?";
         String[] where_args = {ach.getAchId()};
@@ -761,9 +849,12 @@ public class LocalComms
         //no need for dbHelper.onCreate(db);
 
         String q = "SELECT * FROM " + AchievementContract.AchievementEntry.TABLE_NAME +
-                " WHERE " + AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED + "=?";
-        String[] where_args = {"0"};
+                " WHERE " + AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED + "=? AND " +
+                AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DATE + "> ?";
+
+        String[] where_args = {"0","0"};
         Cursor c =db.rawQuery(q,where_args);
+
         if(c!=null)
         {
             if (c.getCount() > 0)
@@ -779,8 +870,9 @@ public class LocalComms
                     int value = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE));
                     int notifd = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED));
                     int pts = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS));
+                    String meth = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_METHOD));
 
-                    Achievement ach = new Achievement(id, name, desc, date, target, value, notifd, pts);
+                    Achievement ach = new Achievement(id, name, desc, date, target, value, notifd, pts, meth);
                     achievements.add(ach);
                 }
                 if (!c.isClosed())
@@ -837,8 +929,9 @@ public class LocalComms
                     int value = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE));
                     int notifd = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED));
                     int pts = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS));
+                    String meth = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_METHOD));
 
-                    Achievement ach = new Achievement(id, name, desc, date, target, value, notifd, pts);
+                    Achievement ach = new Achievement(id, name, desc, date, target, value, notifd, pts, meth);
                     achievements.add(ach);
                 }
                 if (!c.isClosed())
@@ -847,7 +940,7 @@ public class LocalComms
                 return achievements;
             } else
             {
-                Log.wtf(TAG, "No Achievements were not found.");
+                Log.wtf(TAG, "No Achievements were found.");
                 if (c != null)
                     if (!c.isClosed())
                         c.close();
@@ -856,11 +949,68 @@ public class LocalComms
             }
         }else
         {
-            Log.wtf(TAG, "No Achievements were not found.");
+            Log.wtf(TAG, "No Achievements were found.");
             if (c != null)
                 if (!c.isClosed())
                     c.close();
             closeDB(db);
+            return null;
+        }
+    }
+
+    public static ArrayList<Reward> getAllRewardsFromDB(Context context) throws SQLiteException
+    {
+        if (context == null)
+            return null;
+
+        ArrayList<Reward> rewards = new ArrayList<Reward>();
+        RewardHelper dbHelper = new RewardHelper(context);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        //no need for dbHelper.onCreate(db);
+
+        String q = "SELECT * FROM " + RewardContract.RewardEntry.TABLE_NAME;
+
+        Cursor c = db.rawQuery(q,null);
+
+        if(c!=null)
+        {
+            if (c.getCount() > 0)
+            {
+                while (c.moveToNext())
+                {
+                    String id = c.getString(c.getColumnIndex(RewardContract.RewardEntry.COL_REWARD_ID));
+                    String name = c.getString(c.getColumnIndex(RewardContract.RewardEntry.COL_REWARD_NAME));
+                    String desc = c.getString(c.getColumnIndex(RewardContract.RewardEntry.COL_REWARD_DESCRIPTION));
+                    int cost = c.getInt(c.getColumnIndex(RewardContract.RewardEntry.COL_REWARD_VALUE));
+                    String ev_id = c.getString(c.getColumnIndex(RewardContract.RewardEntry.COL_REWARD_EVENT_ID));
+                    String code = c.getString(c.getColumnIndex(RewardContract.RewardEntry.COL_REWARD_CODE));
+
+                    Reward reward = new Reward(id,name,desc,code,cost,ev_id);
+                    rewards.add(reward);
+                }
+                if (!c.isClosed())
+                    c.close();
+                closeDB(db);
+
+                return rewards;
+            } else
+            {
+                Log.wtf(TAG, "No Rewards were found.");
+                if (c != null)
+                    if (!c.isClosed())
+                        c.close();
+                closeDB(db);
+
+                return null;
+            }
+        }else
+        {
+            Log.wtf(TAG, "No Rewards were found.");
+            if (c != null)
+                if (!c.isClosed())
+                    c.close();
+            closeDB(db);
+
             return null;
         }
     }
@@ -912,6 +1062,60 @@ public class LocalComms
         }else
         {
             Log.wtf(TAG, "Achievement[" + ach_id + "] was not found.");
+            if (c != null)
+                if (!c.isClosed())
+                    c.close();
+            closeDB(db);
+            return null;
+        }
+    }
+
+    public static Reward getRewardFromDB(Context context, String rw_id) throws SQLiteException
+    {
+        if (context == null)
+            return null;
+        RewardHelper dbHelper = new RewardHelper(context);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        //no need for dbHelper.onCreate(db);
+
+        String q = "SELECT * FROM " + RewardContract.RewardEntry.TABLE_NAME +
+                " WHERE " + RewardContract.RewardEntry.COL_REWARD_ID + "=?";
+        String[] args = {rw_id};
+
+        Cursor c =db.rawQuery(q,args);
+
+        if(c!=null)
+        {
+            if (c.getCount() > 0)
+            {
+                c.moveToFirst();
+
+                String id = c.getString(c.getColumnIndex(RewardContract.RewardEntry.COL_REWARD_ID));
+                String name = c.getString(c.getColumnIndex(RewardContract.RewardEntry.COL_REWARD_NAME));
+                String desc = c.getString(c.getColumnIndex(RewardContract.RewardEntry.COL_REWARD_DESCRIPTION));
+                int cost = c.getInt(c.getColumnIndex(RewardContract.RewardEntry.COL_REWARD_VALUE));
+                String ev_id = c.getString(c.getColumnIndex(RewardContract.RewardEntry.COL_REWARD_EVENT_ID));
+                String code = c.getString(c.getColumnIndex(RewardContract.RewardEntry.COL_REWARD_CODE));
+
+                Reward reward = new Reward(id,name,desc,code,cost,ev_id);
+
+                if (!c.isClosed())
+                    c.close();
+                closeDB(db);
+
+                return reward;
+            } else
+            {
+                Log.wtf(TAG, "Reward[" + rw_id + "] was not found.");
+                if (c != null)
+                    if (!c.isClosed())
+                        c.close();
+                closeDB(db);
+                return null;
+            }
+        }else
+        {
+            Log.wtf(TAG, "Reward[" + rw_id + "] was not found.");
             if (c != null)
                 if (!c.isClosed())
                     c.close();
@@ -979,7 +1183,7 @@ public class LocalComms
         notif = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_notification_icon)
                 .setContentTitle("IceBreak")
-                .setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
+                //.setVibrate(new long[]{2000})//new long[] { 1000, 1000, 1000, 1000, 1000 })
                 .setLights(Color.CYAN, 3000, 3000)
                 .setContentText(msg)
                 .setSound(notification)

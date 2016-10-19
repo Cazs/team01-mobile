@@ -15,6 +15,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -80,8 +81,8 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     /**
      * The {@link ViewPager} that will host the section contents.
      */
-    private LinearLayout actionBar;
     private ViewPager mViewPager;
+    private LinearLayout actionBar;
     private Typeface ttfInfinity, ttfAilerons;
 
     public static String rootDir = Environment.getExternalStorageDirectory().getPath();
@@ -155,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         tablayout.getTabAt(1).setIcon(viewPagerIcons[1]);
         tablayout.getTabAt(2).setIcon(viewPagerIcons[2]);
         headingTextView.setTypeface(ttfAilerons);
-        headingTextView.setTextSize(30);
+        headingTextView.setTextSize(40);
 
         //Start Icebreak checker service that checks the local DB for Icebreaks
         Intent icebreakChecker = new Intent(this, IcebreakService.class);
@@ -172,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         startService(intTokenService);
         Log.d(TAG, "Started IbTokenRegistrationService");
 
-        //Ping server - server will then update last seen and check for Achievements, Icebreaks and Rewards
+        //Ping server - server will then update last seen and check for Achievements, Icebreaks and Reward
         Thread tPing = new Thread(new Runnable() {
             @Override
             public void run()
@@ -243,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                     title.setTextSize(25);
                 } else
                 {
-                    title.setTextSize(35);
+                    title.setTextSize(40);
                     title.setText("IceBreak");
                 }
             }
@@ -320,9 +321,14 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                             @Override
                             public void run()
                             {
+                                Vibrator vibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
+                                if(vibrator.hasVibrator())
+                                    vibrator.vibrate(1000);
+
                                 msg.setText(unnotifd.get(0).getAchName());
                                 title.setText("Achievement Unlocked");
                                 //TODO: set icon
+                                //TODO: Change ach stat to notified
                             }
                         });
                     }

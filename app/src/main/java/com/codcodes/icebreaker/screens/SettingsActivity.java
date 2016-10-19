@@ -30,7 +30,7 @@ public class SettingsActivity extends AppCompatActivity
 
         TextView headingTextView = (TextView) findViewById(R.id.main_heading);
         headingTextView.setTypeface(ttfAilerons);
-        headingTextView.setTextSize(30);
+        headingTextView.setTextSize(40);
 
         Spinner spnGender = (Spinner)findViewById(R.id.spnGender);
         // Create an ArrayAdapter using the string array and a default spinner layout
