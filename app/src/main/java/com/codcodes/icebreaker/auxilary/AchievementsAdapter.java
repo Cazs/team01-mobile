@@ -94,9 +94,9 @@ public class AchievementsAdapter extends ArrayAdapter
             coins.setVisibility(View.INVISIBLE);
         } else {
             pb.setMax(data.get(position).getAchTarget());
-            int process = data.get(position).getUserPoints();
-            pb.setProgress(process);
-            score.setText(String.valueOf(process));
+
+            pb.setProgress(data.get(position).getUserPoints());
+            score.setText(String.valueOf(data.get(position).getUserPoints()));
             target.setText(String.valueOf(data.get(position).getAchTarget()));
             //reward.setText(String.valueOf(data.get(position).getAchReward()));
 

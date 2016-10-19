@@ -7,6 +7,7 @@ import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -86,6 +87,7 @@ public class RewardsAdapter extends ArrayAdapter
     private void rwClaimWindow(int position)
     {
         Dialog dialog = new Dialog(getContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.activity_claim_reward);
         TextView redimLbl = (TextView)  dialog.findViewById(R.id.retriveLbl);
         redimLbl.setTypeface(null,Typeface.BOLD);

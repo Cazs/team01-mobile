@@ -28,7 +28,9 @@ import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
+import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.Achievement;
+import com.codcodes.icebreaker.model.Reward;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,8 +59,11 @@ public class RewardsActivity extends AppCompatActivity
     private Bitmap circularbitmap,bitmap;
     private String Name,profilepic;
     public static ArrayList<Achievement> achievements=null;
+    public static ArrayList<Reward> rewards=null;
     private AchievementFragment achFrag=null;
+    private RewardFragment rwFrag = null;
     private static final String TAG = "RewardsActivity";
+    private String counter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -102,13 +107,57 @@ public class RewardsActivity extends AppCompatActivity
         circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
         circularImageView.setImageBitmap(circularbitmap);
 
+       readRewards();
+       readAchievements();
+
+    }
+
+    private void readRewards()
+    {
         Thread tLoadAllAchs = new Thread(new Runnable()
         {
             @Override
             public void run()
             {
                 Looper.prepare();
+                try
+                {
+                    rewards = new ArrayList<>();
+                    String response = RemoteComms.sendGetRequest("/getAllRewards");
+                    JSON.getJsonableObjectsFromJson(response, rewards, Reward.class);
 
+                    if(rewards!=null)
+                    {
+                        Log.d(TAG,rewards.size() + " Reward in remote DB.");
+                        if(rwFrag!=null)
+                            rwFrag.setAdapter();
+                    }
+                    else
+                        Log.d(TAG,"Reward from remote DB are null.");
+
+                }catch (InstantiationException e)
+                {
+                    LocalComms.logException(e);
+                } catch (IllegalAccessException e)
+                {
+                    LocalComms.logException(e);
+                }
+                catch (IOException e)
+                {
+                    LocalComms.logException(e);
+                }
+            }
+        });
+        tLoadAllAchs.start();
+    }
+    private void readAchievements()
+    {
+        Thread tLoadAllAchs = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Looper.prepare();
                 try
                 {
                     achievements = new ArrayList<>();
@@ -117,9 +166,11 @@ public class RewardsActivity extends AppCompatActivity
 
                     if(achievements!=null)
                     {
+                        setAchScore();
                         Log.d(TAG,achievements.size() + " Achievements in remote DB.");
                         if(achFrag!=null)
                             achFrag.setAdapter();
+
                     }
                     else
                         Log.d(TAG,"Achievements from remote DB are null.");
@@ -139,7 +190,205 @@ public class RewardsActivity extends AppCompatActivity
         });
         tLoadAllAchs.start();
     }
+    private void functionA()
+    {
+        final String username = Name;
 
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    counter = (RemoteComms.sendGetRequest("getUserIcebreakCount/"+ username));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
+    }
+
+    private void functionB()
+    {
+        final String username = Name;
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    counter = (RemoteComms.sendGetRequest("getUserSuccessfulIcebreakCount/"+ username));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
+    }
+    private void functionC()
+    {
+        final String username = Name;
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    counter = (RemoteComms.sendGetRequest("getMaxUserIcebreakCountAtOneEvent/"+ username));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
+    }
+
+    private void functionD()
+    {
+        final String username = Name;
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    counter = (RemoteComms.sendGetRequest("getMaxUserSuccessfulIcebreakCountAtOneEvent/"+ username));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
+    }
+    private void functionE()
+    {
+        final String username = Name;
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    counter = (RemoteComms.sendGetRequest("getUserIcebreakCountXHoursApart/"+ username + "/" + 2));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
+    }
+    private void functionF()
+    {
+        final String username = Name;
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    counter = (RemoteComms.sendGetRequest("getUserSuccessfulIcebreakCountXHoursApart/"+ username + "/" + 1));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
+    }
+
+    private void functionAB()
+    {
+        final String username = Name;
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int total = Integer.valueOf(RemoteComms.sendGetRequest("getUserIcebreakCount/"+ username));
+                    int success = Integer.valueOf(RemoteComms.sendGetRequest("getUserSuccessfulIcebreakCount/"+ username));
+                    total -= success;
+                    counter = String.valueOf(total);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
+    }
+    private void setAchScore()
+    {
+        for(Achievement ach : achievements)
+        {
+            switch(ach.getAchMethod())
+            {
+                case "A":
+                {
+                    functionA();
+                    if(counter != null)
+                    {
+                        if(Integer.valueOf(counter) > ach.getAchTarget())
+                            counter = String.valueOf(ach.getAchTarget());
+                        ach.setAchValue(Integer.valueOf(counter));
+                        counter = null;
+                    }
+                    break;
+                }
+                case "B":
+                {
+                    functionB();
+                    if(counter != null)
+                    {
+                        if(Integer.valueOf(counter) > ach.getAchTarget())
+                            counter = String.valueOf(ach.getAchTarget());
+                        ach.setAchValue(Integer.valueOf(counter));
+                        counter = null;
+                    }
+                    break;
+                }
+                case "C":
+                {
+                    functionC();
+                    if(counter != null)
+                    {
+                        if(Integer.valueOf(counter) > ach.getAchTarget())
+                            counter = String.valueOf(ach.getAchTarget());
+                        ach.setAchValue(Integer.valueOf(counter));
+                        counter = null;
+                    }
+                    break;
+                }
+                case "D":
+                {
+                    functionD();
+                    if(counter != null)
+                    {
+                        if(Integer.valueOf(counter) > ach.getAchTarget())
+                            counter = String.valueOf(ach.getAchTarget());
+                        ach.setAchValue(Integer.valueOf(counter));
+                        counter = null;
+                    }
+                    break;
+                }
+                case "E":
+                {
+                    functionE();
+                    if(counter != null)
+                    {
+                        if(Integer.valueOf(counter) > ach.getAchTarget())
+                            counter = String.valueOf(ach.getAchTarget());
+                        ach.setAchValue(Integer.valueOf(counter));
+                        counter = null;
+                    }
+                    break;
+                }
+                case "F":
+                {
+                    functionAB();
+                    if(counter != null)
+                    {
+                        if(Integer.valueOf(counter) > ach.getAchTarget())
+                            counter = String.valueOf(ach.getAchTarget());
+                        ach.setAchValue(Integer.valueOf(counter));
+                        counter = null;
+                    }
+                    break;
+                }
+
+            }
+        }
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {

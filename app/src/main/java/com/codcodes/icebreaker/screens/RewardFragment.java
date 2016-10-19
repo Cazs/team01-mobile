@@ -7,8 +7,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.AchievementsAdapter;
 import com.codcodes.icebreaker.auxilary.RewardsAdapter;
 import com.codcodes.icebreaker.model.Reward;
 
@@ -21,7 +23,7 @@ import java.util.ArrayList;
 public class RewardFragment extends android.support.v4.app.Fragment
 {
     private static AssetManager mgr;
-    private ListView rewardList;
+    private ListView list;
     private RewardsAdapter adapter;
     private ArrayList<Reward> rewads;
 
@@ -29,15 +31,8 @@ public class RewardFragment extends android.support.v4.app.Fragment
     {
 
         View v = inflater.inflate(R.layout.fragment_reward,container,false);
-        rewardList = (ListView) v.findViewById(R.id.RewarList);
-        rewads = new ArrayList<Reward>();
-        rewads.add(new Reward("Free Icebreak Event Ticket",false,"Party Animal Achievement reward",randromCodeGenerator()));
-        rewads.add(new Reward("Free Shot",false,"Most Rejected",randromCodeGenerator()));
-        rewads.add(new Reward("Free VIP pass",false,"IceBreak Queen/King",randromCodeGenerator()));
-        rewads.add(new Reward("Free drink ",false,"Populer Kids",randromCodeGenerator()));
-        rewads.add(new Reward("Free Hamper",false,"Star Of The Night",randromCodeGenerator()));
-        adapter = new RewardsAdapter(getContext(),rewads,0);
-        rewardList.setAdapter(adapter);
+        list = (ListView) v.findViewById(R.id.RewarList);
+        setAdapter();
         return v;
     }
 
@@ -59,5 +54,28 @@ public class RewardFragment extends android.support.v4.app.Fragment
         e.setArguments(b);
         return e;
     }
+    public void setAdapter()
+    {
+        if(RewardsActivity.rewards!=null)
+        {
+            if(!RewardsActivity.rewards.isEmpty())
+            {
+                adapter = new RewardsAdapter(getActivity(),RewardsActivity.rewards,0);
+                if(adapter!=null && list!=null && getActivity()!=null)
+                {
+                    getActivity().runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            list.setAdapter(adapter);
+                        }
+                    });
+                }
+            }
+            else Toast.makeText(getActivity(), "No Rewards found, or they are still loading.",Toast.LENGTH_LONG).show();
+        }
+    }
+
 
 }
