@@ -131,14 +131,13 @@ public class CameraSource {
      */
     private int mRotation;
 
-    private Size mPreviewSize;
+    private static Size mPreviewSize;
 
     // These values may be requested by the caller.  Due to hardware limitations, we may need to
     // select close, but not exactly the same values for these.
     private float mRequestedFps = 20.0f;
-    private int mRequestedPreviewWidth = 1080;
-    private int mRequestedPreviewHeight = 1366;
-
+    private static int mRequestedPreviewWidth = 4096;
+    private static int mRequestedPreviewHeight = 4096;
 
     private String mFocusMode = null;
     private String mFlashMode = null;
@@ -188,6 +187,8 @@ public class CameraSource {
 
             mDetector = detector;
             mCameraSource.mContext = context;
+            if(mPreviewSize==null)
+                mPreviewSize = new Size(mRequestedPreviewWidth, mRequestedPreviewHeight);
         }
 
         /**
@@ -218,10 +219,13 @@ public class CameraSource {
          * Also, we try to select a preview size which corresponds to the aspect ratio of an
          * associated full picture size, if applicable.  Default: 1024x768.
          */
-        public Builder setRequestedPreviewSize(int width, int height) {
+        public Builder setRequestedPreviewSize(int width, int height)
+        {
             // Restrict the requested range to something within the realm of possibility.  The
             // choice of 1000000 is a bit arbitrary -- intended to be well beyond resolutions that
             // devices can support.  We bound this to avoid int overflow in the code later.
+            //width = 4096;
+            //height = 4096;
             final int MAX = 1000000;
             if ((width <= 0) || (width > MAX) || (height <= 0) || (height > MAX)) {
                 throw new IllegalArgumentException("Invalid preview size: " + width + "x" + height);
@@ -229,6 +233,7 @@ public class CameraSource {
 
             mCameraSource.mRequestedPreviewWidth = width;
             mCameraSource.mRequestedPreviewHeight = height;
+            mPreviewSize = new Size(width,height);
             return this;
         }
 

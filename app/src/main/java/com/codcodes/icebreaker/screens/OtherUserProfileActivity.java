@@ -80,7 +80,7 @@ public class OtherUserProfileActivity extends AppCompatActivity
         profile = (TextView) findViewById(R.id.main_heading);
         Typeface heading = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
         profile.setTypeface(heading);
-        profile.setTextSize(29);
+        profile.setTextSize(34);
 
         //Load and render selected user's profile
         final Activity ctxt = this;

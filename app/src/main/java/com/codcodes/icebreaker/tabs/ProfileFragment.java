@@ -215,7 +215,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                     startActivity(intent);
                 }else
                 {
-                    Toast.makeText(getActivity(),"Profile not yet loaded!",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(),"Profile has not yet been loaded.",Toast.LENGTH_LONG).show();
                 }
             }
         });

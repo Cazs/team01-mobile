@@ -39,6 +39,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.GestureDetector;
@@ -106,7 +107,7 @@ public final class BarcodeCaptureActivity extends Activity
       TextView title = (TextView)findViewById(R.id.main_heading);
       Typeface ttfAilerons = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
       title.setTypeface(ttfAilerons);
-      title.setTextSize(29);
+      title.setTextSize(32);
       //requestWindowFeature(Window.FEATURE_NO_TITLE);
       //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -232,15 +233,20 @@ public final class BarcodeCaptureActivity extends Activity
     // to other detection examples to enable the barcode detector to detect small barcodes
     // at long distances.
 
-    Display display = getWindowManager().getDefaultDisplay();
+    /*Display display = getWindowManager().getDefaultDisplay();
     Point size = new Point();
-    display.getSize(size);
+    display.getRealSize(size);
     int w = size.x;
-    int h = size.y;
+    int h = size.y;*/
+
+    //Log.d(TAG,">>>>>>>>>>>>>>>>>>>>>>>>>>Device w:" + w + ", Device h: " + h);
+
+    DisplayMetrics metrics = new DisplayMetrics();
+    getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
   CameraSource.Builder builder = new CameraSource.Builder(getApplicationContext(), barcodeDetector)
             .setFacing(CameraSource.CAMERA_FACING_BACK)
-            .setRequestedPreviewSize(w, h)
+            .setRequestedPreviewSize(metrics.widthPixels, metrics.heightPixels)
             .setRequestedFps(15.0f);
 
 

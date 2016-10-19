@@ -17,6 +17,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,12 +30,15 @@ import android.widget.TextView;
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.ImageUtils;
+import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
+import com.codcodes.icebreaker.model.Achievement;
 import com.codcodes.icebreaker.model.Rewards;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class RewardsActivity extends AppCompatActivity
 {
@@ -59,6 +63,9 @@ public class RewardsActivity extends AppCompatActivity
             };
     private Bitmap circularbitmap,bitmap;
     private String Name,profilepic;
+    public static ArrayList<Achievement> achievements=null;
+    private AchievementFragment achFrag=null;
+    private static final String TAG = "RewardsActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -102,7 +109,7 @@ public class RewardsActivity extends AppCompatActivity
         circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
         circularImageView.setImageBitmap(circularbitmap);
 
-        Thread t = new Thread(new Runnable()
+        Thread tLoadAllAchs = new Thread(new Runnable()
         {
             @Override
             public void run()
@@ -111,14 +118,33 @@ public class RewardsActivity extends AppCompatActivity
 
                 try
                 {
-                    String response = RemoteComms.sendGetRequest("getUserIcebreakCount/"+
-                            SharedPreference.getUsername(RewardsActivity.this));
-                } catch (IOException e)
+                    achievements = new ArrayList<>();
+                    String response = RemoteComms.sendGetRequest("/getAllAchievements");
+                    JSON.getJsonableObjectsFromJson(response, achievements, Achievement.class);
+
+                    if(achievements!=null)
+                    {
+                        Log.d(TAG,achievements.size() + " Achievements in remote DB.");
+                        if(achFrag!=null)
+                            achFrag.setAdapter();
+                    }
+                    else
+                        Log.d(TAG,"Achievements from remote DB are null.");
+
+                }catch (InstantiationException e)
+                {
+                    LocalComms.logException(e);
+                } catch (IllegalAccessException e)
+                {
+                    LocalComms.logException(e);
+                }
+                catch (IOException e)
                 {
                     LocalComms.logException(e);
                 }
             }
         });
+        tLoadAllAchs.start();
     }
 
     @Override
@@ -163,7 +189,9 @@ public class RewardsActivity extends AppCompatActivity
         {
             switch (position)
             {
-                case 0: return AchievementFragment.newInstance(context);
+                case 0:
+                    achFrag = AchievementFragment.newInstance(context);
+                    return achFrag;
                 case 1: return RewardFragment.newInstance(context);
                 default:return RewardFragment.newInstance(context);
             }

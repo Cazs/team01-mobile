@@ -373,7 +373,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
             throw new RuntimeException(context.toString()
                     + " must implement IOnListFragmentInteractionListener");
         }
-        Toast.makeText(getActivity(),"EventsFragment has been attached.",Toast.LENGTH_LONG).show();
+        //Toast.makeText(getActivity(),"EventsFragment has been attached.",Toast.LENGTH_LONG).show();
     }
 
     @Override

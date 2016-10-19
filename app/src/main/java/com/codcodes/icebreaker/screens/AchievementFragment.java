@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.AchievementsAdapter;
@@ -29,14 +30,14 @@ public class AchievementFragment extends android.support.v4.app.Fragment
     private static AssetManager mgr;
     private ListView list;
     private AchievementsAdapter adapter;
-    private ArrayList<Achievement> achList;
+    //private ArrayList<Achievement> achList;
     private int counter = -1;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View v = inflater.inflate(R.layout.fragment_achievement,container,false);
 
-        achList = new ArrayList<Achievement>();
+        //achList = new ArrayList<Achievement>();
       /*  Thread t = new Thread(new Runnable()
         {
             @Override
@@ -101,7 +102,32 @@ public class AchievementFragment extends android.support.v4.app.Fragment
         list = (ListView) v.findViewById(R.id.achievementList);
         adapter = new AchievementsAdapter(getActivity(),achList,0);
         list.setAdapter(adapter);*/
+        list = (ListView) v.findViewById(R.id.achievementList);
+        setAdapter();
         return v;
+    }
+
+    public void setAdapter()
+    {
+        if(RewardsActivity.achievements!=null)
+        {
+            if(!RewardsActivity.achievements.isEmpty())
+            {
+                adapter = new AchievementsAdapter(getActivity(),RewardsActivity.achievements,0);
+                if(adapter!=null && list!=null && getActivity()!=null)
+                {
+                    getActivity().runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            list.setAdapter(adapter);
+                        }
+                    });
+                }
+            }
+            else Toast.makeText(getActivity(), "No Achievements found, or they are still loading.",Toast.LENGTH_LONG).show();
+        }
     }
 
     public static AchievementFragment newInstance(Context context)

@@ -9,28 +9,13 @@
     tools:context=".screens.OtherUserProfileActivity">
 
     <LinearLayout
-        android:id="@+id/actionBar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/app_bar_h"
         android:background="@drawable/action_bar_background">
-
-        <ImageView
-            android:layout_width="@dimen/logo_w"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_vertical"
-            android:src="@mipmap/ic_launcher" />
-
-        <TextView
-            android:id="@+id/main_heading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="@string/app_name"
-            android:textSize="29pt"
-            android:textColor="@color/white" />
-
+        <include
+            layout="@layout/appbar"/>
     </LinearLayout>
 
-        <include layout="@layout/content_other_profile" />
+    <include layout="@layout/content_other_profile" />
 
 </android.support.design.widget.CoordinatorLayout>

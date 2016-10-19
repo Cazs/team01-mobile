@@ -23,7 +23,6 @@
                 android:id="@+id/editprofilepic"
                 android:layout_width="@dimen/dp_size_120"
                 android:layout_height="@dimen/dp_size_120"
-                android:layout_marginTop="@dimen/dp_size_20"
                 android:layout_centerHorizontal="true" />
 
             <TextView
@@ -36,12 +35,12 @@
                 android:layout_centerHorizontal="true"/>
 
             <EditText
+                android:id="@+id/editName"
                 android:layout_width="@dimen/text_box_size"
                 android:layout_height="match_parent"
                 android:hint="First Name"
                 android:textSize="10pt"
-                android:id="@+id/editName"
-                android:layout_marginTop="@dimen/dp_size_230"
+                android:layout_below="@+id/editphoto"
                 android:layout_centerHorizontal="true"
                 android:fontFamily="monospace"
                 android:maxLines="1"
@@ -49,12 +48,12 @@
                 android:drawableLeft="@drawable/ic_perm_identity_black_24dp"/>
 
             <EditText
+                android:id="@+id/editLastName"
                 android:layout_width="@dimen/text_box_size"
                 android:layout_height="match_parent"
                 android:hint="Last Name"
                 android:textSize="10pt"
-                android:id="@+id/editLastName"
-                android:layout_marginTop="@dimen/dp_size_280"
+                android:layout_below="@+id/editName"
                 android:layout_centerHorizontal="true"
                 android:fontFamily="monospace"
                 android:maxLines="1"
@@ -62,25 +61,25 @@
                 android:drawableLeft="@drawable/ic_perm_identity_black_24dp"/>
 
             <EditText
+                android:id="@+id/editAge"
                 android:layout_width="@dimen/text_box_size"
                 android:layout_height="match_parent"
                 android:hint="Age"
                 android:textSize="10pt"
-                android:id="@+id/editAge"
                 android:maxLines="1"
-                android:layout_marginTop="330dp"
+                android:layout_below="@+id/editLastName"
                 android:layout_centerHorizontal="true"
                 android:fontFamily="monospace"
                 android:drawableLeft="@drawable/ic_date_range_black_24dp"
                 android:inputType="number"/>
 
             <EditText
+                android:id="@+id/editOccupation"
                 android:layout_width="@dimen/text_box_size"
                 android:layout_height="match_parent"
                 android:hint="Occupation"
                 android:textSize="10pt"
-                android:id="@+id/editOccupation"
-                android:layout_marginTop="380dp"
+                android:layout_below="@+id/editAge"
                 android:layout_centerHorizontal="true"
                 android:fontFamily="monospace"
                 android:maxLines="1"
@@ -92,20 +91,20 @@
                 android:layout_width="@dimen/text_box_size"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:layout_marginTop="430dp"/>
+                android:layout_below="@+id/editOccupation"/>
 
             <EditText
+                android:id="@+id/CatchPhrase"
                 android:layout_width="@dimen/text_box_size"
                 android:layout_height="match_parent"
                 android:fontFamily="monospace"
                 android:textSize="10pt"
                 android:hint="Catchphrase"
-                android:id="@+id/CatchPhrase"
                 android:inputType="textMultiLine"
                 android:maxLines="10"
                 android:layout_centerHorizontal="true"
                 android:scrollbars="vertical"
-                android:layout_marginTop="480dp"
+                android:layout_below="@+id/spinner1"
                 android:drawableLeft="@drawable/ic_description_black_24dp"/>
 
             <EditText
@@ -119,7 +118,7 @@
                 android:maxLines="10"
                 android:layout_centerHorizontal="true"
                 android:scrollbars="vertical"
-                android:layout_marginTop="@dimen/dp_size_540dp"
+                android:layout_below="@+id/CatchPhrase"
                 android:drawableLeft="@drawable/ic_description_black_24dp"/>
         </RelativeLayout>
     </ScrollView>
