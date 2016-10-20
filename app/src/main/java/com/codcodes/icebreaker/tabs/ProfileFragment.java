@@ -212,6 +212,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                     Intent intent = new Intent(view.getContext(), RewardsActivity.class);
                     intent.putExtra("Picture", profilePicture);
                     intent.putExtra("Name", user.getFirstname() + " " + user.getLastname());
+                    intent.putExtra("Coins", user.getCoins());
                     startActivity(intent);
                 }else
                 {

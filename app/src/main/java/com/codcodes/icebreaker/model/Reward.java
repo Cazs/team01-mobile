@@ -10,8 +10,19 @@ public class Reward implements IJsonable
     private String rwDescription;
     private String rwCode;//Code used by Event manager to redeem reward for user
     private int rwCost;
+    private int usersCoins;
     private String event_id;//Event that Reward is applicable to
 
+    public Reward(String rwId, String rwName, String rwDescription, String rwCode, int rwCost, String event_id,int usersCoins)
+    {
+        this.rwId = rwId;
+        this.rwName = rwName;
+        this.rwDescription = rwDescription;
+        this.rwCode = rwCode;
+        this.rwCost = rwCost;
+        this.event_id=event_id;
+        this.usersCoins = usersCoins;
+    }
     public Reward(String rwId, String rwName, String rwDescription, String rwCode, int rwCost, String event_id)
     {
         this.rwId = rwId;
@@ -21,7 +32,6 @@ public class Reward implements IJsonable
         this.rwCost = rwCost;
         this.event_id=event_id;
     }
-
     public String getRwId() { return rwId;}
 
     public String getRwName() {
@@ -67,6 +77,14 @@ public class Reward implements IJsonable
 
     public void setRwEventID(String event_id) {
         this.event_id = event_id;
+    }
+
+    public void setUsersCoins(int usersCoins) {
+        this.usersCoins = usersCoins;
+    }
+
+    public int getUsersCoins() {
+        return usersCoins;
     }
 
     @Override

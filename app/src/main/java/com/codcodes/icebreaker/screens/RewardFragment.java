@@ -40,8 +40,8 @@ public class RewardFragment extends android.support.v4.app.Fragment
     {
         String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         SecureRandom rnd = new SecureRandom();
-        StringBuilder sb = new StringBuilder(8);
-        for( int i = 0; i < 8; i++ )
+        StringBuilder sb = new StringBuilder(4);
+        for( int i = 0; i < 4; i++ )
             sb.append( AB.charAt( rnd.nextInt(AB.length()) ) );
         return sb.toString();
     }
@@ -60,6 +60,10 @@ public class RewardFragment extends android.support.v4.app.Fragment
         {
             if(!RewardsActivity.rewards.isEmpty())
             {
+                for(Reward rw : RewardsActivity.rewards)
+                {
+                    rw.setRwCode(randromCodeGenerator());
+                }
                 adapter = new RewardsAdapter(getActivity(),RewardsActivity.rewards,0);
                 if(adapter!=null && list!=null && getActivity()!=null)
                 {

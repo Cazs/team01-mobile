@@ -294,7 +294,8 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                     if(MainActivity.events.isEmpty())
                     {
                         Event temp = new Event();
-                        temp.setTitle(getString(R.string.msg_no_events));
+                        if(!pulsator.isStarted())
+                            temp.setTitle(getString(R.string.msg_no_events));
                         final ArrayList<Event> temp_lst = new ArrayList<Event>();
                         temp_lst.add(temp);
                         if(getActivity()!=null)

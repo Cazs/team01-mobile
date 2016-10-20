@@ -25,12 +25,13 @@ public class User implements IJsonable, Parcelable
     private String fb_id;
     private String fb_token;
     private Event event;
+    private int coins;
 
     private final String TAG = "IB/User";
 
     public User() {}
 
-    public User(String firstname, String lastname, int age, String occupation, String bio, String catchphrase, String email, String password, String gender, String username) {
+    public User(String firstname, String lastname, int age, String occupation, String bio, String catchphrase, String email, String password, String gender, String username,int coins) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.age = age;
@@ -41,6 +42,7 @@ public class User implements IJsonable, Parcelable
         this.password = password;
         this.gender = gender;
         this.username = username;
+        this.coins =coins;
     }
 
     public Event getEvent(){return  this.event;}
@@ -140,6 +142,14 @@ public class User implements IJsonable, Parcelable
 
     public void setFbToken(String token) {
         this.fb_token = token;
+    }
+
+    public void setCoins(int coins) {
+        this.coins = coins;
+    }
+
+    public int getCoins() {
+        return coins;
     }
 
     @Override

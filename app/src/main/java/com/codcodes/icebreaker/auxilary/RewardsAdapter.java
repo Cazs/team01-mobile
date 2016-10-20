@@ -57,10 +57,12 @@ public class RewardsAdapter extends ArrayAdapter
         TextView rwName = (TextView) convertView.findViewById(R.id.rwName);
         TextView rwDescription = (TextView) convertView.findViewById(R.id.rwDescription);
         final Button claimBtn = (Button)  convertView.findViewById(R.id.btnClaim);
+        TextView rwCost = (TextView) convertView.findViewById(R.id.rwValue);
 
         rwName.setTypeface(null, Typeface.BOLD);
         rwName.setText("\n" + data.get(position).getRwName());
         rwDescription.setText(data.get(position).getRwDescription());
+        rwCost.setText(String.valueOf(data.get(position).getRwCost()));
 
         ImageView imgAch = (ImageView)convertView.findViewById(R.id.imgRw);
 
@@ -75,11 +77,15 @@ public class RewardsAdapter extends ArrayAdapter
         else
             imgAch.setImageResource(R.drawable.trophy);
 
+        if(data.get(position).getRwCost() < data.get(position).getUsersCoins())
+            claimBtn.setVisibility(View.INVISIBLE);
+
        claimBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 rwClaimWindow(position);
+
             }
         });
         return convertView;

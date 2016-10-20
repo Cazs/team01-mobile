@@ -73,6 +73,7 @@ public class AchievementsAdapter extends ArrayAdapter
         TextView achieved = (TextView) convertView.findViewById(R.id.achived);
         TextView spliter = (TextView) convertView.findViewById(R.id.spliter);
         TextView rwLable = (TextView) convertView.findViewById(R.id.achRewardlbl);
+
         ImageView coins = (ImageView) convertView.findViewById(R.id.imgValue);
         ProgressBar pb = (ProgressBar) convertView.findViewById(R.id.scoreBar);
 
@@ -98,7 +99,7 @@ public class AchievementsAdapter extends ArrayAdapter
             pb.setProgress(data.get(position).getUserPoints());
             score.setText(String.valueOf(data.get(position).getUserPoints()));
             target.setText(String.valueOf(data.get(position).getAchTarget()));
-            //reward.setText(String.valueOf(data.get(position).getAchReward()));
+            reward.setText(String.valueOf(data.get(position).getAchValue()));
 
             score.setTypeface(null, Typeface.BOLD);
             target.setTypeface(null, Typeface.BOLD);
