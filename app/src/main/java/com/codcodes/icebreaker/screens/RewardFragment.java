@@ -31,11 +31,11 @@ public class RewardFragment extends android.support.v4.app.Fragment
         View v = inflater.inflate(R.layout.fragment_reward,container,false);
         rewardList = (ListView) v.findViewById(R.id.RewarList);
         rewads = new ArrayList<Reward>();
-        rewads.add(new Reward("Free Icebreak Event Ticket",false,"Party Animal Achievement reward",randromCodeGenerator()));
+        /*rewads.add(new Reward("Free Icebreak Event Ticket",false,"Party Animal Achievement reward",randromCodeGenerator()));
         rewads.add(new Reward("Free Shot",false,"Most Rejected",randromCodeGenerator()));
         rewads.add(new Reward("Free VIP pass",false,"IceBreak Queen/King",randromCodeGenerator()));
         rewads.add(new Reward("Free drink ",false,"Populer Kids",randromCodeGenerator()));
-        rewads.add(new Reward("Free Hamper",false,"Star Of The Night",randromCodeGenerator()));
+        rewads.add(new Reward("Free Hamper",false,"Star Of The Night",randromCodeGenerator()));*/
         adapter = new RewardsAdapter(getContext(),rewads,0);
         rewardList.setAdapter(adapter);
         return v;

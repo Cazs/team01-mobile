@@ -29,6 +29,7 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 
 /**
@@ -86,10 +87,16 @@ public class IcebreakService extends IntentService// implements LocationListener
                     if(!active)//don't check when UI is visible
                     {
                         long ev_id = 0;
-                        String temp = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
-                        if(temp!=null)
-                            if(!temp.isEmpty() && !temp.equals("null"))
-                                ev_id=Long.parseLong(temp);
+                        try
+                        {
+                            String temp = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
+                            if (temp != null)
+                                if (!temp.isEmpty() && !temp.equals("null"))
+                                    ev_id = Long.parseLong(temp);
+                        }catch (NumberFormatException e)
+                        {
+                            LocalComms.logException(e);
+                        }
                         if (ev_id > 0)
                         {
                             //is at Event
@@ -137,33 +144,36 @@ public class IcebreakService extends IntentService// implements LocationListener
                                         }else
                                         {
                                             Log.d(TAG, "User location hasn't been updated yet.");//TODO: if has been 0 for too long kickOut()
-                                            System.out.println("Logging out of Event.");
-                                            RemoteComms.logOutUserFromEvent(this);
+                                            //System.out.println("Logging out of Event.");
+                                            //RemoteComms.logOutUserFromEvent(this);
                                         }
                                     } //else Log.d(TAG, "Last known User location is null.");
                                 } else
                                 {
                                     Log.d(TAG, "Boundary for Event: " + ev_id + " is null.");
-                                    System.out.println("Logging out of Event.");
-                                    RemoteComms.logOutUserFromEvent(this);
+                                    //System.out.println("Logging out of Event.");
+                                    //RemoteComms.logOutUserFromEvent(this);
                                 }
                             } else
                             {
                                 Log.d(TAG, "Event: " + ev_id + " is null.");
-                                System.out.println("Logging out of Event.");
-                                RemoteComms.logOutUserFromEvent(this);
+                                //System.out.println("Logging out of Event.");
+                                //RemoteComms.logOutUserFromEvent(this);
                             }
                             checkForIceBreaks();
                         } else
                         {
                             Log.d(TAG, "User not at a valid Event. Skipping IceBreak checks.");
-                            System.out.println("Logging out of Event.");
-                            RemoteComms.logOutUserFromEvent(this);
+                            //System.out.println("Logging out of Event.");
+                            //RemoteComms.logOutUserFromEvent(this);
                         }
                     }else{Log.d(TAG,"UI is active, skipping checks.");}
                     //Take a break, take a KatKit
                     Thread.sleep(INTERVALS.IB_CHECK_DELAY.getValue());
                 }
+            }catch (SocketTimeoutException e)
+            {
+                LocalComms.logException(e);
             }
             catch (IOException e)
             {

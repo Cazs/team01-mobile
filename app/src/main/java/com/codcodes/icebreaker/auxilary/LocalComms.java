@@ -731,8 +731,6 @@ public class LocalComms
             return false;
         if(reward.getRwId().isEmpty())
             return false;
-        if(reward.getRwId().equals("0"))
-            return false;
 
         Reward tmp_rw=null;
         try
@@ -775,8 +773,6 @@ public class LocalComms
         if(reward.getRwId()==null)
             return false;
         if(reward.getRwId().isEmpty())
-            return false;
-        if(reward.getRwId().equals("0"))
             return false;
 
         Log.d(TAG, "Reward["+reward.getRwName()+"] exists on local DB, updating it.");
@@ -881,7 +877,7 @@ public class LocalComms
                 return achievements;
             } else
             {
-                Log.wtf(TAG, "No unnotified Achievements were not found.");
+                Log.wtf(TAG, "No unnotified Achievements were found.");
                 if (c != null)
                     if (!c.isClosed())
                         c.close();
@@ -1043,8 +1039,9 @@ public class LocalComms
                 int value = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_VALUE));
                 int notifd = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED));
                 int pts = c.getInt(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_USR_PTS));
+                String meth = c.getString(c.getColumnIndex(AchievementContract.AchievementEntry.COL_ACHIEVEMENT_METHOD));
 
-                Achievement ach = new Achievement(id, name, desc, date, target, value, notifd, pts);
+                Achievement ach = new Achievement(id, name, desc, date, target, value, notifd, pts, meth);
 
                 if (!c.isClosed())
                     c.close();

@@ -196,8 +196,16 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                     String tmp = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
                     if (tmp != null)
                     {
-                        if (!tmp.isEmpty() && !tmp.equals("null"))
-                            event_id = Long.valueOf(tmp);
+                        try
+                        {
+                            if (tmp != null)
+                                if (!tmp.isEmpty() && !tmp.equals("null"))
+                                    event_id = Long.parseLong(tmp);
+                        }catch (NumberFormatException e)
+                        {
+                            LocalComms.logException(e);
+                        }
+
                         if (event_id > 0)
                         {
                             contacts = new ArrayList<User>();
@@ -206,8 +214,11 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                             String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + event_id);
                             JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
                             refreshUsersAtEvent();
-                        }// else Log.d(TAG,"User not at an event.");
-                    }
+                        } else{
+                            Log.d(TAG,"User not at an event.");
+                            RemoteComms.logOutUserFromEvent(getActivity());
+                        }
+                    }else RemoteComms.logOutUserFromEvent(getActivity());
                 }
                 catch (NumberFormatException e)
                 {
@@ -256,10 +267,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 }
                 catch (IOException e)
                 {
-                    if(e.getMessage()!=null)
-                        Log.wtf(TAG,e.getMessage(),e);
-                    else
-                        e.printStackTrace();
+                    LocalComms.logException(e);
                 }
 
                 if (bitmap != null)

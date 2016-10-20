@@ -247,7 +247,7 @@ public final class BarcodeCaptureActivity extends Activity
   CameraSource.Builder builder = new CameraSource.Builder(getApplicationContext(), barcodeDetector)
             .setFacing(CameraSource.CAMERA_FACING_BACK)
             .setRequestedPreviewSize(metrics.heightPixels, metrics.heightPixels)
-            .setRequestedFps(15.0f);
+            .setRequestedFps(30.0f);
 
 
     //TODO: Update deprecated code

@@ -61,6 +61,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -411,8 +412,14 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                         catch (NumberFormatException e)
                         {
                             LocalComms.logException(e);
+                            return;
                         }
                     }
+                }catch (SocketTimeoutException e)
+                {
+                    Message message = toastHandler("We are having trouble connecting to the server, please check your internet connection.").obtainMessage();
+                    message.sendToTarget();
+                    Log.d(TAG, e.getMessage(), e);
                 }
                 catch (IOException e)
                 {
@@ -492,6 +499,11 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                             }
                         }
                     });*/
+                }catch (SocketTimeoutException e)
+                {
+                    Message message = toastHandler("We are having trouble connecting to the server, please check your internet connection.").obtainMessage();
+                    message.sendToTarget();
+                    Log.d(TAG, e.getMessage(), e);
                 }
                 catch(ConcurrentModificationException e)
                 {

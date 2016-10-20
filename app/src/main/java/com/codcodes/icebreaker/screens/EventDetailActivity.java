@@ -48,6 +48,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.vision.barcode.Barcode;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -337,7 +338,13 @@ public class EventDetailActivity extends AppCompatActivity
                                     Message message = toastHandler("Could not sign in to event, User object is null.").obtainMessage();
                                     message.sendToTarget();
                                 }
-                            }catch (UnknownHostException e)
+                            }catch (SocketTimeoutException e)
+                            {
+                                Message message = toastHandler("We are having trouble connecting to the server, please check your internet connection.").obtainMessage();
+                                message.sendToTarget();
+                                Log.d(TAG, e.getMessage(), e);
+                            }
+                            catch (UnknownHostException e)
                             {
                                 Message message = toastHandler("No Internet Access..").obtainMessage();
                                 message.sendToTarget();

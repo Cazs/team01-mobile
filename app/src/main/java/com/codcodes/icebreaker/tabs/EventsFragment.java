@@ -335,6 +335,10 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                                 });
                             }else Log.wtf(TAG,"MainActivity is null.");
                         }
+                        catch (ConcurrentModificationException e)
+                        {
+                            LocalComms.logException(e);
+                        }
                         catch (IOException e)
                         {
                             LocalComms.logException(e);
