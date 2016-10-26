@@ -75,7 +75,7 @@ public class Achievement implements IJsonable
         return this.method;
     }
 
-    public boolean isAchieved() { return this.achDate>0;}
+    public boolean isAchieved() { return this.achDate>0 && this.user_points>0;}
 
     //Mutators
     /**

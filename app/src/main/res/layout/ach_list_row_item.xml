@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:weightSum="100">
+    android:layout_height="@dimen/achievements_list_item_height"
+    android:weightSum="100"
+    android:background="@drawable/list_divider">
 
     <ImageView
         android:id="@+id/imgAch"
@@ -12,6 +14,7 @@
         android:layout_height="@dimen/dp_size_80"
         android:layout_weight="15"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"/>
+
     <TextView
         android:id="@+id/achName"
         android:layout_width="@dimen/dp_size_150"
@@ -20,45 +23,44 @@
         android:text="Popular Kid"
         android:lines="2"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_toRightOf="@+id/imgAch"
-        />
+        android:layout_toRightOf="@+id/imgAch"/>
 
     <TextView
         android:id="@+id/achDescription"
         android:layout_width="@dimen/dp_size_150"
         android:layout_height="@dimen/dp_size_40"
         android:layout_weight="90"
-        android:text="Popular Kid"
+        android:text="Reward Title"
         android:lines="2"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_below="@+id/achName"
-        android:layout_toRightOf="@+id/imgAch"
-        />
+        android:layout_toRightOf="@+id/imgAch"/>
 
     <TextView
+        android:id="@+id/score"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="00"
         android:layout_marginLeft="@dimen/dp_size_40"
-        android:layout_toRightOf="@+id/achName"
         android:layout_marginTop="@dimen/dp_size_15"
-        android:id="@+id/score"/>
+        android:layout_toRightOf="@+id/achName"/>
+
     <TextView
+        android:id="@+id/spliter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="/"
         android:layout_toRightOf="@+id/score"
-        android:id="@+id/spliter"
-        android:layout_marginTop="@dimen/dp_size_15"
-        />
+        android:layout_marginTop="@dimen/dp_size_15"/>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="00"
         android:layout_toRightOf="@+id/spliter"
         android:layout_marginTop="@dimen/dp_size_15"
-        android:id="@+id/target"
-        />
+        android:id="@+id/target"/>
+
     <ProgressBar
         android:layout_width="@dimen/dp_size_115"
         android:layout_height="@dimen/dp_size_20"
@@ -67,44 +69,34 @@
         android:id="@+id/scoreBar"
         android:layout_marginTop="@dimen/dp_size_25"
         android:progressTint="@color/iceblue"
-        android:progressBackgroundTint="@color/iceblue"
-        />
+        android:progressBackgroundTint="@color/iceblue"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/achRewardlbl"
-        android:text="Reward"
+        android:text="Points"
         android:layout_below="@+id/achName"
         android:layout_marginLeft="@dimen/dp_size_5"
-        android:layout_toRightOf="@+id/achDescription"
-        />
+        android:layout_toRightOf="@+id/achDescription"/>
+
     <TextView
+        android:id="@+id/achPts"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/achReward"
         android:layout_marginLeft="@dimen/dp_size_10"
         android:text="000"
         android:layout_below="@+id/achName"
-        android:layout_toRightOf="@+id/achRewardlbl"
-        />
+        android:layout_toRightOf="@+id/achRewardlbl"/>
+
     <ImageView
         android:id="@+id/imgValue"
         android:layout_marginLeft="@dimen/dp_size_0"
         android:layout_width="@dimen/dp_size_50"
         android:layout_height="@dimen/dp_size_50"
         android:layout_weight="15"
-        android:layout_toRightOf="@+id/achReward"
+        android:layout_toRightOf="@+id/achPts"
         android:layout_marginTop="@dimen/dp_size_25"
-        android:src="@drawable/coins"
-        />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/achived"
-        android:text="ACHIEVED"
-        android:layout_toRightOf="@+id/achName"
-        android:layout_marginTop="@dimen/dp_size_30"
-        android:visibility="invisible"
-        android:layout_marginLeft="@dimen/dp_size_25"/>
+        android:src="@drawable/coins"/>
+
 </RelativeLayout>

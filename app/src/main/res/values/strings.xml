@@ -9,6 +9,8 @@
     <string name="reg_password2">Confirm Password</string>
     <string name="reg_email">Email Address</string>
     <string name="msg_not_in_event">You are currently not logged in to any event</string>
+    <string name="msg_no_rewards">No Rewards</string>
+    <string name="msg_no_achievements">No Achievements</string>
     <string name="msg_no_events">No events were found.</string>
     <string name="facebook_app_id">279070875809816</string>
     <string name="fb_login_protocol_scheme">fb279070875809816</string>

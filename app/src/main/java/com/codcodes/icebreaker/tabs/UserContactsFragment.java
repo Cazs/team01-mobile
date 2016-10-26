@@ -69,6 +69,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
     private RecyclerView recyclerView;
     //private SwipeListAdapter swipeAdapter;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private static  UserContactsFragment contactsList;
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -78,11 +79,11 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
     @SuppressWarnings("unused")
     public static UserContactsFragment newInstance(int columnCount)
     {
-        UserContactsFragment fragment = new UserContactsFragment();
+        contactsList = new UserContactsFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_COLUMN_COUNT, columnCount);
-        fragment.setArguments(args);
-        return fragment;
+        contactsList.setArguments(args);
+        return contactsList;
     }
 
     @Override
@@ -101,9 +102,9 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
 
     public static UserContactsFragment newInstance(Context context, Bundle b)
     {
-        UserContactsFragment instance = new UserContactsFragment();
-        instance.setArguments(b);
-        return instance;
+        contactsList = new UserContactsFragment();
+        contactsList.setArguments(b);
+        return contactsList;
     }
 
     @Override

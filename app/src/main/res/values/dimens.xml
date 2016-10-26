@@ -33,6 +33,8 @@
 
     <dimen name="logo_w">50dp</dimen>
     <dimen name="logo_h">65dp</dimen>
+    <dimen name="rewards_user_pic_w">80dp</dimen>
+    <dimen name="rewards_user_pic_h">80dp</dimen>
     <dimen name="logo_tmargin">5dp</dimen>
 
     <dimen name="profile_settings_h">400dp</dimen>
@@ -43,6 +45,8 @@
     <dimen name="contact_bio_text_size">14dp</dimen>
     <dimen name="contact_bio_tpadding">2dp</dimen>
     <dimen name="contact_list_item_height">100dp</dimen>
+    <dimen name="rewards_list_item_height">90dp</dimen>
+    <dimen name="achievements_list_item_height">90dp</dimen>
     <dimen name="fab_border_width">3dp</dimen>
     <dimen name="app_bar_h">75dp</dimen>
     <dimen name="app_bar_bmargin">72dp</dimen>

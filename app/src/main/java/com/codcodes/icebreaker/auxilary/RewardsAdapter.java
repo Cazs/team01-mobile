@@ -1,12 +1,16 @@
 package com.codcodes.icebreaker.auxilary;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -16,15 +20,19 @@ import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.model.Reward;
 import com.google.zxing.*;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 
 public class RewardsAdapter extends ArrayAdapter
 {
-    private Context context;
+    private Activity context;
     private ArrayList<Reward> data;
     private static LayoutInflater inflater = null;
+    private Bitmap bitmap=null;
+    private String TAG = "RewardsAdapter";
 
-    public RewardsAdapter(Context context, ArrayList<Reward> data, int resource) {
+    public RewardsAdapter(Activity context, ArrayList<Reward> data, int resource) {
         super(context, resource);
         this.data = data;
         this.context = context;
@@ -56,10 +64,12 @@ public class RewardsAdapter extends ArrayAdapter
         TextView rwName = (TextView) convertView.findViewById(R.id.rwName);
         TextView rwDescription = (TextView) convertView.findViewById(R.id.rwDescription);
         final Button claimBtn = (Button)  convertView.findViewById(R.id.btnClaim);
+        TextView rwCost = (TextView) convertView.findViewById(R.id.rwValue);
 
         rwName.setTypeface(null, Typeface.BOLD);
         rwName.setText("\n" + data.get(position).getRwName());
         rwDescription.setText(data.get(position).getRwDescription());
+        rwCost.setText(String.valueOf(data.get(position).getRwCost()));
 
         ImageView imgAch = (ImageView)convertView.findViewById(R.id.imgRw);
 
@@ -74,41 +84,98 @@ public class RewardsAdapter extends ArrayAdapter
         else
             imgAch.setImageResource(R.drawable.trophy);
 
+        if(data.get(position).getRwCost() < data.get(position).getUsersCoins())
+            claimBtn.setVisibility(View.INVISIBLE);
+
        claimBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 rwClaimWindow(position);
+
             }
         });
         return convertView;
     }
     private void rwClaimWindow(int position)
     {
-        Dialog dialog = new Dialog(getContext());
+        String usr = SharedPreference.getUsername(context);
+        sendRewardCode(usr, position);
+    }
+
+    private void sendRewardCode(final String username, final int position)
+    {
+        final Dialog dialog = new Dialog(getContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.activity_claim_reward);
-        TextView redimLbl = (TextView)  dialog.findViewById(R.id.retriveLbl);
-        redimLbl.setTypeface(null,Typeface.BOLD);
 
-        TextView expireLbl = (TextView)  dialog.findViewById(R.id.expireLbl);
-        expireLbl.setTypeface(null,Typeface.BOLD);
-
-        TextView expireDate = (TextView)  dialog.findViewById(R.id.expireDate);
-        TextView code = (TextView)  dialog.findViewById(R.id.rwCode);
-        code.setTypeface(null,Typeface.BOLD_ITALIC);
-        code.setText(data.get(position).getRwCode());
-
-        ImageView qrCode = (ImageView) dialog.findViewById(R.id.rwQRcode);
-        QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(data.get(position).getRwCode(), 500);
-
-        try
+        Thread tCodeSender = new Thread(new Runnable()
         {
-            Bitmap bitmap = qrCodeEncoder.encodeAsBitmap();
-            qrCode.setImageBitmap(bitmap);
-        } catch (WriterException e)
-        {
-            LocalComms.logException(e);
-        }
-        dialog.show();
+            @Override
+            public void run()
+            {
+                Looper.prepare();
+                try
+                {
+                    String eventID = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
+                    if (eventID != null)
+                    {
+                        final String code = data.get(position).getRwCode();
+                        String rew_id = data.get(position).getRwId();
+                        String response = RemoteComms.sendGetRequest("/claimReward/" + username + "/" + rew_id + "/" + eventID + "/" + code);
+                        System.err.println(">>>>>>>>>>>>>>>>>>>>>Response: " + response);
+
+                        if (response.toLowerCase().contains("success"))
+                        {
+                            final TextView redimLbl = (TextView)  dialog.findViewById(R.id.retriveLbl);
+
+                            final TextView expireLbl = (TextView)  dialog.findViewById(R.id.expireLbl);
+
+                            final TextView expireDate = (TextView)  dialog.findViewById(R.id.expireDate);
+
+                            final TextView txtCode = (TextView)  dialog.findViewById(R.id.rwCode);
+
+                            final ImageView qrCode = (ImageView) dialog.findViewById(R.id.rwQRcode);
+
+                            QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(code, 500);
+                            try
+                            {
+                                 bitmap = qrCodeEncoder.encodeAsBitmap();
+                            } catch (WriterException e)
+                            {
+                                LocalComms.logException(e);
+                            }
+
+                            if(context!=null)
+                            {
+                                context.runOnUiThread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        txtCode.setText(code);
+                                        txtCode.setTypeface(null,Typeface.BOLD_ITALIC);
+                                        expireLbl.setTypeface(null,Typeface.BOLD);
+                                        redimLbl.setTypeface(null,Typeface.BOLD);
+                                        if(bitmap!=null)
+                                            qrCode.setImageBitmap(bitmap);
+
+                                    }
+                                });
+                                dialog.show();
+                            }
+                        } else Log.d(TAG, "Rewards from remote DB are null.");
+                    }
+                }
+                catch (SocketTimeoutException e)
+                {
+                    LocalComms.logException(e);
+                } catch (IOException e)
+                {
+                    LocalComms.logException(e);
+                }
+            }
+        });
+        tCodeSender.start();
     }
 }

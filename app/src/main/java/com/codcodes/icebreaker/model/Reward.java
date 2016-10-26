@@ -10,8 +10,19 @@ public class Reward implements IJsonable
     private String rwDescription;
     private String rwCode;//Code used by Event manager to redeem reward for user
     private int rwCost;
+    private int usersCoins;
     private String event_id;//Event that Reward is applicable to
 
+    public Reward(String rwId, String rwName, String rwDescription, String rwCode, int rwCost, String event_id,int usersCoins)
+    {
+        this.rwId = rwId;
+        this.rwName = rwName;
+        this.rwDescription = rwDescription;
+        this.rwCode = rwCode;
+        this.rwCost = rwCost;
+        this.event_id=event_id;
+        this.usersCoins = usersCoins;
+    }
     public Reward(String rwId, String rwName, String rwDescription, String rwCode, int rwCost, String event_id)
     {
         this.rwId = rwId;
@@ -21,6 +32,8 @@ public class Reward implements IJsonable
         this.rwCost = rwCost;
         this.event_id=event_id;
     }
+
+    public Reward(){};
 
     public String getRwId() { return rwId;}
 
@@ -69,6 +82,14 @@ public class Reward implements IJsonable
         this.event_id = event_id;
     }
 
+    public void setUsersCoins(int usersCoins) {
+        this.usersCoins = usersCoins;
+    }
+
+    public int getUsersCoins() {
+        return usersCoins;
+    }
+
     @Override
     public void setVarValue(String var, String value)
     {
@@ -89,7 +110,7 @@ public class Reward implements IJsonable
                 setRwDescription(value);
                 break;
             }
-            case "cost":
+            case "value":
             {
                 setRwCost(Integer.valueOf(value));
                 break;
@@ -104,6 +125,16 @@ public class Reward implements IJsonable
                 setRwEventID(value);
                 break;
             }
+            /*case "date":
+            {
+                set(value);
+                break;
+            }
+            case "owner":
+            {
+                set(value);
+                break;
+            }*/
             default:
                 System.err.println("Unknown Reward attribute '" + var + "'");
         }

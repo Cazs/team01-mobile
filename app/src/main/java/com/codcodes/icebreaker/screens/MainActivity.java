@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             @Override
             public void run()
             {
-                while (true)
+                //while (true)
                 {
                     checkAchievements();
                     try
@@ -599,7 +599,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     @Override
     public void onConnected(@Nullable Bundle bundle)
     {
-        Toast.makeText(this, "Connected to GPS provider.", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "Connected to GPS provider.", Toast.LENGTH_SHORT).show();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
             // TODO: Consider calling

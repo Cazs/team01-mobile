@@ -75,6 +75,25 @@ public class LocalComms
         }
         else//exists
         {
+            //return local image
+            return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+        }
+    }
+
+    public static Bitmap getUpToDateImage(Context context, String filename,String ext, String path, BitmapFactory.Options options) throws IOException
+    {
+        path = path.charAt(0) != '/' && path.charAt(0) != '\\' ? '/' + path : path;
+        if(!ext.contains("."))//add dot to image extension if it's not there
+            ext = '.' + ext;
+        //Look for image locally
+        if (!new File(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext).exists())
+        {
+            Log.d(TAG,MainActivity.rootDir + "/Icebreak" + path+ '/' + filename + ext + " does not exist.");
+            //bitmap = BitmapFactory.decodeFile(MainActivity.rootDir + "/Icebreak"+path+"/default.png", options);
+            return RemoteComms.getImage(context, filename, ext, path, options);
+        }
+        else//exists
+        {
             //Get remote meta data for file
             String file_id = path+'|'+filename+ext;
             //remove any remaining slashes
@@ -845,10 +864,9 @@ public class LocalComms
         //no need for dbHelper.onCreate(db);
 
         String q = "SELECT * FROM " + AchievementContract.AchievementEntry.TABLE_NAME +
-                " WHERE " + AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED + "=? AND " +
-                AchievementContract.AchievementEntry.COL_ACHIEVEMENT_DATE + "> ?";
+                " WHERE " + AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED + "=?";
 
-        String[] where_args = {"0","0"};
+        String[] where_args = {"0"};
         Cursor c =db.rawQuery(q,where_args);
 
         if(c!=null)

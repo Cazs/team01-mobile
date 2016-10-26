@@ -23,14 +23,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.codcodes.icebreaker.R;
+import com.codcodes.icebreaker.auxilary.Config;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
+import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.Achievement;
+import com.codcodes.icebreaker.model.Reward;
+import com.codcodes.icebreaker.tabs.AchievementFragment;
+import com.codcodes.icebreaker.tabs.RewardFragment;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 
 public class RewardsActivity extends AppCompatActivity
@@ -55,10 +61,13 @@ public class RewardsActivity extends AppCompatActivity
                 R.drawable.ic_school_white_24dp
             };
     private Bitmap circularbitmap,bitmap;
-    private String Name,profilepic;
+    private String Name,profilepic,coins;
     public static ArrayList<Achievement> achievements=null;
+    public static ArrayList<Reward> rewards=null;
     private AchievementFragment achFrag=null;
+    private RewardFragment rwFrag = null;
     private static final String TAG = "RewardsActivity";
+    private String counter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -79,6 +88,7 @@ public class RewardsActivity extends AppCompatActivity
         {
            Name = extras.getString("Name");
             profilepic =extras.getString("Picture");
+            coins = extras.getString("Coiins");
         }
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(new FragmentAdapter(getSupportFragmentManager(),RewardsActivity.this));
@@ -89,6 +99,9 @@ public class RewardsActivity extends AppCompatActivity
 
         TextView name = (TextView) findViewById(R.id.RewardName);
         name.setText(Name);
+
+        TextView rwCoins = (TextView)  findViewById(R.id.RewardPoints);
+        rwCoins.setText(coins);
         TabLayout tablayout = (TabLayout) findViewById(R.id.tabs);
         tablayout.setupWithViewPager(mViewPager);
         tablayout.getTabAt(0).setIcon(imageResId[0]);
@@ -102,13 +115,83 @@ public class RewardsActivity extends AppCompatActivity
         circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_300);
         circularImageView.setImageBitmap(circularbitmap);
 
+        //rewardSetUp();
+        readAchievements();
+        readRewards();
+    }
+    private void rewardSetUp()
+    {
+        try {
+            String eventId = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
+            rewards = new ArrayList<>();
+            //rewards.add(new Reward("1","Free hamper","Hmper contains shirt, cap, and bag","Aaron",10,eventId,0));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void readRewards()
+    {
+        Thread tLoadAllRews = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Looper.prepare();
+                try
+                {
+                    String eventID = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
+                    if (eventID != null)
+                    {
+                        rewards = new ArrayList<>();
+                        //String response = RemoteComms.sendGetRequest("/getRewardsForEvent/" + eventID);
+                        String response = RemoteComms.sendGetRequest("/getAllRewards");
+                        System.err.println(">>>>>>>>>>>>>>>>>>>>>Response: " + response);
+                        JSON.getJsonableObjectsFromJson(response, rewards, Reward.class);
+                        System.err.println(">>>>>>>>>>>>>>>>>>>>>Size: " + rewards.size());
+
+                        if (rewards != null)
+                        {
+                            /*for(Reward rw: rewards)
+                            {
+                                if(!rw.getRwEventID().equals(eventID))
+                                    rewards.remove(rw);
+                            }*/
+
+                            //if (rwFrag != null)
+                            //    rwFrag.setAdapter();
+
+                        } else Log.d(TAG, "Rewards from remote DB are null.");
+                    }
+                }
+                catch (SocketTimeoutException e)
+                {
+                    LocalComms.logException(e);
+                }catch (InstantiationException e)
+                {
+                    LocalComms.logException(e);
+                } catch (IllegalAccessException e)
+                {
+                    LocalComms.logException(e);
+                }
+                catch (IOException e)
+                {
+                    LocalComms.logException(e);
+                }
+            }
+        });
+        tLoadAllRews.start();
+    }
+
+    private void readAchievements()
+    {
         Thread tLoadAllAchs = new Thread(new Runnable()
         {
             @Override
             public void run()
             {
                 Looper.prepare();
-
                 try
                 {
                     achievements = new ArrayList<>();
@@ -117,9 +200,11 @@ public class RewardsActivity extends AppCompatActivity
 
                     if(achievements!=null)
                     {
+                        //setAchScore();
                         Log.d(TAG,achievements.size() + " Achievements in remote DB.");
-                        if(achFrag!=null)
-                            achFrag.setAdapter();
+                        //if(achFrag!=null)
+                        //    achFrag.setAdapter();
+
                     }
                     else
                         Log.d(TAG,"Achievements from remote DB are null.");
@@ -185,7 +270,9 @@ public class RewardsActivity extends AppCompatActivity
                 case 0:
                     achFrag = AchievementFragment.newInstance(context);
                     return achFrag;
-                case 1: return RewardFragment.newInstance(context);
+                case 1:
+                    rwFrag = RewardFragment.newInstance(context);
+                    return rwFrag;
                 default:return RewardFragment.newInstance(context);
             }
         }

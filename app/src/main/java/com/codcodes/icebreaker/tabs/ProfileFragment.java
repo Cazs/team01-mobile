@@ -32,6 +32,7 @@ import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.screens.InitialActivity;
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.screens.MainActivity;
+import com.codcodes.icebreaker.screens.RewardsAchievementsActivity;
 import com.codcodes.icebreaker.screens.RewardsActivity;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.User;
@@ -176,10 +177,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                     }
                     catch (IOException e)
                     {
-                        if(e.getMessage()!=null)
-                            Log.wtf(TAG,e.getMessage(),e);
-                        else
-                            e.printStackTrace();
+                        LocalComms.logException(e);
                     }
                 }
 
@@ -207,16 +205,20 @@ public class ProfileFragment extends android.support.v4.app.Fragment
         {
             @Override
             public void onClick(View view) {
-                if(user!=null)
+                /*if(user!=null)
                 {
                     Intent intent = new Intent(view.getContext(), RewardsActivity.class);
                     intent.putExtra("Picture", profilePicture);
                     intent.putExtra("Name", user.getFirstname() + " " + user.getLastname());
+                    intent.putExtra("Coins", user.getCoins());
                     startActivity(intent);
                 }else
                 {
                     Toast.makeText(getActivity(),"Profile has not yet been loaded.",Toast.LENGTH_LONG).show();
-                }
+                }*/
+                Intent intent = new Intent(view.getContext(), RewardsAchievementsActivity.class);
+                intent.putExtra("User",user);
+                startActivity(intent);
             }
         });
 

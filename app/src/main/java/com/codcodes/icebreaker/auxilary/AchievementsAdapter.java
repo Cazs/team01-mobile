@@ -69,10 +69,11 @@ public class AchievementsAdapter extends ArrayAdapter
         TextView description = (TextView) convertView.findViewById(R.id.achDescription);
         score = (TextView) convertView.findViewById(R.id.score);
         TextView target = (TextView) convertView.findViewById(R.id.target);
-        TextView reward = (TextView) convertView.findViewById(R.id.achReward);
-        TextView achieved = (TextView) convertView.findViewById(R.id.achived);
+        TextView reward = (TextView) convertView.findViewById(R.id.achPts);
+        //TextView achieved = (TextView) convertView.findViewById(R.id.achived);
         TextView spliter = (TextView) convertView.findViewById(R.id.spliter);
         TextView rwLable = (TextView) convertView.findViewById(R.id.achRewardlbl);
+
         ImageView coins = (ImageView) convertView.findViewById(R.id.imgValue);
         ProgressBar pb = (ProgressBar) convertView.findViewById(R.id.scoreBar);
 
@@ -83,8 +84,8 @@ public class AchievementsAdapter extends ArrayAdapter
 
         if (data.get(position).getUserPoints()>= data.get(position).getAchTarget()) {
             //Typeface heading = Typeface.createFromAsset(null,"Ailerons-Typeface.otf");
-            achieved.setTypeface(null, Typeface.BOLD_ITALIC);
-            achieved.setVisibility(View.VISIBLE);
+            //achieved.setTypeface(null, Typeface.BOLD_ITALIC);
+            //achieved.setVisibility(View.VISIBLE);
             pb.setVisibility(View.INVISIBLE);
             score.setVisibility(View.INVISIBLE);
             target.setVisibility(View.INVISIBLE);
@@ -94,11 +95,11 @@ public class AchievementsAdapter extends ArrayAdapter
             coins.setVisibility(View.INVISIBLE);
         } else {
             pb.setMax(data.get(position).getAchTarget());
-            int process = data.get(position).getUserPoints();
-            pb.setProgress(process);
-            score.setText(String.valueOf(process));
+
+            pb.setProgress(data.get(position).getUserPoints());
+            score.setText(String.valueOf(data.get(position).getUserPoints()));
             target.setText(String.valueOf(data.get(position).getAchTarget()));
-            //reward.setText(String.valueOf(data.get(position).getAchReward()));
+            reward.setText(String.valueOf(data.get(position).getAchValue()));
 
             score.setTypeface(null, Typeface.BOLD);
             target.setTypeface(null, Typeface.BOLD);

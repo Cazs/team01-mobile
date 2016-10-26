@@ -25,12 +25,15 @@ public class User implements IJsonable, Parcelable
     private String fb_id;
     private String fb_token;
     private Event event;
+    private long points;
+    private long last_seen;
 
     private final String TAG = "IB/User";
 
     public User() {}
 
-    public User(String firstname, String lastname, int age, String occupation, String bio, String catchphrase, String email, String password, String gender, String username) {
+    public User(String firstname, String lastname, int age, String occupation, String bio, String catchphrase, String email, String password, String gender, String username,int points)
+    {
         this.firstname = firstname;
         this.lastname = lastname;
         this.age = age;
@@ -41,6 +44,7 @@ public class User implements IJsonable, Parcelable
         this.password = password;
         this.gender = gender;
         this.username = username;
+        this.points =points;
     }
 
     public Event getEvent(){return  this.event;}
@@ -142,6 +146,18 @@ public class User implements IJsonable, Parcelable
         this.fb_token = token;
     }
 
+    public void setPoints(long pts) {this.points = pts;}
+
+    public long getPoints() {
+        return points;
+    }
+
+    public void setLastSeen(long ls) {this.last_seen = ls;}
+
+    public long getLastSeen() {
+        return last_seen;
+    }
+
     @Override
     public String toString()
     {
@@ -176,6 +192,7 @@ public class User implements IJsonable, Parcelable
             if (this.fb_id != null)
                 result.append(URLEncoder.encode("fb_id", "UTF-8") + "=" + URLEncoder.encode(this.fb_id, "UTF-8") + "&");
 
+
             s = result.toString();
             //Remove ending '&'
             if(s!=null)
@@ -197,38 +214,47 @@ public class User implements IJsonable, Parcelable
     @Override
     public void setVarValue(String var, String value)
     {
-        switch (var)
+        switch (var.toLowerCase())
         {
-            case "Age":
+            case "age":
                 setAge(Integer.valueOf(value));
                 break;
-            case "Bio":
+            case "bio":
                 setBio(value);
                 break;
-            case "Event_id":
+            case "event_id":
                 break;
-            case "Access_level":
+            case "access_level":
                 break;
-            case "Fname":
+            case "fname":
                 setFirstname(value);
                 break;
-            case "Lname":
+            case "lname":
                 setLastname(value);
                 break;
-            case "Username":
+            case "username":
                 setUsername(value);
                 break;
-            case "Email":
+            case "email":
                 setEmail(value);
                 break;
-            case "Gender":
+            case "gender":
                 setGender(value.toLowerCase());
                 break;
-            case "Occupation":
+            case "occupation":
                 setOccupation(value);
                 break;
-            case "Catchphrase":
+            case "catchphrase":
                 setCatchphrase(value);
+                break;
+            case "points":
+                setPoints(Long.parseLong(value));
+                break;
+            case "last_seen":
+                setLastSeen(Long.parseLong(value));
+                break;
+            default:
+                Log.d(TAG,"Unknown User attribute '" + var + "'");
                 break;
         }
     }
@@ -251,6 +277,8 @@ public class User implements IJsonable, Parcelable
         parcel.writeString(getEmail());
         parcel.writeString(getGender());
         parcel.writeString(getOccupation());
+        parcel.writeLong(getPoints());
+        parcel.writeLong(getLastSeen());
     }
 
     //Used to regenerate Message object.
@@ -268,6 +296,8 @@ public class User implements IJsonable, Parcelable
             u.setEmail(in.readString());
             u.setGender(in.readString());
             u.setOccupation(in.readString());
+            u.setPoints(in.readLong());
+            u.setLastSeen(in.readLong());
             return u;
         }
 

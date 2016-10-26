@@ -111,11 +111,17 @@ public class InitialActivity extends AppCompatActivity
                 nav_dot_2.setBackgroundResource(R.drawable.init_nav_dot);
                 nav_dot_3.setBackgroundResource(R.drawable.init_nav_dot);
                 if(position==0)
+                {
                     nav_dot_1.setBackgroundResource(R.drawable.init_nav_dot_filled);
+                }
                 if(position==1)
+                {
                     nav_dot_2.setBackgroundResource(R.drawable.init_nav_dot_filled);
+                }
                 if(position==2)
+                {
                     nav_dot_3.setBackgroundResource(R.drawable.init_nav_dot_filled);
+                }
             }
 
             @Override
@@ -129,7 +135,7 @@ public class InitialActivity extends AppCompatActivity
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         TextView headingTextView = (TextView) findViewById(R.id.main_heading);
         headingTextView.setTypeface(heading);
-        headingTextView.setTextSize(29);
+        headingTextView.setTextSize(40);
 
         if(SharedPreference.getUsername(InitialActivity.this).length()==0)
             return;

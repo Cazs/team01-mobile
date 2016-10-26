@@ -41,7 +41,7 @@
     <uses-permission android:name="android.permission.READ_CALL_LOG"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
         android:name="android.support.multidex.MultiDexApplication"
@@ -228,7 +228,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.codcodes.icebreaker.screens.MainActivity"/>
         </activity>
-
         <activity
             android:name=".screens.SettingsActivity"
             android:parentActivityName=".screens.MainActivity"
@@ -236,6 +235,14 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.codcodes.icebreaker.screens.MainActivity"/>
+        </activity>
+        <activity
+            android:name=".screens.RewardsAchievementsActivity"
+            android:parentActivityName=".screens.MainActivity"
+            android:theme="@style/IBTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.codcodes.icebreaker.screens.RewardsAchievementsActivity"/>
         </activity>
     </application>
 
