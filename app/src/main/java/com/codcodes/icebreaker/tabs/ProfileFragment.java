@@ -204,21 +204,17 @@ public class ProfileFragment extends android.support.v4.app.Fragment
         rewards.setOnClickListener(new View.OnClickListener()
         {
             @Override
-            public void onClick(View view) {
-                /*if(user!=null)
+            public void onClick(View view)
+            {
+                if(user!=null)
                 {
-                    Intent intent = new Intent(view.getContext(), RewardsActivity.class);
-                    intent.putExtra("Picture", profilePicture);
-                    intent.putExtra("Name", user.getFirstname() + " " + user.getLastname());
-                    intent.putExtra("Coins", user.getCoins());
+                    Intent intent = new Intent(view.getContext(), RewardsAchievementsActivity.class);
+                    intent.putExtra("User",user);
                     startActivity(intent);
                 }else
                 {
                     Toast.makeText(getActivity(),"Profile has not yet been loaded.",Toast.LENGTH_LONG).show();
-                }*/
-                Intent intent = new Intent(view.getContext(), RewardsAchievementsActivity.class);
-                intent.putExtra("User",user);
-                startActivity(intent);
+                }
             }
         });
 
@@ -271,11 +267,13 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                 //Clean up
                 try
                 {
+                    WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(),"0");
+                    WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(),"0");
                     WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),"0");
-                    WritersAndReaders.writeAttributeToConfig(Config.DLG_ACTIVE.getValue(),Config.DLG_ACTIVE_FALSE.getValue());
+                    WritersAndReaders.writeAttributeToConfig(Config.DLG_ACTIVE.getValue(), Config.DLG_ACTIVE_FALSE.getValue());
                 } catch (IOException e)
                 {
-                    e.printStackTrace();
+                    LocalComms.logException(e);
                 }
                 SharedPreference.logOut(view.getContext());
                 LoginManager.getInstance().logOut();

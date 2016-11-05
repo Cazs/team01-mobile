@@ -12,16 +12,16 @@ public class EventContract
     public static final String SQL_CREATE_tblEvents = "CREATE TABLE IF NOT EXISTS " +
             EventEntry.TABLE_NAME + " (" +
             EventEntry.COL_EVENT_ID + " " + TYPE_INT+ " PRIMARY KEY," +
-            EventEntry.COL_EVENT_TITLE + " " + TYPE_TEXT + " NULL," +
-            EventEntry.COL_EVENT_DESCRIPTION + " " + TYPE_TEXT + " NULL," +
-            EventEntry.COL_EVENT_ADDRESS + " " + TYPE_TEXT + " NULL," +
-            EventEntry.COL_EVENT_LOCATION + " " + TYPE_TEXT + " NULL," +
-            EventEntry.COL_EVENT_DATE + " " + TYPE_INT + " NULL," +
-            EventEntry.COL_EVENT_MEETING_PLACES + " " + TYPE_TEXT + " NULL," +
-            EventEntry.COL_EVENT_END_DATE + " " + TYPE_INT + " NULL," +
-            EventEntry.COL_EVENT_ACCESS_CODE + " " + TYPE_INT + " NULL" +
+            EventEntry.COL_EVENT_TITLE + " " + TYPE_TEXT + " NOT NULL," +
+            EventEntry.COL_EVENT_DESCRIPTION + " " + TYPE_TEXT + " NOT NULL," +
+            EventEntry.COL_EVENT_ADDRESS + " " + TYPE_TEXT + " NOT NULL," +
+            EventEntry.COL_EVENT_LOCATION + " " + TYPE_TEXT + " NOT NULL," +
+            EventEntry.COL_EVENT_DATE + " " + TYPE_INT + " NOT NULL," +
+            EventEntry.COL_EVENT_MEETING_PLACES + " " + TYPE_TEXT + " NOT NULL," +
+            EventEntry.COL_EVENT_END_DATE + " " + TYPE_INT + " NOT NULL," +
+            EventEntry.COL_EVENT_ACCESS_CODE + " " + TYPE_INT + " NOT NULL" +
             ")";
-    public static final String SQL_DELETE_tblMeta = "DROP TABLE IF EXISTS " + EventEntry.TABLE_NAME;
+    public static final String SQL_DELETE_tblEvents = "DROP TABLE IF EXISTS " + EventEntry.TABLE_NAME;
 
     public EventContract(){}
 

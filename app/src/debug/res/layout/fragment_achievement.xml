@@ -1,9 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <View
+        android:id="@+id/anchor"
+        android:layout_width="match_parent"
+        android:layout_height="2dp" />
+
+    <ProgressBar
+        android:id="@+id/pb_ach_load"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:indeterminate="true"
+        android:layout_below="@+id/anchor"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="30dp"
+        android:layout_marginTop="20dp"
+        android:visibility="visible"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/ach_list"
@@ -13,10 +28,11 @@
         android:name="com.codcodes.icebreaker.tabs.AchievementFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@+id/anchor"
         android:layout_marginLeft="2dp"
         android:layout_marginRight="2dp"
         app:layoutManager="LinearLayoutManager"
         tools:context=".tabs.AchievementFragment"
         tools:listitem="@layout/ach_list_row_item" />
 
-</LinearLayout>
+</RelativeLayout>

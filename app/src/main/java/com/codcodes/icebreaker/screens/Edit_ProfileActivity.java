@@ -170,10 +170,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                         });
                     } catch (IOException e)
                     {
-                        if(e.getMessage()!=null)
-                            Log.d(TAG,e.getMessage(),e);
-                        else
-                            e.printStackTrace();
+                        LocalComms.logException(e);
                     }
                 }
             });
@@ -267,7 +264,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
             try
             {
                 final String usr = SharedPreference.getUsername(this).toString();
-                Bitmap bitmap = bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
+                Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(targetUri));
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.PNG, 20, stream);
                 final byte[] bmp_arr = stream.toByteArray();
@@ -290,7 +287,7 @@ public class Edit_ProfileActivity extends AppCompatActivity implements AdapterVi
                                 message.sendToTarget();
 
                                 //Save  copy of image to app directory iff it was uploaded successfully
-                                WritersAndReaders.saveImage(Edit_ProfileActivity.this,bmp_arr, "/profile/" + usr + ".png");
+                                WritersAndReaders.saveFile(Edit_ProfileActivity.this,bmp_arr, "/profile/" + usr + ".png");
                             } else
                             {
                                 Message message = toastHandler("Image upload successful: " + res_code).obtainMessage();

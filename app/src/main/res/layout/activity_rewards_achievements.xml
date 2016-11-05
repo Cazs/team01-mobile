@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     android:id="@+id/appbar"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,10 +9,10 @@
     android:background="@android:color/transparent"
     android:clickable="true"
     android:focusable="false"
-    android:orientation="vertical"
     tools:context="com.codcodes.icebreaker.screens.RewardsAchievementsActivity">
 
     <LinearLayout
+        android:id="@+id/big_app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/action_bar_bg"
@@ -60,11 +60,25 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/imgProfilePic"
+            <LinearLayout
                 android:layout_width="@dimen/rewards_user_pic_w"
                 android:layout_height="@dimen/rewards_user_pic_h"
-                android:layout_gravity="center"/>
+                android:layout_gravity="center">
+
+                <ProgressBar
+                    android:id="@+id/pb_img_load"
+                    android:layout_width="@dimen/rewards_user_pic_w"
+                    android:layout_height="@dimen/rewards_user_pic_h"
+                    android:indeterminate="true"
+                    android:layout_gravity="center"
+                    android:visibility="visible"/>
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/imgProfilePic"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -110,6 +124,7 @@
         android:id="@+id/rew_ach_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/big_app_bar"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-</LinearLayout>
+</RelativeLayout>

@@ -92,6 +92,8 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
     private PulsatorLayout pulsator;
     private IOnListFragmentInteractionListener mListener;
 
+    public static final int LOAD_LOCAL_EVENTS = 0;
+    public static final int LOAD_REMOTE_EVENTS = 1;
     private Dialog dlgGpsHack;
     public static ArrayList<AbstractMap.SimpleEntry<String,LatLng>> debug_locations=new ArrayList<>();
 
@@ -286,48 +288,52 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
             @Override
             public void run()
             {
+                Looper.prepare();
                 if (recyclerView != null)
                 {
                     if(MainActivity.events==null)
                         MainActivity.events = new ArrayList<>();
 
+                    //Check if list empty
                     if(MainActivity.events.isEmpty())
                     {
                         Event temp = new Event();
                         if(!pulsator.isStarted())
                             temp.setTitle(getString(R.string.msg_no_events));
-                        final ArrayList<Event> temp_lst = new ArrayList<Event>();
-                        temp_lst.add(temp);
-                        if(getActivity()!=null)
-                        {
-                            if (animContainer != null)
-                                animContainer.setVisibility(View.GONE);
-                            if (pulsator != null)
-                                pulsator.stop();
-                            getActivity().runOnUiThread(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    recyclerView.setAdapter(new EventsRecyclerViewAdapter(temp_lst, MainActivity.bitmaps, mListener));
-                                }
-                            });
-                        }else Log.wtf(TAG,"MainActivity is null.");
+                        Toast.makeText(getContext(),"No events found.",Toast.LENGTH_LONG).show();
+                        //MainActivity.events.add(temp);
+                        //final ArrayList<Event> temp_lst = new ArrayList<Event>();
+                        //temp_lst.add(temp);
                         Log.d(TAG, "Events list is empty.");
+                        reloadEvents(LOAD_REMOTE_EVENTS);
                     }
-                    else
+                    //Set adapter
+                    if(getActivity()!=null)
                     {
+                        getActivity().runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                if (animContainer != null)
+                                    animContainer.setVisibility(View.GONE);
+                                if (pulsator != null)
+                                    pulsator.stop();
+
+                                recyclerView.setAdapter(new EventsRecyclerViewAdapter(MainActivity.events, MainActivity.bitmaps, mListener));
+                            }
+                        });
+                    }else Log.wtf(TAG,"MainActivity is null.");
+                    /*{
                         BitmapFactory.Options options = new BitmapFactory.Options();
-                        if(MainActivity.bitmaps==null)
-                            MainActivity.bitmaps=new ArrayList<>();
+                        //if(MainActivity.bitmaps==null)
+                        MainActivity.bitmaps=new ArrayList<>();
                         try
                         {
-                            if (MainActivity.bitmaps.isEmpty())
-                            {
+                            //if (MainActivity.bitmaps.isEmpty())
+                            for (Event e : MainActivity.events)
+                                MainActivity.bitmaps.add(LocalComms.getImage(getContext(), "event_icons-" + e.getId(), ".png", "/events", options));
 
-                                for (Event e : MainActivity.events)
-                                    MainActivity.bitmaps.add(LocalComms.getImage(getContext(), "event_icons-" + e.getId(), ".png", "/events", options));
-                            }
                             if(getActivity()!=null)
                             {
                                 getActivity().runOnUiThread(new Runnable()
@@ -349,7 +355,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                             LocalComms.logException(e);
                         }
                         Log.d(TAG, "Set events list.");
-                    }
+                    }*/
 
                     if(getActivity()!=null)
                     {
@@ -407,11 +413,10 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
         return eventsFrag;
     }
 
-    public void reloadEvents()
+    public void reloadEvents(final int src)
     {
         MainActivity.is_reloading_events=true;
         startPulsator();
-
 
         Thread eventsThread = new Thread(new Runnable()
         {
@@ -430,8 +435,17 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                 MainActivity.events = new ArrayList<>();
                 try
                 {
-                    String eventIds = RemoteComms.sendGetRequest("getNearbyEventIds/" + MainActivity.mLastKnownLoc.getLatitude()
-                            + '/' + MainActivity.mLastKnownLoc.getLongitude() + '/' + MainActivity.range);
+                    String eventIds;
+                    if(MainActivity.loudness>0)
+                    {
+                        eventIds = RemoteComms.sendGetRequest("getNearbyEventIdsByNoise/" + MainActivity.mLastKnownLoc.getLatitude()
+                                + '/' + MainActivity.mLastKnownLoc.getLongitude() + '/' + MainActivity.range + '/' + MainActivity.loudness);
+                    }else
+                    {
+                        eventIds = RemoteComms.sendGetRequest("getNearbyEventIds/" + MainActivity.mLastKnownLoc.getLatitude()
+                                + '/' + MainActivity.mLastKnownLoc.getLongitude() + '/' + MainActivity.range);
+                    }
+
                     eventIds=eventIds.replaceAll("\\[","");
                     eventIds=eventIds.replaceAll("\\]","");
                     eventIds=eventIds.replace("\"","");
@@ -439,20 +453,82 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                     eventIds=eventIds.replaceAll("\\{","");
                     eventIds=eventIds.replaceAll("\\}","");
 
-                    String[] ids_arr = eventIds.split(",");
-                    for(String id:ids_arr)
+                    final String[] ids_arr = eventIds.split(",");
+                    if(src==LOAD_LOCAL_EVENTS)
                     {
-                        try
+                        //Load local events
+                        for (String id : ids_arr)
                         {
-                            long ev_id = Long.parseLong(id);
-                            Event event = LocalComms.getEvent(getContext(), ev_id);
-                            MainActivity.events.add(event);
+                            try
+                            {
+                                long ev_id = Long.parseLong(id);
+                                Event event = LocalComms.getLocalEventRecord(getContext(), ev_id);
+                                MainActivity.events.add(event);
+                            } catch (NumberFormatException e)
+                            {
+                                LocalComms.logException(e);
+                            }
                         }
-                        catch (NumberFormatException e)
+                    }else if(src==LOAD_REMOTE_EVENTS)
+                    {
+                        for (String id : ids_arr)
                         {
-                            LocalComms.logException(e);
+                            try
+                            {
+                                long ev_id = Long.parseLong(id);
+                                Event event = LocalComms.getEvent(getContext(), ev_id);
+                                MainActivity.events.add(event);
+                            } catch (NumberFormatException e)
+                            {
+                                LocalComms.logException(e);
+                            }
                         }
                     }
+                    setAdapter();//render events, no icons yet
+                    //Load remote events in the background
+                    /*Thread tEventLoader = new Thread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            ArrayList<Event> events = new ArrayList<>();
+                            try
+                            {
+                                for (String id : ids_arr)
+                                {
+                                    try
+                                    {
+                                        long ev_id = Long.parseLong(id);
+                                        Event event = LocalComms.getEvent(EventsFragment.this.getContext(), ev_id);
+                                        events.add(event);
+                                    } catch (NumberFormatException e)
+                                    {
+                                        LocalComms.logException(e);
+                                    } catch (IOException e)
+                                    {
+                                        LocalComms.logException(e);
+                                    }
+                                }
+                                //Replace main array contents with new and up to date ones and set adapter
+                                if (!events.isEmpty())
+                                {
+                                    if (MainActivity.events==null)
+                                        MainActivity.events = new ArrayList<>();
+
+                                    MainActivity.events.clear();
+                                    for(Event e:events)
+                                        MainActivity.events.add(e);
+
+                                    setAdapter();
+                                }
+                            }
+                            catch (ConcurrentModificationException e)
+                            {
+                                LocalComms.logException(e);
+                            }
+                        }
+                    });*/
+
                 }
                 catch (IOException e)
                 {
@@ -540,6 +616,6 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
     {
         if(swipeRefreshLayout!=null)
             swipeRefreshLayout.setRefreshing(true);
-        reloadEvents();
+        reloadEvents(LOAD_REMOTE_EVENTS);
     }
 }

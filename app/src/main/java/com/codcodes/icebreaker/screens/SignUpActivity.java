@@ -140,7 +140,7 @@ public class SignUpActivity extends AppCompatActivity
                             {
                                 byte[] res = RemoteComms.getFBImage("https://graph.facebook.com","v2.7/"+ accessToken.getUserId()+"/picture?width=240&height=320&access_token="+accessToken.getToken());
                                 //Write image to local disk
-                                WritersAndReaders.saveImage(SignUpActivity.this,res,"profile/"+usr+".png");
+                                WritersAndReaders.saveFile(SignUpActivity.this,res,"profile/"+usr+".png");
                                 //Update remote Image
                                 int code = RemoteComms.imageUpload(res,"profile;"+usr,".png");
                                 if(code==HttpURLConnection.HTTP_OK)

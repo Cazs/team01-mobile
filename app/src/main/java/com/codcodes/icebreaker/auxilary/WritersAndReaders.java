@@ -27,7 +27,7 @@ public class WritersAndReaders
 {
 	private static String TAG = "IB/WritersAndReaders";
 
-    public static void saveImage(Context context, byte[] data,String filename)
+    public static void saveFile(Context context, byte[] data,String filename)
 	{
         File f=null;
         String folders = "";
@@ -70,7 +70,7 @@ public class WritersAndReaders
             fos.write(data);
 			fos.flush();
             fos.close();
-			Log.d(TAG,"Saved image to disk: " + f.getPath().toString());
+			Log.d(TAG,"Saved file to disk: " + f.getPath().toString());
 		}
 		catch (IOException e)
 		{
@@ -81,6 +81,31 @@ public class WritersAndReaders
                 e.printStackTrace();
 		}
 	}
+
+    public static void createDirectories(String path)
+    {
+        String folders = "";
+        File f=null;
+        if(path.contains("/") || path.contains("\\"))
+        {
+            //Remove first slash if it exists
+            folders = (path.charAt(0)=='/'||path.charAt(0)=='\\') ? path.substring(1) : path;
+            String[] dirs = folders.split("/");//get directories
+            String directories = "/";
+            for(int i=0;i<dirs.length-1;i++)
+                directories = directories +"/" + dirs[i];
+
+            f = new File(MainActivity.rootDir + "/Icebreak/" + directories);
+            /*if(f.getAbsolutePath().charAt(f.getAbsolutePath().length()-1)!='/' && f.getAbsolutePath().charAt(f.getAbsolutePath().length()-1)!='\\')
+                f = new File(MainActivity.rootDir + "/Icebreak/" + directories + "/");*/
+
+            //if(!f.isDirectory())
+            Log.d(TAG,f.getPath() + " directory creation: " + f.mkdirs());
+
+            //f = new File(MainActivity.rootDir + "/Icebreak/" + path);
+        }
+        f=null;
+    }
 
     public static void writeAttributeToConfig(String key, String value) throws IOException
     {
@@ -116,7 +141,7 @@ public class WritersAndReaders
         }
         else result.append(key+"="+value+"\n");//File DNE - write new line.
 
-        //System.err.println("#############################Writing to config: " + key + "=" + value);
+        System.err.println("#############################Writing to config: " + key + "=" + value);
 
         /*if(!rec_found)//File exists but record doesn't exist - create new record
             result.append(key+"="+value+"\n");*/

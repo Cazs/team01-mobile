@@ -13,7 +13,9 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.codcodes.icebreaker.R;
@@ -99,6 +101,7 @@ public class RewardsAchievementsActivity extends AppCompatActivity implements IO
                 options.inPreferredConfig = Bitmap.Config.ALPHA_8;
                 try
                 {
+                    final ProgressBar pb = (ProgressBar) findViewById(R.id.pb_img_load);
                     final Bitmap bmp = LocalComms.getImage(RewardsAchievementsActivity.this,u.getUsername(),".png","/profile",options);
                     RewardsAchievementsActivity.this.runOnUiThread(new Runnable()
                     {
@@ -106,6 +109,8 @@ public class RewardsAchievementsActivity extends AppCompatActivity implements IO
                         public void run()
                         {
                             img.setImageBitmap(bmp);
+                            if(pb!=null)
+                                pb.setVisibility(View.GONE);
                         }
                     });
                 } catch (IOException e)
@@ -240,7 +245,7 @@ public class RewardsAchievementsActivity extends AppCompatActivity implements IO
                                             {
                                                 int pts = Integer.parseInt(response);
                                                 achievements.get(i).setAchUserPoints(pts);
-                                            }catch (ArrayIndexOutOfBoundsException e)
+                                            }catch (IndexOutOfBoundsException e)
                                             {
                                                 Log.wtf(TAG,e.getMessage(),e);
                                             } catch (NumberFormatException e)

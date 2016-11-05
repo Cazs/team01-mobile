@@ -36,7 +36,8 @@ import java.net.UnknownHostException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity
+{
 
     private EditText username;
     private EditText password;
@@ -47,7 +48,8 @@ public class LoginActivity extends AppCompatActivity {
     private final String TAG = "IB/LoginActivity";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_login);

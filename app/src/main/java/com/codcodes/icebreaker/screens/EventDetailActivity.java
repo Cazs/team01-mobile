@@ -18,11 +18,15 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
@@ -38,8 +42,12 @@ import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.LocationDetector;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
+import com.codcodes.icebreaker.auxilary.TimelineAdapter;
+import com.codcodes.icebreaker.auxilary.ViewHeightAnimator;
 import com.codcodes.icebreaker.auxilary.WritersAndReaders;
 import com.codcodes.icebreaker.model.Event;
+import com.codcodes.icebreaker.model.IJsonable;
+import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.tabs.EventsFragment;
 import com.codcodes.icebreaker.tabs.UserContactsFragment;
@@ -53,12 +61,17 @@ import java.net.UnknownHostException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 
-public class EventDetailActivity extends AppCompatActivity
+public class EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
 {
     private final String TAG = "IB/EventDetailActivity";
 
     private LatLng me;
     private Event selected_event;
+    private boolean is_loading_timeline=true;
+    private boolean timeline_in_fg = false;
+    private ArrayList<AbstractMap.SimpleEntry<String, String>> image_to_audio_map;
+    private RecyclerView rview;
+    private IOnListFragmentInteractionListener mListener;
 
     private LocationDetector locationChecker;
 
@@ -152,7 +165,7 @@ public class EventDetailActivity extends AppCompatActivity
             TextView eventDescription = (TextView)findViewById(R.id.event_description);
 
             if(selected_event==null||eventName==null||eventDescription==null)
-                return;
+                finish();
 
             eventName.setText(selected_event.getTitle());
             eventDescription.setText(selected_event.getDescription());
@@ -193,6 +206,13 @@ public class EventDetailActivity extends AppCompatActivity
             tIconLoader.start();
         }else this.finish();
 
+        rview = (RecyclerView)findViewById(R.id.imageTimeline);
+
+        if (rview instanceof RecyclerView)
+        {
+            rview.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        }
+
         eventDetails = (TextView)findViewById(R.id.main_heading);
         Typeface heading = Typeface.createFromAsset(getAssets(),"Ailerons-Typeface.otf");
         eventDetails.setTypeface(heading);
@@ -205,7 +225,7 @@ public class EventDetailActivity extends AppCompatActivity
             @Override
             public boolean onEditorAction(TextView v, int actionID, KeyEvent event)
             {
-                if (actionID== EditorInfo.IME_ACTION_DONE)
+                if (actionID== EditorInfo.IME_ACTION_DONE || actionID== EditorInfo.IME_ACTION_NEXT)
                 {
                     //Event e = RemoteComms.getEvent(Eventid);
                     int code=0;
@@ -222,6 +242,175 @@ public class EventDetailActivity extends AppCompatActivity
                 return false;
             }
         });
+
+        //bitmaps = new ArrayList<>();
+        image_to_audio_map = new ArrayList<>();
+        Thread tImageDownloader = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    String ev_id = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
+                    if (ev_id != null)
+                    {
+                        if (!ev_id.isEmpty())
+                        {
+                            if (Long.parseLong(ev_id) > 0)
+                            {
+                                if(selected_event.getId()>0)//Selected event is valid
+                                {
+                                    is_loading_timeline = true;
+                                    String img_paths = RemoteComms.sendGetRequest("getImageIDsAtEvent/" + selected_event.getId());
+                                    //Remove inverted commas
+                                    img_paths = img_paths.charAt(0) == '"' ? img_paths.substring(1) : img_paths;
+                                    img_paths = img_paths.charAt(img_paths.length() - 1) == '"' ? img_paths.substring(0, img_paths.length() - 1) : img_paths;
+                                    String[] img_path_arr = img_paths.split(";");
+                                    for (String path : img_path_arr)
+                                    {
+                                        //path = path.replaceAll("\\|", ";");
+                                        if (path != null)
+                                        {
+                                            if (path.contains("."))
+                                            {
+                                                String filename = path.split("\\.")[0];
+                                                if(filename.contains("|"))
+                                                {
+                                                    String dir = filename.substring(0, filename.lastIndexOf('|'));
+                                                    filename = filename.substring(filename.lastIndexOf('|') + 1);
+
+                                                    //BitmapFactory.Options options = new BitmapFactory.Options();
+                                                    //options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+
+                                                    //Bitmap bitmap = LocalComms.getImage(getApplicationContext(), filename, path.split("\\.")[1], dir, options);
+                                                    //bitmaps.add(bitmap);
+                                                    String audio_path = filename + ".wav";
+                                                    String img_path = filename + ".png";
+
+                                                    image_to_audio_map.add(new AbstractMap.SimpleEntry<>(img_path, audio_path));
+
+                                                    /*byte[] audio = LocalComms.getFile(getApplicationContext(), filename, ".wav", dir);
+                                                    if (audio != null)
+                                                        Log.v(TAG, "Audio size for '" + filename + ".wav': " + audio.length);
+                                                    else Log.v(TAG, "Audio file '" + filename + ".wav' does not exist on server/locally");*/
+                                                }else Log.wtf(TAG, "Invalid file path.");
+                                            } else
+                                            {
+                                                Log.wtf(TAG, "Image path does not have an extension.");
+                                                toastHandler("Image path does not have an extension.").obtainMessage().sendToTarget();
+                                            }
+                                        } else
+                                        {
+                                            Log.d(TAG, "Invalid path received from server.");
+                                            toastHandler("Invalid path received from server.").obtainMessage().sendToTarget();
+                                        }
+                                    }
+                                }else
+                                {
+                                    Log.d(TAG, "Invalid Icebreak event selected.");
+                                    toastHandler("Invalid Icebreak event selected.").obtainMessage().sendToTarget();
+                                }
+                                is_loading_timeline = false;
+                                //TODO: Think about calling setAdapter here
+                            }else
+                            {
+                                Log.d(TAG, "You're not signed in to an Icebreak event.");
+                                toastHandler("You're not signed in to an Icebreak event.").obtainMessage().sendToTarget();
+                            }
+                        }else
+                        {
+                            Log.d(TAG, "You're not signed in to an Icebreak event.");
+                            toastHandler("You're not signed in to an Icebreak event.").obtainMessage().sendToTarget();
+                        }
+                    }else
+                    {
+                        Log.d(TAG, "You're not signed in to an Icebreak event.");
+                        toastHandler("You're not signed in to an Icebreak event.").obtainMessage().sendToTarget();
+                    }
+                }catch (NumberFormatException e)
+                {
+                    LocalComms.logException(e);
+                } catch (IOException e)
+                {
+                    LocalComms.logException(e);
+                }
+            }
+        });
+        tImageDownloader.start();
+    }
+
+    public void showTimeline(View view)
+    {
+        final LinearLayout bottom_bar = (LinearLayout)findViewById(R.id.dragView);
+        final Button btnShowTimeline = (Button) findViewById(R.id.btnShowTimeline);
+        //ViewGroup.LayoutParams params = bottom_bar.getLayoutParams();
+        final int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics());
+        //DisplayMetrics metrics = getResources().getDisplayMetrics();
+
+        if(timeline_in_fg)//hide timeline
+        {
+            ViewHeightAnimator heightAnim = new ViewHeightAnimator(bottom_bar, 1,height);
+            heightAnim.setDuration(200);
+            bottom_bar.startAnimation(heightAnim);
+            timeline_in_fg=false;
+            btnShowTimeline.setText("Show Event Timeline");
+        }else//display timeline
+        {
+            btnShowTimeline.setText("Loading timeline...");
+            btnShowTimeline.setClickable(false);
+            Thread tTimelineLoader = new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    while (is_loading_timeline){Log.v(TAG,"Is loading timeline.");}
+                    EventDetailActivity.this.runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            rview.setAdapter(new TimelineAdapter(EventDetailActivity.this, image_to_audio_map,  mListener));
+                            ViewHeightAnimator heightAnim = new ViewHeightAnimator(bottom_bar, height, 5);
+                            heightAnim.setDuration(200);
+                            bottom_bar.startAnimation(heightAnim);
+                            timeline_in_fg=true;
+                            btnShowTimeline.setClickable(true);
+                            btnShowTimeline.setText("Hide Event Timeline");
+                        }
+                    });
+                }
+            });
+            tTimelineLoader.start();
+        }
+    }
+
+    @Override
+    public void onAttachedToWindow()
+    {
+        super.onAttachedToWindow();
+        if (this instanceof IOnListFragmentInteractionListener)
+        {
+            mListener = (IOnListFragmentInteractionListener) this;
+        }
+        else
+        {
+            throw new RuntimeException(this.toString()
+                    + " must implement IOnListFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onListFragmentInteraction(IJsonable item)
+    {
+        Log.d(TAG,"Got JSonable object.");
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        mListener = null;
     }
 
     public void mockLocation(double lat, double lng)
@@ -243,7 +432,7 @@ public class EventDetailActivity extends AppCompatActivity
 
     public void viewPosition(View view)
     {
-        Intent i = new Intent(this,ExtendedEventInfoActivity.class);
+        Intent i = new Intent(this,EventTimelineActivity.class);
         i.putExtra("Location_lat",String.valueOf(MainActivity.mLastKnownLoc.getLatitude()));
         i.putExtra("Location_lng",String.valueOf(MainActivity.mLastKnownLoc.getLongitude()));
         i.putExtra("Event",selected_event);
@@ -317,23 +506,24 @@ public class EventDetailActivity extends AppCompatActivity
                                             startActivity(i);
                                         } else
                                         {
-                                            WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),
-                                                    String.valueOf(selected_event.getId()));
+                                            /*WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),
+                                                    String.valueOf(0));*/
                                             message = toastHandler("Could not login to event, server response: " + resp).obtainMessage();
                                             message.sendToTarget();
                                             Log.d(TAG, resp);
                                         }
                                     } else
                                     {
-                                        WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),
-                                                String.valueOf(selected_event.getId()));
-                                        Message message = toastHandler("Event is null for some reason.").obtainMessage();
+                                        /*WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),
+                                                String.valueOf(0));*/
+                                        Message message = toastHandler("Event is null.").obtainMessage();
                                         message.sendToTarget();
                                         Log.wtf(TAG, "Event is null for some reason.");
-
                                     }
                                 } else
                                 {
+                                    /*WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),
+                                            String.valueOf(0));*/
                                     Log.wtf(TAG, "User object is null.");
                                     Message message = toastHandler("Could not sign in to event, User object is null.").obtainMessage();
                                     message.sendToTarget();
@@ -346,12 +536,11 @@ public class EventDetailActivity extends AppCompatActivity
                             }
                             catch (UnknownHostException e)
                             {
-                                Message message = toastHandler("No Internet Access..").obtainMessage();
+                                Message message = toastHandler("No Internet access.").obtainMessage();
                                 message.sendToTarget();
                                 Log.d(TAG, e.getMessage(), e);
                             } catch (IOException e)
                             {
-                                //TODO: better logging
                                 Log.wtf(TAG, e.getMessage(), e);
                             } finally
                             {

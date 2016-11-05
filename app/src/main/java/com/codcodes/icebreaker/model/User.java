@@ -4,6 +4,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
+import com.codcodes.icebreaker.auxilary.LocalComms;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
@@ -27,12 +29,24 @@ public class User implements IJsonable, Parcelable
     private Event event;
     private long points;
     private long last_seen;
+    private double pitch;
 
     private final String TAG = "IB/User";
 
     public User() {}
 
-    public User(String firstname, String lastname, int age, String occupation, String bio, String catchphrase, String email, String password, String gender, String username,int points)
+    public User(String firstname,
+                String lastname,
+                int age,
+                String occupation,
+                String bio,
+                String catchphrase,
+                String email,
+                String password,
+                String gender,
+                String username,
+                int points,
+                double pitch)
     {
         this.firstname = firstname;
         this.lastname = lastname;
@@ -45,6 +59,7 @@ public class User implements IJsonable, Parcelable
         this.gender = gender;
         this.username = username;
         this.points =points;
+        this.pitch = pitch;
     }
 
     public Event getEvent(){return  this.event;}
@@ -158,6 +173,12 @@ public class User implements IJsonable, Parcelable
         return last_seen;
     }
 
+    public void setPitch(double pitch) {this.pitch = pitch;}
+
+    public double getPitch() {
+        return pitch;
+    }
+
     @Override
     public String toString()
     {
@@ -191,6 +212,12 @@ public class User implements IJsonable, Parcelable
                 result.append(URLEncoder.encode("fb_token", "UTF-8") + "=" + URLEncoder.encode(this.fb_token, "UTF-8") + "&");
             if (this.fb_id != null)
                 result.append(URLEncoder.encode("fb_id", "UTF-8") + "=" + URLEncoder.encode(this.fb_id, "UTF-8") + "&");
+            if (this.points > 0)
+                result.append(URLEncoder.encode("pts", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(this.points), "UTF-8") + "&");
+            if (this.pitch > 0)
+                result.append(URLEncoder.encode("pitch", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(this.pitch), "UTF-8") + "&");
+            if (this.last_seen > 0)
+                result.append(URLEncoder.encode("last_seen", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(this.last_seen), "UTF-8") + "&");
 
 
             s = result.toString();
@@ -217,14 +244,22 @@ public class User implements IJsonable, Parcelable
         switch (var.toLowerCase())
         {
             case "age":
-                setAge(Integer.valueOf(value));
+                try
+                {
+                    setAge(Integer.valueOf(value));
+                }catch (NumberFormatException e)
+                {
+                    LocalComms.logException(e);
+                }
                 break;
             case "bio":
                 setBio(value);
                 break;
             case "event_id":
+                Log.wtf(TAG,"User attribute 'event_id' has not been implemented yet.");
                 break;
             case "access_level":
+                Log.wtf(TAG,"User attribute 'access_level' has not been implemented yet.");
                 break;
             case "fname":
                 setFirstname(value);
@@ -248,10 +283,31 @@ public class User implements IJsonable, Parcelable
                 setCatchphrase(value);
                 break;
             case "points":
-                setPoints(Long.parseLong(value));
+                try
+                {
+                    setPoints(Long.parseLong(value));
+                }catch (NumberFormatException e)
+                {
+                    LocalComms.logException(e);
+                }
                 break;
             case "last_seen":
-                setLastSeen(Long.parseLong(value));
+                try
+                {
+                    setLastSeen(Long.parseLong(value));
+                }catch (NumberFormatException e)
+                {
+                    LocalComms.logException(e);
+                }
+                break;
+            case "pitch":
+                try
+                {
+                    setPitch(Double.parseDouble(value));
+                }catch (NumberFormatException e)
+                {
+                    LocalComms.logException(e);
+                }
                 break;
             default:
                 Log.d(TAG,"Unknown User attribute '" + var + "'");

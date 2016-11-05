@@ -113,7 +113,7 @@ public class Event implements IJsonable, Parcelable
                 double lng = Double.valueOf(coord.split(",")[1]);
                 boundary.add(new LatLng( lat, lng));
             }
-        }else Log.wtf(TAG,"Invalid 'lat,lng;lat,lng;lat,lng;...' format.");
+        }else Log.wtf(TAG,"Invalid 'lat,lng;lat,lng;lat,lng;...' format ["+bounds+"]");
     }
 
     public boolean isValid()

@@ -234,8 +234,38 @@ public class RemoteComms
         params.add(new AbstractMap.SimpleEntry<String,String>
                 (new AbstractMap.SimpleEntry<String, String>("payload",payload)));*/
 
-        System.err.println(remote_filename + ext);
         URL urlConn = new URL("http://icebreak.azurewebsites.net/IBUserRequestService.svc/imgUpload/"+remote_filename + ext);
+        HttpURLConnection httpConn = (HttpURLConnection)urlConn.openConnection();
+        httpConn.setReadTimeout(10000);
+        httpConn.setConnectTimeout(15000);
+        httpConn.setRequestMethod("PUT");
+        httpConn.setDoInput(true);
+        httpConn.setDoOutput(true);
+
+        //Write to server
+        OutputStream os = httpConn.getOutputStream();
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"UTF-8"));
+        writer.write(bytearrayToBase64(bitmap));
+        writer.flush();
+        writer.close();
+        os.close();
+
+        httpConn.connect();
+
+        /*Scanner scn = new Scanner(new InputStreamReader(httpConn.getErrorStream()));
+        String resp = "";
+        while(scn.hasNext())
+            resp+=scn.nextLine();
+        System.err.println(TAG+": "+resp);*/
+        int rcode = httpConn.getResponseCode();
+        httpConn.disconnect();
+        return rcode;
+    }
+
+    public static int imageUploadWithMeta(byte[] bitmap, String meta) throws IOException
+    {
+        Log.wtf(TAG,"Uploading file: " + meta);
+        URL urlConn = new URL("http://icebreak.azurewebsites.net/IBUserRequestService.svc/imageUploadWithMeta/"+meta);
         HttpURLConnection httpConn = (HttpURLConnection)urlConn.openConnection();
         httpConn.setReadTimeout(10000);
         httpConn.setConnectTimeout(15000);
@@ -374,7 +404,7 @@ public class RemoteComms
             ext = '.' + ext;
         try
         {
-            Log.d(TAG,"Attempting to download image: " + image + ext);
+            Log.d(TAG,"Attempting to download file: " + image + ext);
             Socket soc = new Socket(InetAddress.getByName("icebreak.azurewebsites.net"), 80);
             System.out.println("Connection established, Sending request..");
             PrintWriter out = new PrintWriter(soc.getOutputStream());
@@ -442,7 +472,7 @@ public class RemoteComms
                 try
                 {
                     byte[] binFileArr = android.util.Base64.decode(payload, android.util.Base64.DEFAULT);
-                    WritersAndReaders.saveImage(context, binFileArr, destPath + "/" + image + ext);
+                    WritersAndReaders.saveFile(context, binFileArr, destPath + "/" + image + ext);
                     Log.d(TAG, "Image download complete");
                     return true;
                 }catch (IllegalArgumentException e)
@@ -485,7 +515,23 @@ public class RemoteComms
         if (RemoteComms.imageDownloader(filename, ext, path, context))
             bitmap = LocalComms.getImage(context,filename,ext,path,options);
         else Log.d(TAG,"Image could not be downloaded.");//TODO: better logging
+
         return bitmap;
+    }
+
+    public static byte[] getFile(Context context, String filename,String ext, String path) throws IOException
+    {
+        path = path.charAt(0) != '/' && path.charAt(0) != '\\' ? '/' + path : path;
+        if(!ext.contains("."))//add dot to image extension if it's not there
+            ext = '.' + ext;
+
+        Log.d(TAG,"***Downloading file [~"+path+'/'+filename+ext+"]***");
+
+        if (RemoteComms.imageDownloader(filename, ext, path, context))
+            return LocalComms.getFile(context,filename,ext,path);
+        else Log.wtf(TAG,"File[~"+path+'/'+filename+ext+"] could not be downloaded.");
+
+        return null;
     }
 
     public static boolean sendMessage(Context context, Message m) throws IOException

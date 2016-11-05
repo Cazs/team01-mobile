@@ -12,16 +12,4 @@
     <include
         layout="@layout/content_main"/>
 
-        <!--<android.support.design.widget.FloatingActionButton
-            android:id="@+id/fabSwitch"
-            app:layout_anchor="@id/container"
-            app:layout_anchorGravity="center_vertical|right"
-            android:paddingBottom="@dimen/fab_bmargin"
-            android:src="@drawable/ic_compare_arrows_black_24dp"
-            app:borderWidth="@dimen/fab_border_width"
-            app:fabSize="normal"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_marginBottom="@dimen/fab_bmargin"/>-->
-
 </android.support.design.widget.CoordinatorLayout>

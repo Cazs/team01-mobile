@@ -80,7 +80,8 @@ public class CameraSource {
     @SuppressLint("InlinedApi")
     public static final int CAMERA_FACING_FRONT = CameraInfo.CAMERA_FACING_FRONT;
 
-    private static final String TAG = "OpenCameraSource";
+    private static final String TAG = "IB/CameraSource";
+    private static Frame outputFrame;
 
     /**
      * The dummy surface texture must be assigned a chosen name.  Since we never use an OpenGL
@@ -169,7 +170,8 @@ public class CameraSource {
     /**
      * Builder for configuring and creating an associated camera source.
      */
-    public static class Builder {
+    public static class Builder
+    {
         private final Detector<?> mDetector;
         private CameraSource mCameraSource = new CameraSource();
 
@@ -177,7 +179,8 @@ public class CameraSource {
          * Creates a camera source builder with the supplied context and detector.  Camera preview
          * images will be streamed to the associated detector upon starting the camera source.
          */
-        public Builder(Context context, Detector<?> detector) {
+        public Builder(Context context, Detector<?> detector)
+        {
             if (context == null) {
                 throw new IllegalArgumentException("No context supplied.");
             }
@@ -186,6 +189,17 @@ public class CameraSource {
             }
 
             mDetector = detector;
+            mCameraSource.mContext = context;
+            if(mPreviewSize==null)
+                mPreviewSize = new Size(mRequestedPreviewWidth, mRequestedPreviewHeight);
+        }
+
+        public Builder(Context context)
+        {
+            if (context == null) {
+                throw new IllegalArgumentException("No context supplied.");
+            }
+            mDetector = null;
             mCameraSource.mContext = context;
             if(mPreviewSize==null)
                 mPreviewSize = new Size(mRequestedPreviewWidth, mRequestedPreviewHeight);
@@ -265,7 +279,8 @@ public class CameraSource {
     /**
      * Callback interface used to signal the moment of actual image capture.
      */
-    public interface ShutterCallback {
+    public interface ShutterCallback
+    {
         /**
          * Called as near as possible to the moment when a photo is captured from the sensor. This
          * is a good opportunity to play a shutter sound or give other feedback of camera operation.
@@ -278,7 +293,8 @@ public class CameraSource {
     /**
      * Callback interface used to supply image data from a photo capture.
      */
-    public interface PictureCallback {
+    public interface PictureCallback
+    {
         /**
          * Called when image data is available after a picture is taken.  The format of the data
          * is a jpeg binary.
@@ -289,7 +305,8 @@ public class CameraSource {
     /**
      * Callback interface used to notify on completion of camera auto focus.
      */
-    public interface AutoFocusCallback {
+    public interface AutoFocusCallback
+    {
         /**
          * Called when the camera auto focus completes.  If the camera
          * does not support auto-focus and autoFocus is called,
@@ -328,10 +345,13 @@ public class CameraSource {
     /**
      * Stops the camera and releases the resources of the camera and underlying detector.
      */
-    public void release() {
-        synchronized (mCameraLock) {
+    public void release()
+    {
+        synchronized (mCameraLock)
+        {
             stop();
-            mFrameProcessor.release();
+            if(mFrameProcessor!=null)
+                mFrameProcessor.release();
         }
     }
 
@@ -368,6 +388,11 @@ public class CameraSource {
         return this;
     }
 
+    public Frame getCurrentFrame()
+    {
+        return outputFrame;
+    }
+
     /**
      * Opens the camera and starts sending preview frames to the underlying detector.  The supplied
      * surface holder is used for the preview so frames can be displayed to the user.
@@ -376,9 +401,12 @@ public class CameraSource {
      * @throws IOException if the supplied surface holder could not be used as the preview display
      */
     @RequiresPermission(Manifest.permission.CAMERA)
-    public CameraSource start(SurfaceHolder surfaceHolder) throws IOException {
-        synchronized (mCameraLock) {
-            if (mCamera != null) {
+    public CameraSource start(SurfaceHolder surfaceHolder) throws IOException
+    {
+        synchronized (mCameraLock)
+        {
+            if (mCamera != null)
+            {
                 return this;
             }
 
@@ -501,14 +529,21 @@ public class CameraSource {
      * @param shutter the callback for image capture moment, or null
      * @param jpeg    the callback for JPEG image data, or null
      */
-    public void takePicture(ShutterCallback shutter, PictureCallback jpeg) {
-        synchronized (mCameraLock) {
-            if (mCamera != null) {
+    public void takePicture(ShutterCallback shutter, PictureCallback jpeg)
+    {
+        synchronized (mCameraLock)
+        {
+            if (mCamera != null)
+            {
+                //mCamera.lock();
                 PictureStartCallback startCallback = new PictureStartCallback();
                 startCallback.mDelegate = shutter;
                 PictureDoneCallback doneCallback = new PictureDoneCallback();
                 doneCallback.mDelegate = jpeg;
-                mCamera.takePicture(startCallback, null, null, doneCallback);
+                mCamera.takePicture(null, null, null, doneCallback);
+                //doneCallback.mDelegate=null;
+                //doneCallback=null;
+                //mCamera.unlock();
             }
         }
     }
@@ -682,12 +717,15 @@ public class CameraSource {
     /**
      * Wraps the camera1 shutter callback so that the deprecated API isn't exposed.
      */
-    private class PictureStartCallback implements Camera.ShutterCallback {
+    private class PictureStartCallback implements Camera.ShutterCallback
+    {
         private ShutterCallback mDelegate;
 
         @Override
-        public void onShutter() {
-            if (mDelegate != null) {
+        public void onShutter()
+        {
+            if (mDelegate != null)
+            {
                 mDelegate.onShutter();
             }
         }
@@ -697,16 +735,21 @@ public class CameraSource {
      * Wraps the final callback in the camera sequence, so that we can automatically turn the camera
      * preview back on after the picture has been taken.
      */
-    private class PictureDoneCallback implements Camera.PictureCallback {
+    private class PictureDoneCallback implements Camera.PictureCallback
+    {
         private PictureCallback mDelegate;
 
         @Override
-        public void onPictureTaken(byte[] data, Camera camera) {
-            if (mDelegate != null) {
+        public void onPictureTaken(byte[] data, Camera camera)
+        {
+            if (mDelegate != null)
+            {
                 mDelegate.onPictureTaken(data);
             }
-            synchronized (mCameraLock) {
-                if (mCamera != null) {
+            synchronized (mCameraLock)
+            {
+                if (mCamera != null)
+                {
                     mCamera.startPreview();
                 }
             }
@@ -1106,17 +1149,21 @@ public class CameraSource {
          * has completed, which is managed in camera source's release method above.
          */
         @SuppressLint("Assert")
-        void release() {
+        void release()
+        {
             assert (mProcessingThread.getState() == State.TERMINATED);
-            mDetector.release();
+            if(mDetector!=null)
+                mDetector.release();
             mDetector = null;
         }
 
         /**
          * Marks the runnable as active/not active.  Signals any blocked threads to continue.
          */
-        void setActive(boolean active) {
-            synchronized (mLock) {
+        void setActive(boolean active)
+        {
+            synchronized (mLock)
+            {
                 mActive = active;
                 mLock.notifyAll();
             }
@@ -1127,14 +1174,18 @@ public class CameraSource {
          * (if present) back to the camera, and keeps a pending reference to the frame data for
          * future use.
          */
-        void setNextFrame(byte[] data, Camera camera) {
-            synchronized (mLock) {
-                if (mPendingFrameData != null) {
+        void setNextFrame(byte[] data, Camera camera)
+        {
+            synchronized (mLock)
+            {
+                if (mPendingFrameData != null)
+                {
                     camera.addCallbackBuffer(mPendingFrameData.array());
                     mPendingFrameData = null;
                 }
 
-                if (!mBytesToByteBuffer.containsKey(data)) {
+                if (!mBytesToByteBuffer.containsKey(data))
+                {
                     Log.d(TAG,
                             "Skipping frame.  Could not find ByteBuffer associated with the image " +
                                     "data from the camera.");
@@ -1167,24 +1218,30 @@ public class CameraSource {
          * FPS setting above to allow for some idle time in between frames.
          */
         @Override
-        public void run() {
-            Frame outputFrame;
+        public void run()
+        {
             ByteBuffer data;
 
-            while (true) {
-                synchronized (mLock) {
-                    while (mActive && (mPendingFrameData == null)) {
-                        try {
+            while (true)
+            {
+                synchronized (mLock)
+                {
+                    while (mActive && (mPendingFrameData == null))
+                    {
+                        try
+                        {
                             // Wait for the next frame to be received from the camera, since we
                             // don't have it yet.
                             mLock.wait();
-                        } catch (InterruptedException e) {
+                        } catch (InterruptedException e)
+                        {
                             Log.d(TAG, "Frame processing loop terminated.", e);
                             return;
                         }
                     }
 
-                    if (!mActive) {
+                    if (!mActive)
+                    {
                         // Exit the loop once this camera source is stopped or released.  We check
                         // this here, immediately after the wait() above, to handle the case where
                         // setActive(false) had been called, triggering the termination of this
@@ -1210,14 +1267,19 @@ public class CameraSource {
                 // The code below needs to run outside of synchronization, because this will allow
                 // the camera to add pending frame(s) while we are running detection on the current
                 // frame.
-
-                try {
-                    mDetector.receiveFrame(outputFrame);
-                } catch (Throwable t) {
-                    Log.e(TAG, "Exception thrown from receiver.", t);
-                } finally {
-                    mCamera.addCallbackBuffer(data.array());
-                }
+                if(mDetector!=null)
+                {
+                    try
+                    {
+                        mDetector.receiveFrame(outputFrame);
+                    } catch (Throwable t)
+                    {
+                        Log.e(TAG, "Exception thrown from receiver.", t);
+                    } finally
+                    {
+                        mCamera.addCallbackBuffer(data.array());
+                    }
+                }else Log.v(TAG,"Detector is null. Using CameraSource as normal camera.");
             }
         }
     }

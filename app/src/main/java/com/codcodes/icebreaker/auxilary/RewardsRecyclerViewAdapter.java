@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -254,6 +255,8 @@ public class RewardsRecyclerViewAdapter extends RecyclerView.Adapter<RewardsRecy
 
                                             final ImageView qrCode = (ImageView) d.findViewById(R.id.rwQRcode);
 
+                                            final ProgressBar pb = (ProgressBar) d.findViewById(R.id.pb_code_load);
+
                                             final Button btnDismiss = (Button) d.findViewById(R.id.btnDismiss);
 
                                             btnDismiss.setOnClickListener(new View.OnClickListener() {
@@ -280,13 +283,15 @@ public class RewardsRecyclerViewAdapter extends RecyclerView.Adapter<RewardsRecy
                                                     @Override
                                                     public void run()
                                                     {
+                                                        if(pb!=null)
+                                                            pb.setVisibility(View.GONE);
+
                                                         txtCode.setText(code);
                                                         txtCode.setTypeface(null, Typeface.BOLD_ITALIC);
                                                         expireLbl.setTypeface(null, Typeface.BOLD);
                                                         redimLbl.setTypeface(null, Typeface.BOLD);
                                                         if (bitmap != null)
                                                             qrCode.setImageBitmap(bitmap);
-
                                                     }
                                                 });
                                             }

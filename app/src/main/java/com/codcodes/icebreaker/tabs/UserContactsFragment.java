@@ -210,14 +210,48 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                         if (event_id > 0)
                         {
                             contacts = new ArrayList<User>();
+                            ArrayList<User> users_at_event = new ArrayList<>();
 
                             Event event = RemoteComms.getEvent(event_id);
                             String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + event_id);
-                            JSON.<User>getJsonableObjectsFromJson(contactsJson, contacts, User.class);
+                            JSON.<User>getJsonableObjectsFromJson(contactsJson, users_at_event, User.class);
+                            final int MALE = 0, FEMALE = 1, BOTH = 2;
+                            for(User usr : users_at_event)
+                            {
+                                //Get User gender
+                                int usr_gen = BOTH;
+                                switch (usr.getGender().toLowerCase())
+                                {
+                                    case "male":
+                                        usr_gen = MALE;
+                                        break;
+                                    case "female":
+                                        usr_gen = FEMALE;
+                                        break;
+                                    case "unspecified":
+                                        usr_gen = BOTH;
+                                        break;
+                                    default:
+                                        Log.d(TAG,"Unknown gender '" + usr.getGender() + "'");
+                                }
+                                //Check User gender
+                                if(MainActivity.pref_gender!=BOTH) //Gender preference is set to specific gender
+                                {
+                                    if(MainActivity.pref_gender==usr_gen)//Usre gender matches preference
+                                    {
+                                        if(isUserAgeValid(usr))//Validate age
+                                            contacts.add(usr);
+                                    }
+                                }else//Gender preference is set to all genders
+                                {
+                                    if(isUserAgeValid(usr))//Validate user age
+                                        contacts.add(usr);
+                                }
+                            }
                             refreshUsersAtEvent();
                         } else{
                             Log.d(TAG,"User not at an event.");
-                            RemoteComms.logOutUserFromEvent(getActivity());
+                            //RemoteComms.logOutUserFromEvent(getActivity());
                         }
                     }else RemoteComms.logOutUserFromEvent(getActivity());
                 }
@@ -244,6 +278,26 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
         }, 0, INTERVALS.USERS_AT_EVENT_REFRESH_DELAY.getValue());*/
     }
 
+    public boolean isUserAgeValid(User usr)
+    {
+        boolean age_ok = false;
+        //Check User age
+        if(MainActivity.min_age!=0)//if age pref set to 0, allow all users
+        {
+            if (usr.getAge() >= MainActivity.min_age)
+                age_ok = true;
+            else age_ok=false;
+        }else age_ok = true;
+
+        if(MainActivity.max_age!=0)//if age pref set to 0, allow all users
+        {
+            if(usr.getAge()<=MainActivity.max_age)
+                age_ok=true;
+            else age_ok=false;
+        }else age_ok = true;
+        return age_ok;
+    }
+
     private void refreshUsersAtEvent() throws ConcurrentModificationException
     {
         /**Prepare to set adapter**/
@@ -263,8 +317,6 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 {
                     //Look for user profile image
                     bitmap = LocalComms.getImage(getContext(), u.getUsername(), ".png", "/profile", options);
-                    //if (bitmap == null)
-                    //    bitmap = RemoteComms.getImage(getActivity(), u.getUsername(), ".png", "/profile", options);
                 }
                 catch (IOException e)
                 {
@@ -365,7 +417,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
             {
                 try
                 {
-                    refreshUsersAtEvent();
+                    refresh();
                 }
                 catch (ConcurrentModificationException e)
                 {

@@ -113,10 +113,14 @@ public class IcebreakService extends IntentService// implements LocationListener
                                         {
                                             if(!str_lat.isEmpty() && !str_lat.equals("null"))
                                             {
-                                                try {
+                                                try
+                                                {
                                                     lat = Double.parseDouble(str_lat);
-                                                }catch (NumberFormatException ex){
-                                                    Log.wtf(TAG,"Not a number",ex);}
+                                                }catch (NumberFormatException ex)
+                                                {
+                                                    Log.wtf(TAG,"Not a number",ex);
+                                                    RemoteComms.logOutUserFromEvent(this);
+                                                }
                                             }
                                         }
                                         String str_lng = WritersAndReaders.readAttributeFromConfig(Config.LOC_LNG.getValue());
@@ -138,7 +142,7 @@ public class IcebreakService extends IntentService// implements LocationListener
                                             me = new LatLng(lat, lng);
                                             if (!LocationDetector.containsLocation(me, e.getBoundary(), true))
                                             {
-                                                System.out.println("Logging out of Event.");
+                                                Log.wtf(TAG,"Logging out of Event.");
                                                 RemoteComms.logOutUserFromEvent(this);
                                             } else Log.d(TAG, "**User location valid.");
                                         }else
@@ -168,7 +172,7 @@ public class IcebreakService extends IntentService// implements LocationListener
                             //RemoteComms.logOutUserFromEvent(this);
                         }
                     }else{Log.d(TAG,"UI is active, skipping checks.");}
-                    //Take a break, take a KatKit
+                    //Take a break
                     Thread.sleep(INTERVALS.IB_CHECK_DELAY.getValue());
                 }
             }catch (SocketTimeoutException e)

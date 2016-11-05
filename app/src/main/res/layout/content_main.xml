@@ -58,6 +58,19 @@
                     android:visibility="gone"
                     android:src="@drawable/translucent_circle"/>-->
 
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/fabCam"
+                    android:paddingBottom="@dimen/fab_bmargin"
+                    android:src="@drawable/ic_camera_white_24dp"
+                    app:borderWidth="@dimen/fab_border_width"
+                    app:fabSize="normal"
+                    android:layout_alignBottom="@+id/container"
+                    android:layout_alignRight="@+id/container"
+                    android:layout_width="90dp"
+                    android:layout_height="90dp"
+                    android:layout_marginBottom="20dp"
+                    android:layout_marginRight="30dp"/>
+
                 <LinearLayout
                     android:id="@+id/popup_notif"
                     android:layout_width="match_parent"

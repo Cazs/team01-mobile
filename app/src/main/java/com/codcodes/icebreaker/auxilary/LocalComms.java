@@ -50,6 +50,7 @@ import com.codcodes.icebreaker.screens.MainActivity;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -77,6 +78,34 @@ public class LocalComms
         {
             //return local image
             return ImageUtils.getInstance().compressBitmapImage(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext, context);
+        }
+    }
+
+    public static byte[] getFile(Context context, String filename,String ext, String path) throws IOException
+    {
+        path = path.charAt(0) != '/' && path.charAt(0) != '\\' ? '/' + path : path;
+        if(!ext.contains("."))//add dot to image extension if it's not there
+            ext = '.' + ext;
+        //Look for file locally
+        if (!new File(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext).exists())
+        {
+            Log.d(TAG,MainActivity.rootDir + "/Icebreak" + path+ '/' + filename + ext + " does not exist.");
+            return RemoteComms.getFile(context, filename, ext, path);
+        }
+        else//file exists
+        {
+            //return local file
+            File f = new File(MainActivity.rootDir + "/Icebreak" + path + '/' + filename + ext);
+            if(f.exists())
+            {
+                byte[] file_arr = new byte[(int)f.length()];
+                FileInputStream fis = new FileInputStream(f);
+                fis.read(file_arr,0,file_arr.length);
+                fis.close();
+                fis = null;
+                f = null;
+                return  file_arr;
+            }else return  null;
         }
     }
 
@@ -465,6 +494,64 @@ public class LocalComms
                         }else Log.wtf(TAG,">>>>>>"+payload);
                     }else Log.wtf(TAG,">>>>>>"+payload);
                 }else Log.wtf(TAG,">>>>>>"+payload);
+            }else Log.wtf(TAG,"getEvent> Could not move Cursor to first result-set record.");
+        }
+        else//Event not in local DB check remote DB
+        {
+            event = RemoteComms.getEvent(id);
+            if(event!=null)
+                Log.d(TAG,"[event=" + event.getId()+"] is not in local records.");
+            addEvent(context,event);//new Event
+        }
+
+        if(c!=null)
+            if(!c.isClosed())
+                c.close();
+        closeDB(db);
+
+        return event;
+    }
+
+    public static Event getLocalEventRecord(Context context, long id) throws IOException
+    {
+        Event event=null;
+
+        EventHelper dbHelper = new EventHelper(context);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        dbHelper.onCreate(db);//create table if it doesn't exist - special exception for this method
+
+        String query = "SELECT * FROM " + EventContract.EventEntry.TABLE_NAME + " WHERE " +
+                EventContract.EventEntry.COL_EVENT_ID+"=?";
+
+        Cursor c = db.rawQuery(query,new String[]{String.valueOf(id)});
+
+        if(c.getCount()>0)
+        {
+            //Record exists
+            if(c.moveToFirst())
+            {
+                //long id = c.getLong(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_ID));
+                String title = c.getString(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_TITLE));
+                String address = c.getString(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_ADDRESS));
+                String date = c.getString(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_DATE));
+                String description = c.getString(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_DESCRIPTION));
+                String end_date = c.getString(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_END_DATE));
+                String location = c.getString(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_LOCATION));
+                String places = c.getString(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_MEETING_PLACES));
+                int access_code = c.getInt(c.getColumnIndex(EventContract.EventEntry.COL_EVENT_ACCESS_CODE));
+
+                event = new Event();
+                event.setId(id);
+                event.setTitle(title);
+                event.setAddress(address);
+                event.setDate(date);
+                event.setDescription(description);
+                event.setEndDate(end_date);
+                event.setBoundary(location);
+                if(places!=null)
+                    event.setMeetingPlaces(places.split(";"));
+                event.setAccessCode(access_code);
+
             }else Log.wtf(TAG,"getEvent> Could not move Cursor to first result-set record.");
         }
         else//Event not in local DB check remote DB

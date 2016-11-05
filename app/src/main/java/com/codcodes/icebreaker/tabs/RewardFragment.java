@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
@@ -163,38 +164,45 @@ public class RewardFragment extends android.support.v4.app.Fragment
             RewardsAchievementsActivity.rewards = new ArrayList<>();
         }
 
-        Runnable runnable = new Runnable()
+        if(getActivity()!=null)
         {
-            @Override
-            public void run()
-            {
-                if(RewardsAchievementsActivity.rewards.isEmpty())
-                {
-                    /*Reward temp = new Reward();
-                    temp.setRwName(getString(R.string.msg_no_rewards));
-                    RewardsAchievementsActivity.rewards.add(temp);*/
-                    Log.d(TAG, "Rewards list is empty.");
+            final ProgressBar pb = (ProgressBar) getActivity().findViewById(R.id.pb_rew_load);
 
-                    //LinearLayout contactsContainer = (LinearLayout)getActivity().findViewById(R.id.contcts_anim_container);
-                    //if(contactsContainer!=null)
-                    //    contactsContainer.setVisibility(View.VISIBLE);
-                }
-                else
+            Runnable runnable = new Runnable()
+            {
+                @Override
+                public void run()
                 {
-                    //LinearLayout contactsContainer = (LinearLayout)getActivity().findViewById(R.id.contcts_anim_container);
-                    //if(contactsContainer!=null)
-                    //    contactsContainer.setVisibility(View.GONE);
+                    if(pb!=null)
+                        pb.setVisibility(View.GONE);
+
+                    if (RewardsAchievementsActivity.rewards.isEmpty())
+                    {
+                        /*Reward temp = new Reward();
+                        temp.setRwName(getString(R.string.msg_no_rewards));
+                        RewardsAchievementsActivity.rewards.add(temp);*/
+                        Log.d(TAG, "Rewards list is empty.");
+
+                        //LinearLayout contactsContainer = (LinearLayout)getActivity().findViewById(R.id.contcts_anim_container);
+                        //if(contactsContainer!=null)
+                        //    contactsContainer.setVisibility(View.VISIBLE);
+                    } else
+                    {
+                        //LinearLayout contactsContainer = (LinearLayout)getActivity().findViewById(R.id.contcts_anim_container);
+                        //if(contactsContainer!=null)
+                        //    contactsContainer.setVisibility(View.GONE);
+                    }
+                    if (recyclerView != null)
+                    {
+                        recyclerView.setAdapter(new RewardsRecyclerViewAdapter(RewardsAchievementsActivity.rewards, bitmaps, mListener, getActivity()));
+                        Log.d(TAG, "Set Rewards list.");
+                    }
+                    //if(swipeRefreshLayout!=null)
+                    //    swipeRefreshLayout.setRefreshing(false);
                 }
-                if (recyclerView != null)
-                {
-                    recyclerView.setAdapter(new RewardsRecyclerViewAdapter(RewardsAchievementsActivity.rewards, bitmaps, mListener, getActivity()));
-                    Log.d(TAG, "Set Rewards list.");
-                }
-                //if(swipeRefreshLayout!=null)
-                //    swipeRefreshLayout.setRefreshing(false);
-            }
-        };
-        runOnUI(runnable);
+            };
+            runOnUI(runnable);
+        }else Log.wtf(TAG,"Activity is null");
     }
 
     public void runOnUI(Runnable r)

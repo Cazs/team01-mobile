@@ -18,6 +18,7 @@ import android.os.Message;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -32,6 +33,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -88,6 +90,11 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
 
     public static String rootDir = Environment.getExternalStorageDirectory().getPath();
     public static double range = 40.0;
+    public static int  min_age = 0;
+    public static int max_age = 0;
+    public static int pref_gender = 2;
+    public static double loudness = 0.0;
+
     public static boolean fromBackPress = false;
     public static Location mLastKnownLoc;
     public static boolean is_reloading_events = false;
@@ -96,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     public static ArrayList<Event> events;
     public static ArrayList<Bitmap> bitmaps;
     private EventsFragment eventsFragment;
+    private static final int PERMISSION_REQUEST_CODE = 1;
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -138,6 +146,15 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         }
 
         setContentView(R.layout.activity_main);
+        //
+        String permission = "android.permission.RECORD_AUDIO";
+        int res = getApplication().checkCallingOrSelfPermission(permission);
+        boolean b =  (res == PackageManager.PERMISSION_GRANTED);
+        if(!b)
+            ActivityCompat.requestPermissions(this,
+                    new String[] {Manifest.permission.RECORD_AUDIO},
+                    PERMISSION_REQUEST_CODE);
+        //
 
         ttfInfinity = Typeface.createFromAsset(getAssets(), "Infinity.ttf");
         ttfAilerons = Typeface.createFromAsset(getAssets(), "Ailerons-Typeface.otf");
@@ -174,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         startService(intTokenService);
         Log.d(TAG, "Started IbTokenRegistrationService");
 
-        //Ping server - server will then update last seen and check for Achievements, Icebreaks and Reward
+        //Ping server - server will then update last seen and check for Achievements, Icebreaks and Rewards
         Thread tPing = new Thread(new Runnable() {
             @Override
             public void run()
@@ -191,6 +208,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         });
         tPing.start();
 
+        //Start Achievement checker service
         Thread tAchChecker = new Thread(new Runnable()
         {
             @Override
@@ -199,17 +217,53 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 //while (true)
                 {
                     checkAchievements();
-                    try
+                    /*try
                     {
                         Thread.sleep(30000);
                     } catch (InterruptedException e)
                     {
                         LocalComms.logException(e);
-                    }
+                    }*/
                 }
             }
         });
         tAchChecker.start();
+
+        //Load Settings
+        Thread tSettingsLoader = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    String dist = WritersAndReaders.readAttributeFromConfig(Config.EVENT_MAX_DIST.getValue());
+                    String min_age = WritersAndReaders.readAttributeFromConfig(Config.USR_MIN_AGE.getValue());
+                    String max_age = WritersAndReaders.readAttributeFromConfig(Config.USR_MAX_AGE.getValue());
+                    String loudness = WritersAndReaders.readAttributeFromConfig(Config.EVENT_LOUDNESS.getValue());
+                    String pref_gen = WritersAndReaders.readAttributeFromConfig(Config.USR_GEND.getValue());
+
+                    if (dist != null)
+                        MainActivity.range = Double.parseDouble(dist);
+                    if (min_age != null)
+                        MainActivity.min_age = Integer.parseInt(min_age);
+                    if (max_age != null)
+                        MainActivity.max_age = Integer.parseInt(max_age);
+                    if (loudness != null)
+                        MainActivity.loudness = Double.parseDouble(loudness);
+                    if (pref_gen != null)
+                        MainActivity.pref_gender = Integer.parseInt(pref_gen);
+
+                }catch (NumberFormatException e)
+                {
+                  LocalComms.logException(e);
+                } catch (IOException e)
+                {
+                    LocalComms.logException(e);
+                }
+            }
+        });
+        tSettingsLoader.start();
 
         Intent i = getIntent();
         String frag = i.getStringExtra("Fragment");
@@ -271,6 +325,17 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                     .addApi(LocationServices.API)
                     .build();
         }
+
+        FloatingActionButton btnCam = (FloatingActionButton)findViewById(R.id.fabCam);
+        btnCam.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                Intent intCam = new Intent(MainActivity.this,CameraActivity.class);
+                startActivity(intCam);
+            }
+        });
     }
 
     public void checkAchievements()
@@ -368,7 +433,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         }
     }
 
-    public void reloadEvents()
+    /*public void reloadEvents()
     {
         is_reloading_events=true;
         if(!fromBackPress)
@@ -498,7 +563,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                                 eventsFragment.setAdapter();
                             }
                         }
-                    });*/
+                    });*
                 }catch (SocketTimeoutException e)
                 {
                     Message message = toastHandler("We are having trouble connecting to the server, please check your internet connection.").obtainMessage();
@@ -516,7 +581,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             }
         });
         eventsThread.start();
-    }
+    }*/
 
     private Handler toastHandler(final String text)
     {
@@ -624,7 +689,10 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 LocalComms.logException(e);
             }
         }else Log.wtf(TAG,"Last known location is null.");
-        reloadEvents();
+        if(eventsFragment!=null)
+            eventsFragment.reloadEvents(EventsFragment.LOAD_LOCAL_EVENTS);
+        else Log.d(TAG,"EventsFragment is null");
+        //reloadEvents();
     }
 
     @Override
@@ -705,7 +773,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     {
         super.onPause();
         setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
-        try
+        /*try
         {
             WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(),"0");
             WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(),"0");
@@ -715,7 +783,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 Log.d(TAG,e.getMessage(),e);
             else
                 e.printStackTrace();
-        }
+        }*/
     }
 
     @Override
@@ -731,7 +799,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     {
         super.onDestroy();
         setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
-        try
+        /*try
         {
             WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(),"0");
             WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(),"0");
@@ -741,7 +809,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 Log.d(TAG,e.getMessage(),e);
             else
                 e.printStackTrace();
-        }
+        }*/
     }
 
     @Override
@@ -749,7 +817,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     {
         super.onRestart();
         setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
-        try
+        /*try
         {
             WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(),"0");
             WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(),"0");
@@ -759,7 +827,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 Log.d(TAG,e.getMessage(),e);
             else
                 e.printStackTrace();
-        }
+        }*/
     }
 
     @Override

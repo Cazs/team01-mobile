@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:fitsSystemWindows="true"
+    android:keepScreenOn="true"
+    android:background="@android:color/transparent"
+    android:clickable="true"
+    android:focusable="false"
+    tools:context="com.codcodes.icebreaker.screens.CameraActivity">
+
+    <com.codcodes.icebreaker.auxilary.camera.CameraSourcePreview
+        android:id="@+id/preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="-4dp"
+        android:background="#424242"/>
+
+    <Button
+        android:id="@+id/btnShutter"
+        android:layout_width="110dp"
+        android:layout_height="110dp"
+        android:background="@drawable/cam_shutter_bg"
+        android:layout_marginBottom="20dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignBottom="@+id/preview"/>
+
+</RelativeLayout>

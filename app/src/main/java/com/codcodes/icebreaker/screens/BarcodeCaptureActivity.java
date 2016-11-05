@@ -135,9 +135,6 @@ public final class BarcodeCaptureActivity extends Activity
     Snackbar.make(mGraphicOverlay, "Tap to capture QR code. Pinch/Stretch to zoom.",
               Snackbar.LENGTH_INDEFINITE)
               .show();
-    /*Snackbar.make(mGraphicOverlay, "Tap to capture. Pinch/Stretch to zoom",
-            Snackbar.LENGTH_LONG)
-            .show();*/
   }
 
   /**
@@ -246,8 +243,8 @@ public final class BarcodeCaptureActivity extends Activity
 
   CameraSource.Builder builder = new CameraSource.Builder(getApplicationContext(), barcodeDetector)
             .setFacing(CameraSource.CAMERA_FACING_BACK)
-            .setRequestedPreviewSize(metrics.heightPixels, metrics.heightPixels)
-            .setRequestedFps(30.0f);
+            .setRequestedPreviewSize(metrics.widthPixels, metrics.heightPixels)
+            .setRequestedFps(40.0f);
 
 
     //TODO: Update deprecated code
@@ -350,7 +347,8 @@ public final class BarcodeCaptureActivity extends Activity
    * (e.g., because onResume was called before the camera source was created), this will be called
    * again when the camera source is created.
    */
-  private void startCameraSource() throws SecurityException {
+  private void startCameraSource() throws SecurityException
+  {
     // check that the device has play services available.
     int code = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
             getApplicationContext());

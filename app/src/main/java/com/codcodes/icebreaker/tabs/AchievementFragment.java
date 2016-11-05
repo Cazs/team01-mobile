@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
@@ -150,54 +151,48 @@ public class AchievementFragment extends android.support.v4.app.Fragment
             RewardsAchievementsActivity.achievements = new ArrayList<>();
         }
 
-        Runnable runnable = new Runnable()
+        if(getActivity()!=null)
         {
-            @Override
-            public void run()
+            final ProgressBar pb = (ProgressBar) getActivity().findViewById(R.id.pb_ach_load);
+
+            Runnable runnable = new Runnable()
             {
-                if(RewardsAchievementsActivity.achievements.isEmpty())
+                @Override
+                public void run()
                 {
-                    /*Achievement temp = new Achievement();
-                    temp.setAchName(getString(R.string.msg_no_achievements));
-                    RewardsAchievementsActivity.achievements.add(temp);*/
-                    Log.d(TAG, "Achievement list is empty.");
+                    if(pb!=null)
+                        pb.setVisibility(View.GONE);
 
-                    //LinearLayout contactsContainer = (LinearLayout)getActivity().findViewById(R.id.contcts_anim_container);
-                    //if(contactsContainer!=null)
-                    //    contactsContainer.setVisibility(View.VISIBLE);
-                }
-                else
-                {
-                    //LinearLayout contactsContainer = (LinearLayout)getActivity().findViewById(R.id.contcts_anim_container);
-                    //if(contactsContainer!=null)
-                    //    contactsContainer.setVisibility(View.GONE);
-                }
-                if (recyclerView != null)
-                {
-                    //recyclerView.setAdapter(null);
-                    ArrayList<Achievement> achs = new ArrayList<>();
+                    if (RewardsAchievementsActivity.achievements.isEmpty())
+                    {
+                        /*Achievement temp = new Achievement();
+                        temp.setAchName(getString(R.string.msg_no_achievements));
+                        RewardsAchievementsActivity.achievements.add(temp);*/
+                        Log.d(TAG, "Achievement list is empty.");
 
-                    /**Adapter have direct access to RewardsAchievementsActivity's achievements list
-                     * Solve this by copying elements from Activity to local Fragment.*/
-                    ArrayList<Achievement> achievements = new ArrayList<>();
-                    //for(Achievement a:RewardsAchievementsActivity.achievements)
-                    //for(int i=0;i<10;i++)
-                    //    achievements.add(new Achievement(String.valueOf(i),"Ach name","Ach desc", 0, 100,50, 0, 10, "A"));
-
-                    //achs.add(new Achievement("0","Ach name","Ach desc", 0, 100,50, 0, 10, "A"));
-                    //System.err.println(RewardsAchievementsActivity.achievements==null?"achs>>NULL":"achs>>"+RewardsAchievementsActivity.achievements.size());
-                    //RewardsAchievementsActivity.achievements
-                    AchievementsRecyclerViewAdapter adapter = new AchievementsRecyclerViewAdapter(RewardsAchievementsActivity.achievements, bitmaps, mListener);
-                    recyclerView.setAdapter(adapter);
-                    recyclerView.invalidate();
-                    adapter.notifyDataSetChanged();
-                    Log.d(TAG, "Set Achievements list.");
+                        //LinearLayout contactsContainer = (LinearLayout)getActivity().findViewById(R.id.contcts_anim_container);
+                        //if(contactsContainer!=null)
+                        //    contactsContainer.setVisibility(View.VISIBLE);
+                    } else
+                    {
+                        //LinearLayout contactsContainer = (LinearLayout)getActivity().findViewById(R.id.contcts_anim_container);
+                        //if(contactsContainer!=null)
+                        //    contactsContainer.setVisibility(View.GONE);
+                    }
+                    if (recyclerView != null)
+                    {
+                        AchievementsRecyclerViewAdapter adapter = new AchievementsRecyclerViewAdapter(RewardsAchievementsActivity.achievements, bitmaps, mListener);
+                        recyclerView.setAdapter(adapter);
+                        recyclerView.invalidate();
+                        adapter.notifyDataSetChanged();
+                        Log.d(TAG, "Set Achievements list.");
+                    }
+                    //if(swipeRefreshLayout!=null)
+                    //    swipeRefreshLayout.setRefreshing(false);
                 }
-                //if(swipeRefreshLayout!=null)
-                //    swipeRefreshLayout.setRefreshing(false);
-            }
-        };
-        runOnUI(runnable);
+            };
+            runOnUI(runnable);
+        }else Log.wtf(TAG,"Activity is null");
     }
 
     public void runOnUI(Runnable r)

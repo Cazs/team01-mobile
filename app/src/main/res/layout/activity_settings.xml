@@ -106,9 +106,9 @@
     </RelativeLayout>
 
     <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="10dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -131,5 +131,58 @@
             android:layout_marginRight="10dp"
             android:layout_centerVertical="true"/>
     </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:text="Loudness"
+            android:textSize="18sp"
+            android:layout_marginLeft="10dp"
+            android:typeface="monospace"
+            android:gravity="center"/>
+
+        <EditText
+            android:id="@+id/edtLoudness"
+            android:layout_width="@dimen/dp_size_170"
+            android:layout_height="@dimen/dp_size_40"
+            android:hint="Loudness of event"
+            android:inputType="number"
+            android:fontFamily="monospace"
+            android:background="@drawable/textbox"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:layout_centerVertical="true"/>
+    </RelativeLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:text="Update Search Filters"
+        android:textSize="16sp"
+        android:typeface="monospace"
+        android:onClick="updateFilters"
+        android:layout_gravity="center"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:text="Other"
+        android:textSize="28sp"
+        android:typeface="monospace"
+        android:layout_gravity="center"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:text="Show Icebreak history"
+        android:textSize="16sp"
+        android:typeface="monospace"
+        android:onClick="showIcebreakHistory"
+        android:layout_gravity="center"/>
 
 </LinearLayout>

@@ -15,6 +15,7 @@ public enum Config
     USR_MIN_AGE("min_age"),
     USR_MAX_AGE("max_age"),
     USR_GEND("pref_gender"),
+    EVENT_LOUDNESS("loudness"),
     META_DELIM(";"),
     META_DATE_MODIFIED("dmd"),
     META_PARAM_NEWER("1"),
