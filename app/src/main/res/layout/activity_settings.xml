@@ -22,7 +22,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="50dp"
-        android:text="Search Filters"
+        android:text="Settings"
         android:textSize="28sp"
         android:typeface="monospace"
         android:layout_gravity="center"/>
@@ -47,6 +47,7 @@
             android:layout_height="@dimen/dp_size_40"
             android:hint="Kilometers"
             android:inputType="number"
+            android:textAlignment="center"
             android:fontFamily="monospace"
             android:background="@drawable/textbox"
             android:layout_alignParentRight="true"
@@ -63,6 +64,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Interested in"
+            android:textAlignment="center"
             android:typeface="monospace"
             android:textSize="18sp"
             android:layout_marginLeft="10dp"
@@ -74,6 +76,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_marginRight="10dp"
+            android:textAlignment="center"
             android:layout_centerVertical="true"/>
 
     </RelativeLayout>
@@ -87,6 +90,7 @@
             android:layout_width="wrap_content"
             android:layout_height="50dp"
             android:text="Min age"
+            android:textAlignment="center"
             android:textSize="18sp"
             android:layout_marginLeft="10dp"
             android:typeface="monospace"
@@ -98,6 +102,7 @@
             android:layout_height="@dimen/dp_size_40"
             android:hint="Minimum age"
             android:inputType="number"
+            android:textAlignment="center"
             android:fontFamily="monospace"
             android:background="@drawable/textbox"
             android:layout_alignParentRight="true"
@@ -115,6 +120,7 @@
             android:layout_height="50dp"
             android:text="Max age"
             android:textSize="18sp"
+
             android:layout_marginLeft="10dp"
             android:typeface="monospace"
             android:gravity="center"/>
@@ -125,6 +131,7 @@
             android:layout_height="@dimen/dp_size_40"
             android:hint="Maximum age"
             android:inputType="number"
+            android:textAlignment="center"
             android:fontFamily="monospace"
             android:background="@drawable/textbox"
             android:layout_alignParentRight="true"
@@ -154,35 +161,45 @@
             android:inputType="number"
             android:fontFamily="monospace"
             android:background="@drawable/textbox"
+            android:textAlignment="center"
             android:layout_alignParentRight="true"
             android:layout_marginRight="10dp"
             android:layout_centerVertical="true"/>
     </RelativeLayout>
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="200dp"
         android:layout_height="50dp"
-        android:text="Update Search Filters"
+        android:text="Update Settings"
         android:textSize="16sp"
+        android:textAlignment="center"
+        android:layout_marginTop="@dimen/dp_size_10"
         android:typeface="monospace"
         android:onClick="updateFilters"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="@drawable/icebreak_button"
+        />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:text="Other"
-        android:textSize="28sp"
+        android:layout_marginTop="@dimen/dp_size_10"
+        android:textSize="20sp"
         android:typeface="monospace"
         android:layout_gravity="center"/>
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="200dp"
         android:layout_height="50dp"
-        android:text="Show Icebreak history"
+        android:text="History"
         android:textSize="16sp"
+        android:layout_marginBottom="@dimen/dp_size_20"
         android:typeface="monospace"
         android:onClick="showIcebreakHistory"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"
+        android:background="@drawable/icebreak_button"
+        />
 
 </LinearLayout>

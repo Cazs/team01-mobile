@@ -354,17 +354,17 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
             heightAnim.setDuration(200);
             bottom_bar.startAnimation(heightAnim);
             timeline_in_fg=false;
-            btnShowTimeline.setText("Show Event Timeline");
+            btnShowTimeline.setText("Events Story");
         }else//display timeline
         {
-            btnShowTimeline.setText("Loading timeline...");
+            btnShowTimeline.setText("Story Loading...");
             btnShowTimeline.setClickable(false);
             Thread tTimelineLoader = new Thread(new Runnable()
             {
                 @Override
                 public void run()
                 {
-                    while (is_loading_timeline){Log.v(TAG,"Is loading timeline.");}
+                    while (is_loading_timeline){Log.v(TAG,"Is loading Story.");}
                     EventDetailActivity.this.runOnUiThread(new Runnable()
                     {
                         @Override
@@ -376,7 +376,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                             bottom_bar.startAnimation(heightAnim);
                             timeline_in_fg=true;
                             btnShowTimeline.setClickable(true);
-                            btnShowTimeline.setText("Hide Event Timeline");
+                            btnShowTimeline.setText("Hide Event Story");
                         }
                     });
                 }

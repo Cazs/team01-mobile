@@ -54,6 +54,45 @@
                 android:layout_centerHorizontal="true"
                 android:gravity="center"/>
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/event_Start"
+                android:fontFamily="monospace"
+                android:textSize="8pt"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:text="Start Of event:"
+                android:layout_below="@+id/event_description"
+                android:layout_centerHorizontal="true"
+                />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/event_address"
+                android:fontFamily="monospace"
+                android:textSize="8pt"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:text="Address:"
+                android:layout_below="@+id/event_Start"
+                android:layout_centerHorizontal="true"
+                />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/event_End"
+                android:fontFamily="monospace"
+                android:textSize="8pt"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:text="End of Event:"
+                android:layout_below="@+id/event_address"
+                android:layout_centerHorizontal="true"
+                />
+
             <EditText
                 android:id="@+id/AccessCode"
                 android:layout_width="@dimen/dp_size_200"
@@ -61,8 +100,8 @@
                 android:layout_centerHorizontal="true"
                 android:gravity="center"
                 android:hint="Access Code"
-                android:layout_marginTop="20dp"
-                android:layout_below="@+id/event_description"
+                android:layout_marginTop="40dp"
+                android:layout_below="@+id/event_End"
                 android:inputType="number"
                 android:fontFamily="monospace"
                 android:background="@drawable/textbox"/>
@@ -127,11 +166,13 @@
     <Button
         android:id="@+id/btnShowTimeline"
         android:layout_width="180dp"
+        android:fontFamily="monospace"
         android:layout_height="50dp"
         android:onClick="showTimeline"
         android:layout_centerHorizontal="true"
         android:layout_above="@+id/dragView"
         android:layout_marginBottom="10dp"
-        android:text="Show Event Timeline"/>
-
+        android:text="Events story"
+        android:background="@drawable/icebreak_button"
+        />
 </RelativeLayout>

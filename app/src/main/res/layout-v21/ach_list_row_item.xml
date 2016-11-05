@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="100">
+
+    <ImageView
+        android:id="@+id/imgAch"
+        android:layout_width="@dimen/dp_size_60"
+        android:layout_height="@dimen/dp_size_80"
+        android:layout_weight="15"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"/>
+    <TextView
+        android:id="@+id/achName"
+        android:layout_width="@dimen/dp_size_150"
+        android:layout_height="@dimen/dp_size_40"
+        android:layout_weight="90"
+        android:text="Popular Kid"
+        android:lines="2"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_toRightOf="@+id/imgAch"
+        />
+
+    <TextView
+        android:id="@+id/achDescription"
+        android:layout_width="@dimen/dp_size_150"
+        android:layout_height="@dimen/dp_size_40"
+        android:layout_weight="90"
+        android:text="Popular Kid"
+        android:lines="2"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_below="@+id/achName"
+        android:layout_toRightOf="@+id/imgAch"
+        />
+    <ProgressBar
+        android:layout_width="@dimen/dp_size_115"
+        android:layout_height="wrap_content"
+        style="@android:style/Widget.Material.HorizontalScrollView"
+        android:layout_toRightOf="@+id/achName"
+        android:layout_marginTop="@dimen/dp_size_5"
+        android:id="@+id/scoreBar"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/achReward"
+        android:text="Reward"
+        android:layout_below="@+id/achName"
+        android:layout_marginLeft="@dimen/dp_size_5"
+        android:layout_toRightOf="@+id/achDescription"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/achValue"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:text="000"
+        android:layout_below="@+id/achName"
+        android:layout_toRightOf="@+id/achReward"
+        />
+    <ImageView
+        android:id="@+id/imgValue"
+        android:layout_width="@dimen/dp_size_50"
+        android:layout_height="@dimen/dp_size_50"
+        android:layout_weight="15"
+        android:layout_below="@+id/scoreBar"
+        android:layout_toRightOf="@+id/achValue"
+        android:layout_marginTop="@dimen/dp_size_0"
+        android:src="@drawable/coins"
+        />
+</RelativeLayout>

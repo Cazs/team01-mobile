@@ -122,7 +122,7 @@
             android:textSize="10pt"
             android:layout_centerHorizontal="true"
             android:text="Proceed"
-            android:background="@drawable/buttonshape" />
+            android:background="@drawable/icebreak_button" />
 
     </LinearLayout>
 </RelativeLayout>
