@@ -106,7 +106,7 @@ public class IBDialog extends Activity
 
         if(icebreak_msg==null||receiving_user==null||requesting_user==null || s==null)
         {
-            Log.d(TAG,"Some compulsory objects are null.");
+            Log.wtf(TAG,"Some compulsory objects are null.");
             closeActivity();
         }
 
@@ -117,7 +117,7 @@ public class IBDialog extends Activity
 
         Vibrator vibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
         if(vibrator.hasVibrator())
-            vibrator.vibrate(5000);
+            vibrator.vibrate(1000);
 
         if(request_code==INCOMING_REQUEST)//IceBreak request
         {

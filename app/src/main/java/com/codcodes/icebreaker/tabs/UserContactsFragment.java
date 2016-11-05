@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
@@ -61,6 +62,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
     private static final String ARG_COLUMN_COUNT = "column-count";
     private static final String TAG = "IB/UserContactsFragment";
     private static final boolean DEBUG = true;
+    private static final boolean is_loading_contacts=false;
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private Timer tContactsRefresh = null;
@@ -70,6 +72,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
     //private SwipeListAdapter swipeAdapter;
     private SwipeRefreshLayout swipeRefreshLayout;
     private static  UserContactsFragment contactsList;
+    private ProgressBar pb_loading_contacts;
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -114,6 +117,8 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
         View rview = null;
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_layout);
 
+        rview = view.findViewById(R.id.userContactList);
+        pb_loading_contacts = (ProgressBar) view.findViewById(R.id.pbLoadingContacts);
         TextView txtNotEvent = (TextView)view.findViewById(R.id.txt_not_at_event);
         Typeface ttfInfinity = Typeface.createFromAsset(getActivity().getAssets(), "Infinity.ttf");
         if(txtNotEvent!=null)
@@ -138,9 +143,6 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                 }
             }
         );
-
-        if(view != null)
-            rview = view.findViewById(R.id.userContactList);
 
         if (rview instanceof RecyclerView)
         {
@@ -209,6 +211,19 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
 
                         if (event_id > 0)
                         {
+                            if(getActivity()!=null)
+                            {
+                                getActivity().runOnUiThread(new Runnable()
+                                {
+                                    @Override
+                                    public void run()
+                                    {
+                                        if(pb_loading_contacts!=null)
+                                            pb_loading_contacts.setVisibility(View.VISIBLE);
+                                        else Log.wtf(TAG,"Loading contacts progress bar is null.");
+                                    }
+                                });
+                            }
                             contacts = new ArrayList<User>();
                             ArrayList<User> users_at_event = new ArrayList<>();
 
@@ -300,6 +315,20 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
 
     private void refreshUsersAtEvent() throws ConcurrentModificationException
     {
+        //Stop progress bar if visible
+        if(getActivity()!=null)
+        {
+            getActivity().runOnUiThread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    if(pb_loading_contacts!=null)
+                        pb_loading_contacts.setVisibility(View.GONE);
+                    else Log.wtf(TAG,"Loading contacts progress bar is null.");
+                }
+            });
+        }
         /**Prepare to set adapter**/
         //Load users at Event
         //Attempt to load images into memory and set the list adapter
@@ -366,6 +395,7 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                     if(contactsContainer!=null)
                         contactsContainer.setVisibility(View.GONE);
                 }
+
                 if (recyclerView != null)
                 {
                     recyclerView.setAdapter(new UserListRecyclerViewAdapter(contacts, bitmaps, mListener));

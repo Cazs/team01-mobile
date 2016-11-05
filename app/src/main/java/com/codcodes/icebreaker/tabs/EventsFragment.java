@@ -305,6 +305,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                         //final ArrayList<Event> temp_lst = new ArrayList<Event>();
                         //temp_lst.add(temp);
                         Log.d(TAG, "Events list is empty.");
+                        startPulsator();
                         reloadEvents(LOAD_REMOTE_EVENTS);
                     }
                     //Set adapter

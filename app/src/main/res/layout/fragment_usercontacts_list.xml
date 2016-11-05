@@ -42,10 +42,28 @@
                 android:id="@+id/txt_not_at_event"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="You are currently not signed in to any event."
+                android:text="You are currently not signed in to any event or there are no contacts that match your search filters."
                 android:textSize="20sp"
                 android:layout_gravity="center"
                 android:gravity="center"/>
+
+            <ProgressBar
+                android:id="@+id/pbLoadingContacts"
+                android:layout_width="@dimen/dp_size_50"
+                android:layout_height="@dimen/dp_size_50"
+                android:indeterminate="true"
+                android:visibility="gone"
+                android:layout_gravity="center"/>
+
+            <Button
+                android:id="@+id/btnReload"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Refresh"
+                android:textSize="20sp"
+                android:layout_gravity="center"
+                android:gravity="center"/>
+
         </LinearLayout>
     </RelativeLayout>
 </android.support.v4.widget.SwipeRefreshLayout>

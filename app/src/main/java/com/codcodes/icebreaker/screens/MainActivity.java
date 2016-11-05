@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.location.Location;
+import android.media.Image;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
@@ -87,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     private ViewPager mViewPager;
     private LinearLayout actionBar;
     private Typeface ttfInfinity, ttfAilerons;
+    private FloatingActionButton btnCam;
 
     public static String rootDir = Environment.getExternalStorageDirectory().getPath();
     public static double range = 40.0;
@@ -292,6 +294,9 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             {
 
                 TextView title = (TextView) MainActivity.this.findViewById(R.id.main_heading);
+                if(position==1)
+                    btnCam.setVisibility(View.VISIBLE);
+                else btnCam.setVisibility(View.GONE);
 
                 if (position == 2)
                 {
@@ -326,7 +331,9 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                     .build();
         }
 
-        FloatingActionButton btnCam = (FloatingActionButton)findViewById(R.id.fabCam);
+        btnCam = (FloatingActionButton)findViewById(R.id.fabCam);
+        btnCam.setVisibility(View.GONE);
+
         btnCam.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -342,13 +349,13 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     {
         try
         {
-            ArrayList<Achievement> tmp_unnotifd = null;
+            ArrayList<Achievement> tmp_unnotifd=null;
             try
             {
                 tmp_unnotifd = LocalComms.getUnnotifiedAchievementsFromDB(this);
             }catch (SQLiteException e)
             {
-                Log.d(TAG,e.getMessage());
+                LocalComms.logException(e);
             }
 
             final ArrayList<Achievement> unnotifd = tmp_unnotifd;
@@ -358,21 +365,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                 if(!unnotifd.isEmpty())
                 {
                     final LinearLayout popup_notif = (LinearLayout)findViewById(R.id.popup_notif);
-
-                    if (this != null)
-                    {
-                        this.runOnUiThread(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                if(popup_notif!=null)
-                                    popup_notif.setVisibility(View.VISIBLE);
-                                else return;
-                            }
-                        });
-                    }
-
+                    final ImageView ach_icon = (ImageView)findViewById(R.id.msg_icon);
                     final TextView title = (TextView) findViewById(R.id.msg_title);
                     final TextView msg = (TextView) findViewById(R.id.msg);
                     final ImageView icon = (ImageView) findViewById(R.id.msg_icon);
@@ -387,14 +380,43 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                             @Override
                             public void run()
                             {
-                                Vibrator vibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
-                                if(vibrator.hasVibrator())
-                                    vibrator.vibrate(1000);
+                                if(popup_notif!=null)
+                                {
+                                    popup_notif.setVisibility(View.VISIBLE);
 
-                                msg.setText(unnotifd.get(0).getAchName());
-                                title.setText("Achievement Unlocked");
-                                //TODO: set icon
-                                //TODO: Change ach stat to notified
+                                    Vibrator vibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
+                                    if(vibrator.hasVibrator())
+                                        vibrator.vibrate(500);
+                                    Achievement unlocked_ach = unnotifd.get(0);//get first new achievement unlocked
+                                    msg.setText(unlocked_ach.getAchName());
+                                    title.setText("Achievement Unlocked");
+
+                                    BitmapFactory.Options opts = new BitmapFactory.Options();
+                                    opts.inPreferredConfig = Bitmap.Config.ALPHA_8;
+                                    //Attempt to set icon
+                                    try
+                                    {
+                                        Bitmap bitmap = LocalComms.getImage(MainActivity.this, unlocked_ach.getAchId(), ".png", "/achievements", opts);
+                                        ach_icon.setImageBitmap(bitmap);
+                                    } catch (IOException e)
+                                    {
+                                        LocalComms.logException(e);
+                                    }
+                                    //Change ach status to notified
+                                    unlocked_ach.setNotified(1);
+                                    LocalComms.updateAchievementOnDB(getApplicationContext(), unlocked_ach);
+                                } else return;
+                            }
+                        });
+                    }
+
+                    if (this != null)
+                    {
+                        this.runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
                             }
                         });
                     }
