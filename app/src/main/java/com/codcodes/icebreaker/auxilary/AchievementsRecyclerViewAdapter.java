@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.codcodes.icebreaker.R;
@@ -50,8 +51,7 @@ public class AchievementsRecyclerViewAdapter extends RecyclerView.Adapter<Achiev
     public void onBindViewHolder(final AchievementViewHolder holder, int position)
     {
         holder.setAchievement(mValues.get(position));
-        //holder.mContactName.setText(mValues.get(position).getFirstname() + " " + mValues.get(position).getLastname());
-        //holder.mContactBio.setText(mValues.get(position).getCatchphrase());
+
         if(mIconBitmaps!=null)
         {
             if (position < mIconBitmaps.size())
@@ -89,6 +89,7 @@ public class AchievementsRecyclerViewAdapter extends RecyclerView.Adapter<Achiev
         private final TextView mPoints;
         private final TextView mScore;
         private final TextView mTarget;
+        private final ProgressBar pb;
         private Achievement achievement;
 
         public AchievementViewHolder(View view)
@@ -101,6 +102,8 @@ public class AchievementsRecyclerViewAdapter extends RecyclerView.Adapter<Achiev
             this.mPoints = (TextView) view.findViewById(R.id.achPts);
             this.mScore = (TextView) view.findViewById(R.id.score);
             this.mTarget = (TextView) view.findViewById(R.id.target);
+            this.pb = (ProgressBar) view.findViewById(R.id.scoreBar);
+
         }
 
         public View getView()
@@ -148,11 +151,13 @@ public class AchievementsRecyclerViewAdapter extends RecyclerView.Adapter<Achiev
             if(achievement!=null)
             {
                 this.achievement = achievement;
+                pb.setMax(achievement.getAchTarget());
                 setAchievementName(achievement.getAchName());
                 setAchievementDescription(achievement.getAchDescription());
                 setScore(String.valueOf(achievement.getUserPoints()));
                 setTarget(String.valueOf(achievement.getAchTarget()));
                 setPoints(String.valueOf(achievement.getAchValue()));
+
             }else Log.wtf(TAG, "Achievement is null.");
         }
 
@@ -162,7 +167,18 @@ public class AchievementsRecyclerViewAdapter extends RecyclerView.Adapter<Achiev
 
         public void setAchievementIcon(Bitmap bmp) {this.mAchievementIcon.setImageBitmap(bmp);}
 
-        public void setScore(String score) {this.mScore.setText(score);}
+        public void setScore(String score)
+        {
+            if(achievement.getUserPoints() >=  achievement.getAchTarget() )
+            {
+                this.mScore.setText(String.valueOf(achievement.getAchTarget()));
+            }
+            else
+            {
+                this.mScore.setText(score);
+            }
+            this.pb.setProgress(achievement.getAchValue());
+        }
 
         public void setTarget(String target) {this.mTarget.setText(target);}
 

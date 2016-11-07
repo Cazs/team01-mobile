@@ -12,20 +12,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.LocalComms;
-import com.codcodes.icebreaker.auxilary.RewardsAdapter;
 import com.codcodes.icebreaker.auxilary.RewardsRecyclerViewAdapter;
-import com.codcodes.icebreaker.auxilary.UserListRecyclerViewAdapter;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
 import com.codcodes.icebreaker.model.Reward;
-import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.screens.RewardsAchievementsActivity;
 
 import java.io.IOException;
@@ -39,7 +33,6 @@ import java.util.ConcurrentModificationException;
 public class RewardFragment extends android.support.v4.app.Fragment
 {
     private static AssetManager mgr;
-    private RewardsAdapter adapter;
     private RecyclerView recyclerView;
     private IOnListFragmentInteractionListener mListener;
     private ArrayList<Bitmap> bitmaps;
@@ -78,7 +71,7 @@ public class RewardFragment extends android.support.v4.app.Fragment
         String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         SecureRandom rnd = new SecureRandom();
         StringBuilder sb = new StringBuilder(4);
-        for( int i = 0; i < 4; i++ )
+        for( int i = 0; i < 4; i++)
             sb.append( AB.charAt( rnd.nextInt(AB.length()) ) );
         return sb.toString();
     }
@@ -91,33 +84,6 @@ public class RewardFragment extends android.support.v4.app.Fragment
         reward.setArguments(b);
         return reward;
     }
-    /*public void setAdapter()
-    {
-        if(RewardsAchievementsActivity.rewards!=null)
-        {
-            if(!RewardsAchievementsActivity.rewards.isEmpty())
-            {
-                for(Reward rw : RewardsAchievementsActivity.rewards)
-                {
-                    rw.setRwCode(randromCodeGenerator());
-                }
-                adapter = new RewardsAdapter(getActivity(),RewardsAchievementsActivity.rewards,0);
-
-                if(adapter!=null && list!=null && getActivity()!=null)
-                {
-                    getActivity().runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            list.setAdapter(adapter);
-                        }
-                    });
-                }
-            }
-            else Toast.makeText(getActivity(), "No Rewards found, or they are still loading.",Toast.LENGTH_LONG).show();
-        }
-    }*/
 
     public void renderRewards() throws ConcurrentModificationException
     {

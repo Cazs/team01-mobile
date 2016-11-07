@@ -19,170 +19,198 @@
             layout="@layout/appbar"/>
     </LinearLayout>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:text="Search Filters"
-        android:textSize="28sp"
-        android:typeface="monospace"
-        android:layout_gravity="center"/>
-
-    <RelativeLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp">
+        android:layout_height="match_parent"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:text="Max distance"
-            android:textSize="18sp"
-            android:typeface="monospace"
-            android:layout_marginLeft="10dp"
-            android:gravity="center"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/edtDistance"
-            android:layout_width="@dimen/dp_size_170"
-            android:layout_height="@dimen/dp_size_40"
-            android:hint="Kilometers"
-            android:inputType="number"
-            android:fontFamily="monospace"
-            android:background="@drawable/textbox"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="10dp"
-            android:layout_centerVertical="true"/>
-    </RelativeLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:text="Settings"
+                android:textSize="28sp"
+                android:typeface="monospace"
+                android:layout_gravity="center"/>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="50dp"
+                    android:text="Max distance"
+                    android:textSize="18sp"
+                    android:typeface="monospace"
+                    android:layout_marginLeft="10dp"
+                    android:gravity="center"/>
+
+                <EditText
+                    android:id="@+id/edtDistance"
+                    android:layout_width="@dimen/dp_size_170"
+                    android:layout_height="@dimen/dp_size_40"
+                    android:hint="Kilometers"
+                    android:inputType="number"
+                    android:textAlignment="center"
+                    android:fontFamily="monospace"
+                    android:background="@drawable/textbox"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="10dp"
+                    android:layout_centerVertical="true"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Interested in"
+                    android:textAlignment="center"
+                    android:typeface="monospace"
+                    android:textSize="18sp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_centerVertical="true"/>
+
+                <Spinner
+                    android:id="@+id/spnGender"
+                    android:layout_width="@dimen/dp_size_170"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="10dp"
+                    android:textAlignment="center"
+                    android:layout_centerVertical="true"/>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="50dp"
+                    android:text="Min age"
+                    android:textAlignment="center"
+                    android:textSize="18sp"
+                    android:layout_marginLeft="10dp"
+                    android:typeface="monospace"
+                    android:gravity="center"/>
+
+                <EditText
+                    android:id="@+id/edtMinAge"
+                    android:layout_width="@dimen/dp_size_170"
+                    android:layout_height="@dimen/dp_size_40"
+                    android:hint="Minimum age"
+                    android:inputType="number"
+                    android:textAlignment="center"
+                    android:fontFamily="monospace"
+                    android:background="@drawable/textbox"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="10dp"
+                    android:layout_centerVertical="true"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Interested in"
-            android:typeface="monospace"
-            android:textSize="18sp"
-            android:layout_marginLeft="10dp"
-            android:layout_centerVertical="true"/>
+            android:layout_marginTop="10dp">
 
-        <Spinner
-            android:id="@+id/spnGender"
-            android:layout_width="@dimen/dp_size_170"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="10dp"
-            android:layout_centerVertical="true"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="50dp"
+                    android:text="Max age"
+                    android:textSize="18sp"
 
-    </RelativeLayout>
+                    android:layout_marginLeft="10dp"
+                    android:typeface="monospace"
+                    android:gravity="center"/>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp">
+                <EditText
+                    android:id="@+id/edtMaxAge"
+                    android:layout_width="@dimen/dp_size_170"
+                    android:layout_height="@dimen/dp_size_40"
+                    android:hint="Maximum age"
+                    android:inputType="number"
+                    android:textAlignment="center"
+                    android:fontFamily="monospace"
+                    android:background="@drawable/textbox"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="10dp"
+                    android:layout_centerVertical="true"/>
+            </RelativeLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:text="Min age"
-            android:textSize="18sp"
-            android:layout_marginLeft="10dp"
-            android:typeface="monospace"
-            android:gravity="center"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp">
 
-        <EditText
-            android:id="@+id/edtMinAge"
-            android:layout_width="@dimen/dp_size_170"
-            android:layout_height="@dimen/dp_size_40"
-            android:hint="Minimum age"
-            android:inputType="number"
-            android:fontFamily="monospace"
-            android:background="@drawable/textbox"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="10dp"
-            android:layout_centerVertical="true"/>
-    </RelativeLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="50dp"
+                    android:text="Loudness"
+                    android:textSize="18sp"
+                    android:layout_marginLeft="10dp"
+                    android:typeface="monospace"
+                    android:gravity="center"/>
 
-    <RelativeLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="10dp">
+                <EditText
+                    android:id="@+id/edtLoudness"
+                    android:layout_width="@dimen/dp_size_170"
+                    android:layout_height="@dimen/dp_size_40"
+                    android:hint="Loudness of event"
+                    android:inputType="number"
+                    android:fontFamily="monospace"
+                    android:background="@drawable/textbox"
+                    android:textAlignment="center"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="10dp"
+                    android:layout_centerVertical="true"/>
+            </RelativeLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:text="Max age"
-            android:textSize="18sp"
-            android:layout_marginLeft="10dp"
-            android:typeface="monospace"
-            android:gravity="center"/>
+            <Button
+                android:layout_width="200dp"
+                android:layout_height="50dp"
+                android:text="Update Settings"
+                android:textSize="16sp"
+                android:textAlignment="center"
+                android:layout_marginTop="@dimen/dp_size_10"
+                android:typeface="monospace"
+                android:onClick="updateFilters"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:background="@drawable/icebreak_button"
+                />
 
-        <EditText
-            android:id="@+id/edtMaxAge"
-            android:layout_width="@dimen/dp_size_170"
-            android:layout_height="@dimen/dp_size_40"
-            android:hint="Maximum age"
-            android:inputType="number"
-            android:fontFamily="monospace"
-            android:background="@drawable/textbox"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="10dp"
-            android:layout_centerVertical="true"/>
-    </RelativeLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:text="Other"
+                android:layout_marginTop="@dimen/dp_size_10"
+                android:textSize="20sp"
+                android:typeface="monospace"
+                android:layout_gravity="center"/>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:text="Loudness"
-            android:textSize="18sp"
-            android:layout_marginLeft="10dp"
-            android:typeface="monospace"
-            android:gravity="center"/>
-
-        <EditText
-            android:id="@+id/edtLoudness"
-            android:layout_width="@dimen/dp_size_170"
-            android:layout_height="@dimen/dp_size_40"
-            android:hint="Loudness of event"
-            android:inputType="number"
-            android:fontFamily="monospace"
-            android:background="@drawable/textbox"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="10dp"
-            android:layout_centerVertical="true"/>
-    </RelativeLayout>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:text="Update Search Filters"
-        android:textSize="16sp"
-        android:typeface="monospace"
-        android:onClick="updateFilters"
-        android:layout_gravity="center"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:text="Other"
-        android:textSize="28sp"
-        android:typeface="monospace"
-        android:layout_gravity="center"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:text="Show Icebreak history"
-        android:textSize="16sp"
-        android:typeface="monospace"
-        android:onClick="showIcebreakHistory"
-        android:layout_gravity="center"/>
-
+            <Button
+                android:layout_width="200dp"
+                android:layout_height="50dp"
+                android:text="History"
+                android:textSize="16sp"
+                android:layout_marginBottom="@dimen/dp_size_20"
+                android:typeface="monospace"
+                android:onClick="showIcebreakHistory"
+                android:layout_gravity="center"
+                android:background="@drawable/icebreak_button"/>
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

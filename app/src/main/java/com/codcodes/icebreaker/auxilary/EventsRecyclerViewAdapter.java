@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.codcodes.icebreaker.R;
@@ -50,10 +51,9 @@ public class EventsRecyclerViewAdapter extends RecyclerView.Adapter<EventsRecycl
         if(mEventIcons!=null)
         {
             if (position < mEventIcons.size())
-                holder.getEventIcon().setImageBitmap(ImageConverter.getRoundedCornerBitMap(mEventIcons.get(position),300));
-            else
-                Log.d(TAG, "Bitmap ArrayList is empty.");
-        }
+                holder.setEventIcon(ImageConverter.getRoundedCornerBitMap(mEventIcons.get(position),300));
+            else Log.d(TAG, "Bitmap ArrayList is empty.");
+        }else Log.d(TAG, "Bitmap ArrayList is empty.");
 
         holder.getView().setOnClickListener(new View.OnClickListener()
         {
@@ -82,6 +82,7 @@ public class EventsRecyclerViewAdapter extends RecyclerView.Adapter<EventsRecycl
         private TextView mEventDescription = null;
         private ImageView mEventIcon = null;
         private Event event;
+        private ProgressBar progressBar;
 
         public EventsViewHolder(View view)
         {
@@ -90,6 +91,15 @@ public class EventsRecyclerViewAdapter extends RecyclerView.Adapter<EventsRecycl
             this.mEventName = (TextView) view.findViewById(R.id.contactName);
             this.mEventDescription = (TextView) view.findViewById(R.id.contactBio);
             this.mEventIcon = (ImageView) view.findViewById(R.id.contactProfileImage);
+            this.progressBar = (ProgressBar) view.findViewById(R.id.pb_img_load);
+        }
+
+        public void setEventIcon(Bitmap bitmap)
+        {
+            if(mEventIcon!=null)
+                mEventIcon.setImageBitmap(bitmap);
+            if(progressBar!=null)
+                progressBar.setVisibility(View.GONE);
         }
 
         public TextView getEventName()

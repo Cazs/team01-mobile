@@ -58,8 +58,10 @@ import com.google.android.gms.vision.barcode.Barcode;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class EventDetailActivity extends AppCompatActivity implements IOnListFragmentInteractionListener
 {
@@ -218,6 +220,18 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
         eventDetails.setTypeface(heading);
         eventDetails.setTextSize(40);
 
+        TextView txt_start_date = (TextView)findViewById(R.id.event_start_date);
+        TextView txt_end_date = (TextView)findViewById(R.id.event_end_date);
+        TextView txt_address = (TextView)findViewById(R.id.event_address);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE, MMMM d, yyyy HH:mm");
+        String sdate = sdf.format(new Date(selected_event.getDate()*1000L));
+        String edate = sdf.format(new Date(selected_event.getEndDate()*1000L));
+
+        txt_start_date.setText(sdate);
+        txt_end_date.setText(edate);
+        txt_address.setText(selected_event.getAddress());
+
         final EditText accessCode = (EditText) findViewById(R.id.AccessCode);
 
         accessCode.setOnEditorActionListener(new TextView.OnEditorActionListener()
@@ -227,17 +241,22 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
             {
                 if (actionID== EditorInfo.IME_ACTION_DONE || actionID== EditorInfo.IME_ACTION_NEXT)
                 {
-                    //Event e = RemoteComms.getEvent(Eventid);
-                    int code=0;
-                    try
+                    if(selected_event!=null)
                     {
-                        code = Integer.parseInt(accessCode.getText().toString());
-                        validateEventLogin(code);
-                    }catch (NumberFormatException e)
-                    {
-                        LocalComms.logException(e);
-                        Toast.makeText(EventDetailActivity.this,"Code is not a valid number!",Toast.LENGTH_LONG).show();
-                    }
+                        if(selected_event.getEndDate()>=System.currentTimeMillis()/1000)
+                        {
+                            int code = 0;
+                            try
+                            {
+                                code = Integer.parseInt(accessCode.getText().toString());
+                                validateEventLogin(code);
+                            } catch (NumberFormatException e)
+                            {
+                                LocalComms.logException(e);
+                                Toast.makeText(EventDetailActivity.this, "Code is not a valid number!", Toast.LENGTH_LONG).show();
+                            }
+                        }else toastHandler("This event has already passed.").obtainMessage().sendToTarget();
+                    }else toastHandler("This event is invalid.").obtainMessage().sendToTarget();
                 }
                 return false;
             }
@@ -252,13 +271,13 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
             {
                 try
                 {
-                    String ev_id = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
+                    /*String ev_id = WritersAndReaders.readAttributeFromConfig(Config.EVENT_ID.getValue());
                     if (ev_id != null)
                     {
                         if (!ev_id.isEmpty())
                         {
                             if (Long.parseLong(ev_id) > 0)
-                            {
+                            {*/
                                 if(selected_event.getId()>0)//Selected event is valid
                                 {
                                     is_loading_timeline = true;
@@ -313,7 +332,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                                 }
                                 is_loading_timeline = false;
                                 //TODO: Think about calling setAdapter here
-                            }else
+                            /*}else
                             {
                                 Log.d(TAG, "You're not signed in to an Icebreak event.");
                                 toastHandler("You're not signed in to an Icebreak event.").obtainMessage().sendToTarget();
@@ -327,7 +346,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                     {
                         Log.d(TAG, "You're not signed in to an Icebreak event.");
                         toastHandler("You're not signed in to an Icebreak event.").obtainMessage().sendToTarget();
-                    }
+                    }*/
                 }catch (NumberFormatException e)
                 {
                     LocalComms.logException(e);
@@ -338,12 +357,32 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
             }
         });
         tImageDownloader.start();
+        Thread tTimelineLoader = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                while (is_loading_timeline){Log.v(TAG,"Is loading Story.");}
+                EventDetailActivity.this.runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        rview.setAdapter(new TimelineAdapter(EventDetailActivity.this,getSupportFragmentManager(), image_to_audio_map,  mListener));
+                        timeline_in_fg=true;
+                        //btnShowTimeline.setClickable(true);
+                        //btnShowTimeline.setText("Hide Event Story");
+                    }
+                });
+            }
+        });
+        tTimelineLoader.start();
     }
 
     public void showTimeline(View view)
     {
         final LinearLayout bottom_bar = (LinearLayout)findViewById(R.id.dragView);
-        final Button btnShowTimeline = (Button) findViewById(R.id.btnShowTimeline);
+        //final Button btnShowTimeline = (Button) findViewById(R.id.btnShowTimeline);
         //ViewGroup.LayoutParams params = bottom_bar.getLayoutParams();
         final int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics());
         //DisplayMetrics metrics = getResources().getDisplayMetrics();
@@ -354,29 +393,29 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
             heightAnim.setDuration(200);
             bottom_bar.startAnimation(heightAnim);
             timeline_in_fg=false;
-            btnShowTimeline.setText("Show Event Timeline");
+            //btnShowTimeline.setText("Events Story");
         }else//display timeline
         {
-            btnShowTimeline.setText("Loading timeline...");
-            btnShowTimeline.setClickable(false);
+            //btnShowTimeline.setText("Story Loading...");
+            //btnShowTimeline.setClickable(false);
             Thread tTimelineLoader = new Thread(new Runnable()
             {
                 @Override
                 public void run()
                 {
-                    while (is_loading_timeline){Log.v(TAG,"Is loading timeline.");}
+                    while (is_loading_timeline){Log.v(TAG,"Is loading Story.");}
                     EventDetailActivity.this.runOnUiThread(new Runnable()
                     {
                         @Override
                         public void run()
                         {
-                            rview.setAdapter(new TimelineAdapter(EventDetailActivity.this, image_to_audio_map,  mListener));
+                            rview.setAdapter(new TimelineAdapter(EventDetailActivity.this, getSupportFragmentManager(), image_to_audio_map,  mListener));
                             ViewHeightAnimator heightAnim = new ViewHeightAnimator(bottom_bar, height, 5);
                             heightAnim.setDuration(200);
                             bottom_bar.startAnimation(heightAnim);
                             timeline_in_fg=true;
-                            btnShowTimeline.setClickable(true);
-                            btnShowTimeline.setText("Hide Event Timeline");
+                            //btnShowTimeline.setClickable(true);
+                            //btnShowTimeline.setText("Hide Event Story");
                         }
                     });
                 }

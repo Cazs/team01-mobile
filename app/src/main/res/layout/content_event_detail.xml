@@ -51,23 +51,85 @@
                 android:layout_marginRight="15dp"
                 android:text="Event Description"
                 android:layout_below="@+id/event_name"
-                android:layout_centerHorizontal="true"
+                android:gravity="center"/>
+
+            <TextView
+                android:id="@+id/event_start_date_lbl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:textSize="8pt"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginTop="20dp"
+                android:text="Starts on:"
+                android:layout_below="@+id/event_description"
+                android:gravity="center"/>
+
+            <TextView
+                android:id="@+id/event_start_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:textSize="8pt"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:text="---"
+                android:layout_below="@+id/event_start_date_lbl"
+                android:gravity="center"/>
+
+            <TextView
+                android:id="@+id/event_end_date_lbl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:textSize="8pt"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:text="Ends on:"
+                android:layout_below="@+id/event_start_date"
+                android:gravity="center"/>
+
+            <TextView
+                android:id="@+id/event_end_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:textSize="8pt"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:text="---"
+                android:layout_below="@+id/event_end_date_lbl"
+                android:gravity="center"/>
+
+            <TextView
+                android:id="@+id/event_address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:textSize="8pt"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_below="@+id/event_end_date"
+                android:layout_marginTop="20dp"
+                android:text="Address:"
                 android:gravity="center"/>
 
             <EditText
                 android:id="@+id/AccessCode"
                 android:layout_width="@dimen/dp_size_200"
                 android:layout_height="@dimen/dp_size_40"
-                android:layout_centerHorizontal="true"
-                android:gravity="center"
                 android:hint="Access Code"
-                android:layout_marginTop="20dp"
-                android:layout_below="@+id/event_description"
+                android:layout_marginTop="40dp"
+                android:layout_below="@+id/event_address"
                 android:inputType="number"
                 android:fontFamily="monospace"
-                android:background="@drawable/textbox"/>
+                android:background="@drawable/textbox"
+                android:textAlignment="center"
+                android:layout_centerHorizontal="true"/>
 
             <LinearLayout
+                android:id="@+id/qr_loc_btn_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -90,48 +152,52 @@
                     android:onClick="viewPosition"
                     android:layout_centerHorizontal="true"
                     android:layout_marginLeft="15dp"/>
+
             </LinearLayout>
 
+            <!--<Button
+                android:id="@+id/btnShowTimeline"
+                android:layout_width="180dp"
+                android:fontFamily="monospace"
+                android:layout_height="50dp"
+                android:onClick="showTimeline"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@+id/qr_loc_btn_container"
+                android:layout_marginTop="15dp"
+                android:text="Events story"
+                android:background="@drawable/icebreak_button"/>-->
+
+        <LinearLayout
+            android:id="@+id/dragView"
+            android:layout_width="match_parent"
+            android:layout_height="95dp"
+            android:background="#dbdbdb"
+            android:clickable="true"
+            android:focusable="false"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical"
+            android:layout_below="@+id/qr_loc_btn_container">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/imageTimeline"
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="2dp"
+                android:layout_marginRight="2dp"
+                app:layoutManager="LinearLayoutManager"
+                tools:context=".screens.EventDetailActivity"
+                tools:listitem="@layout/timeline_item" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="60dp"/>
+        </LinearLayout>
+
         </RelativeLayout>
+
     </ScrollView>
-
-    <LinearLayout
-        android:id="@+id/dragView"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#dbdbdb"
-        android:clickable="true"
-        android:focusable="false"
-        android:orientation="vertical"
-        android:layout_alignBottom="@+id/sv_detail_container">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/imageTimeline"
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            xmlns:tools="http://schemas.android.com/tools"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="2dp"
-            android:layout_marginRight="2dp"
-            app:layoutManager="LinearLayoutManager"
-            tools:context=".screens.EventDetailActivity"
-            tools:listitem="@layout/timeline_item" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="60dp"/>
-
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/btnShowTimeline"
-        android:layout_width="180dp"
-        android:layout_height="50dp"
-        android:onClick="showTimeline"
-        android:layout_centerHorizontal="true"
-        android:layout_above="@+id/dragView"
-        android:layout_marginBottom="10dp"
-        android:text="Show Event Timeline"/>
 
 </RelativeLayout>

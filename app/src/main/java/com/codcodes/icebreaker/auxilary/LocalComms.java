@@ -948,7 +948,7 @@ public class LocalComms
         ArrayList<Achievement> achievements = new ArrayList<Achievement>();
         AchievementHelper dbHelper = new AchievementHelper(context);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        //no need for dbHelper.onCreate(db);
+        dbHelper.onCreate(db);
 
         String q = "SELECT * FROM " + AchievementContract.AchievementEntry.TABLE_NAME +
                 " WHERE " + AchievementContract.AchievementEntry.COL_ACHIEVEMENT_NOTIFIED + "=?";

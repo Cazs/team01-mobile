@@ -1,5 +1,7 @@
 package com.codcodes.icebreaker.auxilary;
 
+import android.util.Log;
+
 import com.codcodes.icebreaker.model.IJsonable;
 
 import java.util.ArrayList;
@@ -69,13 +71,16 @@ public class JSON
             //Get and process key value pair
             String pair = m.group(0);
             pair = pair.replaceAll("\"", "");//Remove inverted-commas
-            //System.err.println(pair);
+
             if(pair.contains(":"))
             {
                 String[] kv_pair = pair.split(":");
-                String var = kv_pair[0];
-                String val = kv_pair[1];
-                jsonableClassInstance.setVarValue(var,val);
+                if(kv_pair.length>1)
+                {
+                    String var = kv_pair[0];
+                    String val = kv_pair[1];
+                    jsonableClassInstance.setVarValue(var, val);
+                }else Log.wtf(TAG,"JSON attribute has no value." + pair);
             }
             //look for next pair
             singleJsonObj = singleJsonObj.substring(m.end());

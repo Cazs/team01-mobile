@@ -164,8 +164,8 @@ public class RewardsAchievementsActivity extends AppCompatActivity implements IO
                     if (eventID != null)
                     {
                         rewards = new ArrayList<>();
-                        //String response = RemoteComms.sendGetRequest("/getRewardsForEvent/" + eventID);
-                        String response = RemoteComms.sendGetRequest("/getAllRewards");
+                        String response = RemoteComms.sendGetRequest("/getRewardsForEvent/" + eventID);
+                        //String response = RemoteComms.sendGetRequest("/getAllRewards");
                         JSON.getJsonableObjectsFromJson(response, rewards, Reward.class);
 
                         if (rewards != null)

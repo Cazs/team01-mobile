@@ -61,7 +61,7 @@
                 <android.support.design.widget.FloatingActionButton
                     android:id="@+id/fabCam"
                     android:paddingBottom="@dimen/fab_bmargin"
-                    android:src="@drawable/ic_camera_white_24dp"
+                    android:src="@drawable/ic_camera_alt_white_24dp"
                     app:borderWidth="@dimen/fab_border_width"
                     app:fabSize="normal"
                     android:layout_alignBottom="@+id/container"

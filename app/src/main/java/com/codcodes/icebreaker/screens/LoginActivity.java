@@ -141,6 +141,7 @@ public class LoginActivity extends AppCompatActivity
                                 message.sendToTarget();
                                 //Toast.makeText(getApplicationContext(), "User credentials are correct", Toast.LENGTH_LONG).show();
                                 Intent mainscreen = new Intent(LoginActivity.this,MainActivity.class);
+                                mainscreen.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 startActivity(mainscreen);
                             }
                             else

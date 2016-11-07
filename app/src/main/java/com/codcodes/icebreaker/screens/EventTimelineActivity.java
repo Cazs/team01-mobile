@@ -145,7 +145,8 @@ public class EventTimelineActivity extends FragmentActivity implements OnMapRead
         PolylineOptions geo_fence_opts = new PolylineOptions();
         geo_fence_opts.color(Color.DKGRAY);
         geo_fence_opts.clickable(false);
-        geo_fence_opts.addAll(event.getBoundary());
+        if(event.getBoundary()!=null)
+            geo_fence_opts.addAll(event.getBoundary());
         mMap.addPolyline(geo_fence_opts);
 
         PolylineOptions usr_ev_opts = new PolylineOptions();

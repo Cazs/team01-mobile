@@ -214,19 +214,15 @@ public class RewardsRecyclerViewAdapter extends RecyclerView.Adapter<RewardsRecy
                 @Override
                 public void onClick(View view)
                 {
-                    //rwClaimWindow(reward);
-                    //final Dialog dialog = new Dialog(view.getContext());
-                    //dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                    //dialog.setContentView(R.layout.activity_claim_reward);
-                    //dialog.show();
                     final Dialog d = new Dialog(context);
                     d.setContentView(R.layout.activity_claim_reward);
                     d.setCanceledOnTouchOutside(false);
                     d.setCancelable(false);
                     d.show();
+
                     final String username = SharedPreference.getUsername(context);
-                    //showClaimWindow(reward,d);
-                    Thread tCodeSender = new Thread(new Runnable()
+
+                    final Thread tCodeSender = new Thread(new Runnable()
                     {
                         @Override
                         public void run()
@@ -292,9 +288,12 @@ public class RewardsRecyclerViewAdapter extends RecyclerView.Adapter<RewardsRecy
                                                         redimLbl.setTypeface(null, Typeface.BOLD);
                                                         if (bitmap != null)
                                                             qrCode.setImageBitmap(bitmap);
+
+                                                        Toast.makeText(context, "Please proceed to the collection facility to  collect your reward of '"+reward.getRwName()+"'", Toast.LENGTH_LONG).show();
                                                     }
                                                 });
                                             }
+                                            LocalComms.showNotification(context, "Please proceed to the collection facility to  collect your reward of '"+reward.getRwName()+"'", NOTIFICATION_ID.NOTIF_REQUEST.getId());
                                         } else
                                         {
                                             Log.d(TAG, response);
@@ -302,13 +301,37 @@ public class RewardsRecyclerViewAdapter extends RecyclerView.Adapter<RewardsRecy
                                         }
                                     }else
                                     {
-                                        Toast.makeText(context, "You are not signed into any event.", Toast.LENGTH_LONG);
                                         Log.d(TAG, "You are not signed into any event.");
+                                        if(context!=null)
+                                        {
+                                            context.runOnUiThread(new Runnable()
+                                            {
+                                                @Override
+                                                public void run()
+                                                {
+                                                    if(d!=null)
+                                                        d.dismiss();
+                                                    Toast.makeText(context, "You are not signed into any event.", Toast.LENGTH_LONG);
+                                                }
+                                            });
+                                        }
                                     }
                                 }else
                                 {
-                                    Toast.makeText(context,"You are not signed into any event.",Toast.LENGTH_LONG);
                                     Log.d(TAG, "You are not signed into any event.");
+                                    if(context!=null)
+                                    {
+                                        context.runOnUiThread(new Runnable()
+                                        {
+                                            @Override
+                                            public void run()
+                                            {
+                                                if(d!=null)
+                                                    d.dismiss();
+                                                Toast.makeText(context,"You are not signed into any event.",Toast.LENGTH_LONG);
+                                            }
+                                        });
+                                    }
                                 }
                             }
                             catch (SocketTimeoutException e)
@@ -320,7 +343,44 @@ public class RewardsRecyclerViewAdapter extends RecyclerView.Adapter<RewardsRecy
                             }
                         }
                     });
-                    tCodeSender.start();
+
+                    Thread tPointsValidator = new Thread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            Looper.prepare();
+                            try
+                            {
+                                User user = RemoteComms.getUser(context, username);
+                                if(user.getPoints()>=reward.getRwCost())
+                                {
+                                    tCodeSender.start();
+                                }else
+                                {
+                                    if(context!=null)
+                                    {
+                                        context.runOnUiThread(new Runnable()
+                                        {
+                                            @Override
+                                            public void run()
+                                            {
+                                                if(d!=null)
+                                                    d.dismiss();
+                                                Toast.makeText(context, "Insufficient points to claim reward '"+reward.getRwName()+"'", Toast.LENGTH_LONG).show();
+                                            }
+                                        });
+                                    }
+                                    LocalComms.showNotification(context, "Insufficient points to claim reward '"+reward.getRwName()+"'", NOTIFICATION_ID.NOTIF_REQUEST.getId());
+                                }
+                            } catch (IOException e)
+                            {
+                                LocalComms.logException(e);
+                            }
+                        }
+                    });
+                    tPointsValidator.start();
+                    //showClaimWindow(reward,d);
                 }
             });
         }

@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.codcodes.icebreaker.R;
@@ -50,10 +51,10 @@ public class UserListRecyclerViewAdapter extends RecyclerView.Adapter<UserListRe
         if(mProfileBitmaps!=null)
         {
             if (position < mProfileBitmaps.size())
-                holder.getContactProfileImage().setImageBitmap(mProfileBitmaps.get(position));
-            else
-                Log.d(TAG, "Bitmap ArrayList is empty.");
-        }
+            {
+                holder.setContactProfileImage(ImageConverter.getRoundedCornerBitMap(mProfileBitmaps.get(position),300));
+            } else Log.d(TAG, "Bitmap ArrayList is empty.");
+        }else Log.d(TAG, "Bitmap ArrayList is empty.");
 
         holder.getView().setOnClickListener(new View.OnClickListener()
         {
@@ -81,6 +82,7 @@ public class UserListRecyclerViewAdapter extends RecyclerView.Adapter<UserListRe
         private final TextView mContactName;
         private final TextView mContactBio;
         private final ImageView mContactProfileImage;
+        private ProgressBar progressBar;
         private User user;
 
         public ContactViewHolder(View view)
@@ -90,6 +92,7 @@ public class UserListRecyclerViewAdapter extends RecyclerView.Adapter<UserListRe
             this.mContactName = (TextView) view.findViewById(R.id.contactName);
             this.mContactBio = (TextView) view.findViewById(R.id.contactBio);
             this.mContactProfileImage = (ImageView) view.findViewById(R.id.contactProfileImage);
+            this.progressBar = (ProgressBar) view.findViewById(R.id.pb_img_load);
         }
 
         public TextView getContactName()
@@ -100,6 +103,14 @@ public class UserListRecyclerViewAdapter extends RecyclerView.Adapter<UserListRe
         public ImageView getContactProfileImage()
         {
             return this.mContactProfileImage;
+        }
+
+        public void setContactProfileImage(Bitmap bitmap)
+        {
+            if(mContactProfileImage!=null)
+                mContactProfileImage.setImageBitmap(bitmap);
+            if(progressBar!=null)
+                progressBar.setVisibility(View.GONE);
         }
 
         public User getUser()

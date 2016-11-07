@@ -9,6 +9,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.media.Image;
 import android.media.MediaPlayer;
 import android.provider.MediaStore;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -19,6 +21,8 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.codcodes.icebreaker.R;
@@ -47,15 +51,17 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.Timeli
     private Activity context;
     private boolean isScreenTouched = false;
     private List<AbstractMap.SimpleEntry<String, String>> image_to_audio_map;
+    private FragmentManager fragMan;
 
     private final IOnListFragmentInteractionListener mListener;
 
-    public TimelineAdapter(Activity context, List<AbstractMap.SimpleEntry<String, String>> aud_map, IOnListFragmentInteractionListener listener)
+    public TimelineAdapter(Activity context, FragmentManager fragMan, List<AbstractMap.SimpleEntry<String, String>> aud_map, IOnListFragmentInteractionListener listener)
     {
         mListener = listener;
         //this.mThumbnails = mThumbnails;
         this.context=context;
         this.image_to_audio_map = aud_map;
+        this.fragMan=fragMan;
     }
 
     @Override
@@ -125,47 +131,51 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.Timeli
                     final DisplayMetrics metrics = new DisplayMetrics();
                     WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
                     wm.getDefaultDisplay().getMetrics(metrics);
-                    final LinearLayout img = (LinearLayout)dlg.findViewById(R.id.img_timeline_post);
 
                     if (image_to_audio_map != null)
                     {
-
-                        //Bitmap bitmap = BitmapFactory.decodeFile(image_to_audio_map.get(position).getKey());
-                        final String path = "/public_res|events";
-                        final String filename = image_to_audio_map.get(position).getKey().split("\\.")[0];
-                        Thread tImageLoader = new Thread(new Runnable()
+                        if(image_to_audio_map.size()>position)
                         {
-                            @Override
-                            public void run()
+                            //final RelativeLayout img_post = (RelativeLayout) dlg.findViewById(R.id.post_container);
+                            final ImageView img_post = (ImageView) dlg.findViewById(R.id.anchor);
+                            context.runOnUiThread(new Runnable()
                             {
-                                final Bitmap bitmap;
-                                BitmapFactory.Options options = new BitmapFactory.Options();
-                                options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-                                try
+                                @Override
+                                public void run()
                                 {
-                                    bitmap = LocalComms.getImage(context, filename, ".png", path, options);
-                                    context.runOnUiThread(new Runnable()
+                                    String path = "/public_res|events";
+                                    String filename = image_to_audio_map.get(position).getKey().split("\\.")[0];
+                                    Bitmap bitmap = null;
+                                    BitmapFactory.Options options = new BitmapFactory.Options();
+                                    options.inPreferredConfig = Bitmap.Config.ALPHA_8;
+                                    try
                                     {
-                                        @Override
-                                        public void run()
-                                        {
-                                            img.setBackground(new BitmapDrawable(context.getResources(), bitmap));
-                                            ViewGroup.LayoutParams img_params =  img.getLayoutParams();
-                                            img_params.width = (int)(metrics.widthPixels * 1.20);
-                                            img.setLayoutParams(img_params);
-                                        }
-                                    });
-                                } catch (IOException e)
-                                {
-                                    LocalComms.logException(e);
+                                        bitmap = LocalComms.getImage(context, filename, ".png", path, options);
+                                    } catch (IOException e)
+                                    {
+                                        LocalComms.logException(e);
+                                    }
+
+                                    if (bitmap != null)
+                                    {
+                                        //img_post.setBackground(new BitmapDrawable(context.getResources(), bitmap));
+                                        img_post.setImageBitmap(bitmap);
+                                        ViewGroup.LayoutParams img_params = img_post.getLayoutParams();
+                                        img_params.width = (int) (metrics.widthPixels*1.2);
+                                        img_post.setLayoutParams(img_params);
+                                    } else Log.wtf(TAG, "Bitmap is null.");
                                 }
-                            }
-                        });
-                        tImageLoader.start();
+                            });
+                        }
                     }
                     dlg.show();
+                    //dlg.getWindow().setLayout((int) (metrics.widthPixels * 0.9), (int) (metrics.heightPixels * 0.95));
 
-                    dlg.getWindow().setLayout((int)(metrics.widthPixels * 0.97),(int)(metrics.heightPixels*0.97));
+                    //RelativeLayout img_post = (RelativeLayout) dlg.findViewById(R.id.post_container);
+
+                    /*ViewGroup.LayoutParams img_params = img_post.getLayoutParams();
+                    img_params.width = (int) (metrics.widthPixels*1.4);
+                    img_post.setLayoutParams(img_params);*/
                 }else Log.wtf(TAG,"Context/Listener is null.");
             }
         });
@@ -185,7 +195,8 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.Timeli
                     final DisplayMetrics metrics = new DisplayMetrics();
                     WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
                     wm.getDefaultDisplay().getMetrics(metrics);
-                    final LinearLayout img = (LinearLayout) dlg.findViewById(R.id.img_timeline_post);
+                    //final ImageView img = (ImageView) dlg.findViewById(R.id.img_timeline_post);
+                    final RelativeLayout img = (RelativeLayout)dlg.findViewById(R.id.post_container);
 
                     Thread tAnimator = new Thread(new Runnable()
                     {
@@ -222,7 +233,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.Timeli
                                                     if (bitmap != null)
                                                     {
                                                         img.setBackground(new BitmapDrawable(context.getResources(), bitmap));
-
+                                                        //img.setImageBitmap(bitmap);
                                                         ViewGroup.LayoutParams img_params = img.getLayoutParams();
                                                         img_params.width = (int) (metrics.widthPixels * 1.20);
                                                         img.setLayoutParams(img_params);
@@ -279,7 +290,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.Timeli
                     tAudioPlayer.start();
                     dlg.show();
 
-                    dlg.getWindow().setLayout((int) (metrics.widthPixels * 0.97), (int) (metrics.heightPixels * 0.97));
+                    dlg.getWindow().setLayout((int) (metrics.widthPixels * 1.10), (int) (metrics.heightPixels * 1.10));
                 }else Log.wtf(TAG,"Context is null.");
                 return true;
             }
@@ -294,19 +305,27 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.Timeli
 
     public class TimelineViewHolder extends RecyclerView.ViewHolder
     {
-        private final View view;
-        private final LinearLayout mThumbnail;
+        private View view;
+        private ImageView mThumbnail;
+        private ProgressBar progressBar;
 
         public TimelineViewHolder(View view)
         {
             super(view);
             this.view = view;
-            this.mThumbnail = (LinearLayout) view.findViewById(R.id.thumbnail);
+            this.mThumbnail = (ImageView) view.findViewById(R.id.thumbnail);
+            this.progressBar = (ProgressBar) view.findViewById(R.id.pb_timeline_load);
         }
 
-        public void setThumbnail(Bitmap bitmap){if(this.mThumbnail!=null)this.mThumbnail.setBackground(new BitmapDrawable(context.getResources(),bitmap));}
+        public void setThumbnail(Bitmap bitmap)
+        {
+            //if(this.mThumbnail!=null)this.mThumbnail.setBackground(new BitmapDrawable(context.getResources(),bitmap));
+            if(this.mThumbnail!=null)this.mThumbnail.setImageBitmap(bitmap);
+            if(progressBar!=null)
+                progressBar.setVisibility(View.GONE);
+        }
 
-        public LinearLayout getThumbnail()
+        public ImageView getThumbnail()
         {
             return this.mThumbnail;
         }

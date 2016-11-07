@@ -14,6 +14,13 @@
         android:gravity="center"
         android:padding="1dp">
 
+        <ProgressBar
+            android:id="@+id/pb_img_load"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:indeterminate="true"/>
+
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/contactProfileImage"
             android:layout_width="match_parent"

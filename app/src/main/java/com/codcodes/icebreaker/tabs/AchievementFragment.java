@@ -12,26 +12,17 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.codcodes.icebreaker.R;
-import com.codcodes.icebreaker.auxilary.AchievementsAdapter;
 import com.codcodes.icebreaker.auxilary.AchievementsRecyclerViewAdapter;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
-import com.codcodes.icebreaker.auxilary.UserListRecyclerViewAdapter;
 import com.codcodes.icebreaker.model.Achievement;
 import com.codcodes.icebreaker.model.IOnListFragmentInteractionListener;
-import com.codcodes.icebreaker.model.Reward;
-import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.screens.RewardsAchievementsActivity;
-import com.codcodes.icebreaker.screens.RewardsActivity;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -77,33 +68,6 @@ public class AchievementFragment extends android.support.v4.app.Fragment
         return v;
     }
 
-    /*public void setAdapter()
-    {
-        if(RewardsAchievementsActivity.achievements!=null)
-        {
-            if(!RewardsAchievementsActivity.achievements.isEmpty())
-            {
-                /*for(Achievement ach : RewardsActivity.achievements)
-                {
-                    setAchScore(ach);
-                }*
-                adapter = new AchievementsAdapter(getActivity(),RewardsAchievementsActivity.achievements,0);
-                if(adapter!=null && list!=null && getActivity()!=null)
-                {
-                    getActivity().runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            list.setAdapter(adapter);
-                        }
-                    });
-                }
-            }
-            else Toast.makeText(getActivity(), "No Achievements found, or they are still loading.",Toast.LENGTH_LONG).show();
-        }
-    }*/
-
     public void renderAchievements() throws ConcurrentModificationException
     {
         /**Prepare to set adapter**/
@@ -115,40 +79,38 @@ public class AchievementFragment extends android.support.v4.app.Fragment
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ALPHA_8;
 
-        if(RewardsAchievementsActivity.achievements!=null)
-        {
-            for (Achievement achievement : RewardsAchievementsActivity.achievements)
-            {
-                try
-                {
-                    //Look for icon
-                    if(achievement.isAchieved())
-                        bitmap = LocalComms.getImage(getActivity(),achievement.getAchId(),".png","/achievements",options);
-                    else bitmap = LocalComms.getImage(getActivity(),achievement.getAchId(),"_not.png","/achievements",options);
-                }
-                catch (IOException e)
-                {
-                    LocalComms.logException(e);
-                }
-
-                if (bitmap != null)
-                    circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_200);
-
-                if (bitmap == null || circularbitmap == null)
-                {
-                    Log.wtf(TAG, "Bitmap '" + achievement.getAchId() + ".png' is null");
-                    bitmaps.add(null);
-                } else
-                {
-                    //Log.d(TAG, "Loaded bitmap to memory.");
-                    bitmaps.add(circularbitmap);
-                    bitmap.recycle();
-                }
-            }
-        }
-        else
-        {
+        if(RewardsAchievementsActivity.achievements==null)
             RewardsAchievementsActivity.achievements = new ArrayList<>();
+        /*if(RewardsAchievementsActivity.achievements.isEmpty())
+            RewardsAchievementsActivity.achievements.addAll(LocalComms.getAllAchievementsFromDB(getActivity()));*/
+
+        for (Achievement achievement : RewardsAchievementsActivity.achievements)
+        {
+            try
+            {
+                //Look for icon
+                if(achievement.isAchieved())
+                    bitmap = LocalComms.getImage(getActivity(),achievement.getAchId(),".png","/achievements",options);
+                else bitmap = LocalComms.getImage(getActivity(),achievement.getAchId(),"_not.png","/achievements",options);
+            }
+            catch (IOException e)
+            {
+                LocalComms.logException(e);
+            }
+
+            if (bitmap != null)
+                circularbitmap = ImageConverter.getRoundedCornerBitMap(bitmap, R.dimen.dp_size_200);
+
+            if (bitmap == null || circularbitmap == null)
+            {
+                Log.wtf(TAG, "Bitmap '" + achievement.getAchId() + ".png' is null");
+                bitmaps.add(null);
+            } else
+            {
+                //Log.d(TAG, "Loaded bitmap to memory.");
+                bitmaps.add(circularbitmap);
+                bitmap.recycle();
+            }
         }
 
         if(getActivity()!=null)
@@ -169,10 +131,6 @@ public class AchievementFragment extends android.support.v4.app.Fragment
                         temp.setAchName(getString(R.string.msg_no_achievements));
                         RewardsAchievementsActivity.achievements.add(temp);*/
                         Log.d(TAG, "Achievement list is empty.");
-
-                        //LinearLayout contactsContainer = (LinearLayout)getActivity().findViewById(R.id.contcts_anim_container);
-                        //if(contactsContainer!=null)
-                        //    contactsContainer.setVisibility(View.VISIBLE);
                     } else
                     {
                         //LinearLayout contactsContainer = (LinearLayout)getActivity().findViewById(R.id.contcts_anim_container);

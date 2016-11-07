@@ -1,10 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    android:id="@+id/img_timeline_post"
+<RelativeLayout
+    android:id="@+id/post_container"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/iceblue">
 
-</LinearLayout>
+    <ImageView
+        android:id="@+id/anchor"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"/>
+
+    <TextView
+        android:id="@+id/txt_timestamp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:text="--.--"
+        android:gravity="left"
+        android:layout_alignTop="@+id/anchor"
+        android:background="@android:color/transparent"/>
+
+    <TextView
+        android:id="@+id/txt_usr"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:text="By: ---"
+        android:layout_below="@+id/txt_timestamp"
+        android:background="@android:color/transparent"/>
+
+</RelativeLayout>

@@ -8,7 +8,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
@@ -22,7 +21,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.codcodes.icebreaker.auxilary.Config;
-import com.codcodes.icebreaker.auxilary.ImageUtils;
 import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
@@ -31,15 +29,12 @@ import com.codcodes.icebreaker.screens.Edit_ProfileActivity;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
 import com.codcodes.icebreaker.screens.InitialActivity;
 import com.codcodes.icebreaker.R;
-import com.codcodes.icebreaker.screens.MainActivity;
 import com.codcodes.icebreaker.screens.RewardsAchievementsActivity;
-import com.codcodes.icebreaker.screens.RewardsActivity;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.User;
 import com.codcodes.icebreaker.screens.SettingsActivity;
 import com.facebook.login.LoginManager;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -73,8 +68,8 @@ public class ProfileFragment extends android.support.v4.app.Fragment
     {
         v = inflater.inflate(R.layout.fragment_profile, container, false);
         mgr = getActivity().getAssets();
-        //TODO: Use this information to send to database to see which user it is.
-        final String username = SharedPreference.getUsername(v.getContext());
+
+        final String username = SharedPreference.getUsername(getContext());
 
         pb_profile  = (ProgressBar) v.findViewById(R.id.pb_profile_pic);
         LocalComms.showImageProgressBar(pb_profile);
@@ -112,6 +107,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                 try
                 {
                     usrJson = RemoteComms.sendGetRequest("getUser/" + username);
+                    System.err.println(">>>>>>>>>>>"+usrJson);
                     userList = new ArrayList<>();
                     JSON.<User>getJsonableObjectsFromJson(usrJson,userList,User.class);
                 } catch (IOException e)
@@ -279,6 +275,7 @@ public class ProfileFragment extends android.support.v4.app.Fragment
                 LoginManager.getInstance().logOut();
                 //Go to landing page
                 Intent intent = new Intent(view.getContext(), InitialActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }
         });

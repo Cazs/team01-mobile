@@ -105,8 +105,6 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
         populateOverrideLocations();
 
         setLogoClickListener();
-
-        setAdapter();
     }
 
     public void setLogoClickListener()
@@ -209,7 +207,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
         final View v = inflater.inflate(R.layout.fragment_events,container,false);
 
         animContainer = (LinearLayout)v.findViewById(R.id.animContainer);
-
+        pulsator = (PulsatorLayout) v.findViewById(R.id.pulsator);
         swipeRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_layout);
 
         swipeRefreshLayout.setOnRefreshListener(this);
@@ -233,33 +231,14 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
             }
         }
 
-        Bundle extras = getArguments();
+        //Bundle extras = getArguments();
+        /*if (animContainer != null)
+            animContainer.setVisibility(View.VISIBLE);
         pulsator = (PulsatorLayout) v.findViewById(R.id.pulsator);
         pulsator.setInterpolator(PulsatorLayout.INTERP_LINEAR);
         pulsator.setDuration(4000);
-        //pulsator.start();
-
-        //reloadEvents();
-
-        /*if(extras!=null)
-        {
-            boolean check = extras.getBoolean("com.codcodes.icebreaker.Back");
-            if (check)
-                reloadEvents();
-        }
-        else
-        {
-            if(MainActivity.is_reloading_events) {
-
-                try {
-                    WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),null);
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-                pulsator.start();
-            }
-            else setAdapter();
-        }*/
+        pulsator.start();
+        reloadEvents(LOAD_LOCAL_EVENTS);*/
 
         setAdapter();
         return v;
@@ -267,23 +246,6 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
 
     public void setAdapter()
     {
-        if(getActivity()!=null)
-        {
-            getActivity().runOnUiThread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    if (animContainer != null)
-                        animContainer.setVisibility(View.GONE);
-                    if (pulsator != null)
-                        pulsator.stop();
-                }
-            });
-        }
-
-        MainActivity.is_reloading_events=false;
-
         Thread t = new Thread(new Runnable() {
             @Override
             public void run()
@@ -301,12 +263,10 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                         if(!pulsator.isStarted())
                             temp.setTitle(getString(R.string.msg_no_events));
                         Toast.makeText(getContext(),"No events found.",Toast.LENGTH_LONG).show();
-                        //MainActivity.events.add(temp);
-                        //final ArrayList<Event> temp_lst = new ArrayList<Event>();
-                        //temp_lst.add(temp);
+
                         Log.d(TAG, "Events list is empty.");
                         startPulsator();
-                        reloadEvents(LOAD_REMOTE_EVENTS);
+                        //reloadEvents(LOAD_LOCAL_EVENTS);
                     }
                     //Set adapter
                     if(getActivity()!=null)
@@ -322,41 +282,10 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                                     pulsator.stop();
 
                                 recyclerView.setAdapter(new EventsRecyclerViewAdapter(MainActivity.events, MainActivity.bitmaps, mListener));
+                                MainActivity.is_reloading_events=false;
                             }
                         });
                     }else Log.wtf(TAG,"MainActivity is null.");
-                    /*{
-                        BitmapFactory.Options options = new BitmapFactory.Options();
-                        //if(MainActivity.bitmaps==null)
-                        MainActivity.bitmaps=new ArrayList<>();
-                        try
-                        {
-                            //if (MainActivity.bitmaps.isEmpty())
-                            for (Event e : MainActivity.events)
-                                MainActivity.bitmaps.add(LocalComms.getImage(getContext(), "event_icons-" + e.getId(), ".png", "/events", options));
-
-                            if(getActivity()!=null)
-                            {
-                                getActivity().runOnUiThread(new Runnable()
-                                {
-                                    @Override
-                                    public void run()
-                                    {
-                                        recyclerView.setAdapter(new EventsRecyclerViewAdapter(MainActivity.events, MainActivity.bitmaps, mListener));
-                                    }
-                                });
-                            }else Log.wtf(TAG,"MainActivity is null.");
-                        }
-                        catch (ConcurrentModificationException e)
-                        {
-                            LocalComms.logException(e);
-                        }
-                        catch (IOException e)
-                        {
-                            LocalComms.logException(e);
-                        }
-                        Log.d(TAG, "Set events list.");
-                    }*/
 
                     if(getActivity()!=null)
                     {
@@ -380,6 +309,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
     public void onAttach(Context context)
     {
         super.onAttach(context);
+
         if (context instanceof IOnListFragmentInteractionListener)
         {
             mListener = (IOnListFragmentInteractionListener) context;
@@ -437,16 +367,15 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                 try
                 {
                     String eventIds;
-                    if(MainActivity.loudness>0)
+                    if (MainActivity.loudness > 0)
                     {
                         eventIds = RemoteComms.sendGetRequest("getNearbyEventIdsByNoise/" + MainActivity.mLastKnownLoc.getLatitude()
                                 + '/' + MainActivity.mLastKnownLoc.getLongitude() + '/' + MainActivity.range + '/' + MainActivity.loudness);
-                    }else
+                    } else
                     {
                         eventIds = RemoteComms.sendGetRequest("getNearbyEventIds/" + MainActivity.mLastKnownLoc.getLatitude()
                                 + '/' + MainActivity.mLastKnownLoc.getLongitude() + '/' + MainActivity.range);
                     }
-
                     eventIds=eventIds.replaceAll("\\[","");
                     eventIds=eventIds.replaceAll("\\]","");
                     eventIds=eventIds.replace("\"","");
@@ -463,6 +392,7 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                             try
                             {
                                 long ev_id = Long.parseLong(id);
+
                                 Event event = LocalComms.getLocalEventRecord(getContext(), ev_id);
                                 MainActivity.events.add(event);
                             } catch (NumberFormatException e)
@@ -483,9 +413,17 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                             {
                                 LocalComms.logException(e);
                             }
+                            catch (IOException e)
+                            {
+                                LocalComms.logException(e);
+                            }
                         }
                     }
-                    setAdapter();//render events, no icons yet
+                    setAdapter();//render events, no icons yet      d
+                }catch (IOException e)
+                {
+                    LocalComms.logException(e);
+                }
                     //Load remote events in the background
                     /*Thread tEventLoader = new Thread(new Runnable()
                     {
@@ -529,12 +467,6 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                             }
                         }
                     });*/
-
-                }
-                catch (IOException e)
-                {
-                    LocalComms.logException(e);
-                }
 
                 //Attempt to load bitmaps and set adapter
                 if(MainActivity.events==null)
@@ -604,8 +536,13 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                 {
                     if(animContainer!=null)
                         animContainer.setVisibility(View.VISIBLE);
+
                     if(pulsator!=null)
+                    {
+                        pulsator.setInterpolator(PulsatorLayout.INTERP_LINEAR);
+                        pulsator.setDuration(4000);
                         pulsator.start();
+                    }
                     else Log.wtf(TAG,"***Pulsator is null.");
                 }
             });

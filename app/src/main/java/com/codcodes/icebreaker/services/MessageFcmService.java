@@ -10,6 +10,7 @@ import com.codcodes.icebreaker.auxilary.RemoteComms;
 import com.codcodes.icebreaker.auxilary.SharedPreference;
 import com.codcodes.icebreaker.model.Achievement;
 import com.codcodes.icebreaker.model.Message;
+import com.codcodes.icebreaker.model.Reward;
 import com.codcodes.icebreaker.model.User;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -48,9 +49,44 @@ public class MessageFcmService extends FirebaseMessagingService//IntentService
             case "achievement_id":
                 handleAchievement(kv_pair);
                 break;
+            case "rwd_id":
+                handleReward(kv_pair);
+                break;
             default:
                 break;
 
+        }
+    }
+
+    public void handleReward(String[] kv_pair)
+    {
+        //Get message from server
+        try
+        {
+            String json_msg = RemoteComms.sendGetRequest("getUserReward/"
+                    + SharedPreference.getUsername(getApplicationContext()) + "/"
+                    + kv_pair[1]);
+            Reward reward = new Reward();
+            JSON.getJsonable(json_msg, reward);
+
+            try
+            {
+                LocalComms.addRewardToDB(this, reward);
+            }catch (SQLiteException e)
+            {
+                LocalComms.logException(e);
+            }
+            if(reward.getRwId().equals(kv_pair[1]))
+            {
+                if(reward.getRwCode().toLowerCase().equals("claimed"))
+                    LocalComms.showNotification(this, "New reward redeemed, " + reward.getRwName(), NOTIFICATION_ID.NOTIF_REQUEST.getId());
+                else
+                    LocalComms.showNotification(this, "Insufficient points to redeem reward, " + reward.getRwName(), NOTIFICATION_ID.NOTIF_REQUEST.getId());
+            }
+
+        }catch (IOException e)
+        {
+            LocalComms.logException(e);
         }
     }
 
