@@ -38,6 +38,7 @@ import android.widget.Toast;
 import com.codcodes.icebreaker.R;
 import com.codcodes.icebreaker.auxilary.Config;
 import com.codcodes.icebreaker.auxilary.ImageConverter;
+import com.codcodes.icebreaker.auxilary.JSON;
 import com.codcodes.icebreaker.auxilary.LocalComms;
 import com.codcodes.icebreaker.auxilary.LocationDetector;
 import com.codcodes.icebreaker.auxilary.RemoteComms;
@@ -223,6 +224,7 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
         TextView txt_start_date = (TextView)findViewById(R.id.event_start_date);
         TextView txt_end_date = (TextView)findViewById(R.id.event_end_date);
         TextView txt_address = (TextView)findViewById(R.id.event_address);
+        final TextView txt_usr_count = (TextView)findViewById(R.id.event_user_count);
 
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE, MMMM d, yyyy HH:mm");
         String sdate = sdf.format(new Date(selected_event.getDate()*1000L));
@@ -231,6 +233,38 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
         txt_start_date.setText(sdate);
         txt_end_date.setText(edate);
         txt_address.setText(selected_event.getAddress());
+        Thread t_user_count_loader = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    final ArrayList<User> users_at_event = new ArrayList<>();
+                    String contactsJson = RemoteComms.sendGetRequest("getUsersAtEvent/" + selected_event.getId());
+                    JSON.<User>getJsonableObjectsFromJson(contactsJson, users_at_event, User.class);
+                    EventDetailActivity.this.runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            txt_usr_count.setText("Users logged in: " + users_at_event.size());
+                        }
+                    });
+                }catch (InstantiationException e)
+                {
+                    LocalComms.logException(e);
+                } catch (IllegalAccessException e)
+                {
+                    LocalComms.logException(e);
+                }
+                catch (IOException e)
+                {
+                    LocalComms.logException(e);
+                }
+            }
+        });
+        t_user_count_loader.start();
 
         final EditText accessCode = (EditText) findViewById(R.id.AccessCode);
 

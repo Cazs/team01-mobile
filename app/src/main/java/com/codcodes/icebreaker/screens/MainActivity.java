@@ -31,6 +31,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -96,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     public static int max_age = 0;
     public static int pref_gender = 2;
     public static double loudness = 0.0;
+    public static boolean passed_events=false;
 
     public static boolean fromBackPress = false;
     public static Location mLastKnownLoc;
@@ -216,16 +218,16 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             @Override
             public void run()
             {
-                //while (true)
+                while (true)
                 {
                     checkAchievements();
-                    /*try
+                    try
                     {
-                        Thread.sleep(30000);
+                        Thread.sleep(10000);
                     } catch (InterruptedException e)
                     {
                         LocalComms.logException(e);
-                    }*/
+                    }
                 }
             }
         });
@@ -244,6 +246,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                     String max_age = WritersAndReaders.readAttributeFromConfig(Config.USR_MAX_AGE.getValue());
                     String loudness = WritersAndReaders.readAttributeFromConfig(Config.EVENT_LOUDNESS.getValue());
                     String pref_gen = WritersAndReaders.readAttributeFromConfig(Config.USR_GEND.getValue());
+                    String passed = WritersAndReaders.readAttributeFromConfig(Config.PASSED_EVENTS.getValue());
 
                     if (dist != null)
                         MainActivity.range = Double.parseDouble(dist);
@@ -255,6 +258,11 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
                         MainActivity.loudness = Double.parseDouble(loudness);
                     if (pref_gen != null)
                         MainActivity.pref_gender = Integer.parseInt(pref_gen);
+                    if(passed!=null)
+                    {
+                        if (passed.equals("0"))MainActivity.passed_events=false;
+                        if (passed.equals("1"))MainActivity.passed_events=true;
+                    }
 
                 }catch (NumberFormatException e)
                 {
@@ -455,156 +463,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
         }
     }
 
-    /*public void reloadEvents()
-    {
-        is_reloading_events=true;
-        if(!fromBackPress)
-        {
-            if (eventsFragment != null)
-                eventsFragment.startPulsator();
-            else Log.d(TAG, "EventsFragment object is null.");
-        }
-
-        final Thread eventsThread = new Thread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                Looper.prepare();
-                //progress = LocalComms.showProgressDialog(getActivity(),"Loading Events...");
-                while (mLastKnownLoc==null){}//wait for location
-
-                //Attempt to load Events
-                events = new ArrayList<>();
-
-                try
-                {
-                    String eventIds = RemoteComms.sendGetRequest("getNearbyEventIds/" + mLastKnownLoc.getLatitude()
-                            + '/' + mLastKnownLoc.getLongitude() + '/' + MainActivity.range);
-                    eventIds=eventIds.replaceAll("\\[","");
-                    eventIds=eventIds.replaceAll("\\]","");
-                    eventIds=eventIds.replaceAll("\"","");
-                    eventIds=eventIds.replaceAll("\\{","");
-                    eventIds=eventIds.replaceAll("\\}","");
-
-                    String[] ids_arr = eventIds.split(",");
-                    for(String id:ids_arr)
-                    {
-                        try
-                        {
-                            long ev_id = Long.parseLong(id);
-                            Event event = LocalComms.getEvent(MainActivity.this, ev_id);
-                            events.add(event);
-                        }
-                        catch (NumberFormatException e)
-                        {
-                            LocalComms.logException(e);
-                            return;
-                        }
-                    }
-                }catch (SocketTimeoutException e)
-                {
-                    Message message = toastHandler("We are having trouble connecting to the server, please check your internet connection.").obtainMessage();
-                    message.sendToTarget();
-                    Log.d(TAG, e.getMessage(), e);
-                }
-                catch (IOException e)
-                {
-                    LocalComms.logException(e);
-                }
-
-                //Attempt to load bitmaps and set adapter
-                if(events==null)
-                {
-                    Toast.makeText(MainActivity.this,"Something went wrong while we were trying to read the events. Please reload.",Toast.LENGTH_LONG).show();
-                    Log.d(TAG,"Something went wrong while we were trying to read the events.");
-                    events = new ArrayList<>();
-                }
-                if(events.isEmpty())
-                {
-                    Toast.makeText(MainActivity.this,"No events were found.",Toast.LENGTH_LONG).show();
-                    Log.d(TAG,"No events were found.");
-                }
-
-                bitmaps = new ArrayList<>();
-
-                try
-                {
-                    String iconName = "";
-                    BitmapFactory.Options options = null;
-                    for (Event e : events)
-                    {
-                        iconName = "event_icons-" + e.getId();
-                        options = new BitmapFactory.Options();
-                        options.inPreferredConfig = Bitmap.Config.ALPHA_8;
-
-                        bitmaps.add(LocalComms.getImage(getApplicationContext(), iconName, ".png", "/events", options));
-                    }
-
-                    if(eventsFragment!=null)
-                        eventsFragment.setAdapter();
-
-                        //check bitmaps only if the number of Events has changed
-                        //TODO: Do more in-depth check in case number didn't change but Events changed
-                        /*if (bitmaps.size() == events.size() && !bitmaps.isEmpty() && !events.isEmpty())
-                        {
-                            Log.d(TAG,"Bitmap list is populated.");
-                        }
-                        else*
-                        {
-                            try
-                            {
-                                //Download the file only if it has not been cached
-                                Bitmap bitmap = LocalComms.getImage(MainActivity.this, iconName, ".png", "/events", options);
-                                bitmaps.add(bitmap);
-                            } catch (IOException ex)
-                            {
-                                LocalComms.logException(ex);
-                            }
-                        }
-                    }
-                    runOnUiThread(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            if(eventsFragment!=null)
-                            {
-                                eventsFragment.setEvents(events);
-                                eventsFragment.setBitmaps(bitmaps);
-                                eventsFragment.setLat(location==null?0.0:location.getLatitude());
-                                eventsFragment.setLng(location==null?0.0:location.getLongitude());
-                                eventsFragment.setAdapter();
-                            }else
-                            {
-                                eventsFragment = EventsFragment.newInstance(MainActivity.this,
-                                        getIntent().getExtras(),events,bitmaps,
-                                        location==null?0.0:location.getLatitude(),
-                                        location==null?0.0:location.getLongitude()
-                                        );
-                                eventsFragment.setAdapter();
-                            }
-                        }
-                    });*
-                }catch (SocketTimeoutException e)
-                {
-                    Message message = toastHandler("We are having trouble connecting to the server, please check your internet connection.").obtainMessage();
-                    message.sendToTarget();
-                    Log.d(TAG, e.getMessage(), e);
-                }
-                catch(ConcurrentModificationException e)
-                {
-                    LocalComms.logException(e);
-                }
-                catch (IOException e)
-                {
-                    LocalComms.logException(e);
-                }
-            }
-        });
-        eventsThread.start();
-    }*/
-
     private Handler toastHandler(final String text)
     {
         Handler toastHandler = new Handler(Looper.getMainLooper())
@@ -687,15 +545,12 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     public void onConnected(@Nullable Bundle bundle)
     {
         //Toast.makeText(this, "Connected to GPS provider.", Toast.LENGTH_SHORT).show();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+            ActivityCompat.requestPermissions(this,
+                    new String[] {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    PERMISSION_REQUEST_CODE);
             return;
         }
         mLastKnownLoc = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
@@ -710,7 +565,11 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             {
                 LocalComms.logException(e);
             }
-        }else Log.wtf(TAG,"Last known location is null.");
+        }else
+        {
+            Log.wtf(TAG,"Last known location is null.");
+            toastHandler("Couldn't get last known location.").obtainMessage().sendToTarget();
+        }
         if(eventsFragment!=null)
             eventsFragment.reloadEvents(EventsFragment.LOAD_LOCAL_EVENTS);
         else Log.d(TAG,"EventsFragment is null");
@@ -776,7 +635,7 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             WritersAndReaders.writeAttributeToConfig(Config.DLG_ACTIVE.getValue(),val);
         } catch (IOException e)
         {
-            e.printStackTrace();
+            LocalComms.logException(e);
         }
     }
 
@@ -795,17 +654,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     {
         super.onPause();
         setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
-        /*try
-        {
-            WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(),"0");
-            WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(),"0");
-        } catch (IOException e)
-        {
-            if(e.getMessage()!=null)
-                Log.d(TAG,e.getMessage(),e);
-            else
-                e.printStackTrace();
-        }*/
     }
 
     @Override
@@ -821,17 +669,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     {
         super.onDestroy();
         setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
-        /*try
-        {
-            WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(),"0");
-            WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(),"0");
-        } catch (IOException e)
-        {
-            if(e.getMessage()!=null)
-                Log.d(TAG,e.getMessage(),e);
-            else
-                e.printStackTrace();
-        }*/
     }
 
     @Override
@@ -839,17 +676,6 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
     {
         super.onRestart();
         setDlgStatus(Config.DLG_ACTIVE_FALSE.getValue());
-        /*try
-        {
-            WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(),"0");
-            WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(),"0");
-        } catch (IOException e)
-        {
-            if(e.getMessage()!=null)
-                Log.d(TAG,e.getMessage(),e);
-            else
-                e.printStackTrace();
-        }*/
     }
 
     @Override
@@ -873,6 +699,17 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
          back_click_count++;
          if(back_click_count>=3)
          this.finish();**/
-        Toast.makeText(this,"Clicked back from MainActivity, will close app when clicked twice in the future.",Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this,"Clicked back from MainActivity, will close app when clicked twice in the future.",Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public boolean onKeyLongPress(int keyCode, KeyEvent event)
+    {
+        if (keyCode == KeyEvent.KEYCODE_BACK)
+        {
+            this.finish();
+            return true;
+        }
+        return super.onKeyLongPress(keyCode, event);
     }
 }

@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:layout_marginTop="5dp"
     android:layout_marginBottom="5dp"
-    android:background="@android:color/transparent">
+    android:background="@color/iceblue2">
 
     <ProgressBar
         android:id="@+id/pb_timeline_load"
@@ -19,6 +19,7 @@
         android:id="@+id/thumbnail"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"
+        android:adjustViewBounds="true"/>
 
 </LinearLayout>

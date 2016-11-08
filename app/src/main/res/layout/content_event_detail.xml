@@ -111,8 +111,19 @@
                 android:layout_marginLeft="15dp"
                 android:layout_marginRight="15dp"
                 android:layout_below="@+id/event_end_date"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="10dp"
                 android:text="Address:"
+                android:gravity="center"/>
+
+            <TextView
+                android:id="@+id/event_user_count"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:textSize="8pt"
+                android:layout_below="@+id/event_address"
+                android:layout_marginTop="10dp"
+                android:text="Users logged in: "
                 android:gravity="center"/>
 
             <EditText
@@ -120,8 +131,8 @@
                 android:layout_width="@dimen/dp_size_200"
                 android:layout_height="@dimen/dp_size_40"
                 android:hint="Access Code"
-                android:layout_marginTop="40dp"
-                android:layout_below="@+id/event_address"
+                android:layout_below="@+id/event_user_count"
+                android:layout_marginTop="10dp"
                 android:inputType="number"
                 android:fontFamily="monospace"
                 android:background="@drawable/textbox"
@@ -170,7 +181,7 @@
         <LinearLayout
             android:id="@+id/dragView"
             android:layout_width="match_parent"
-            android:layout_height="95dp"
+            android:layout_height="80dp"
             android:background="#dbdbdb"
             android:clickable="true"
             android:focusable="false"
@@ -189,11 +200,7 @@
                 android:layout_marginRight="2dp"
                 app:layoutManager="LinearLayoutManager"
                 tools:context=".screens.EventDetailActivity"
-                tools:listitem="@layout/timeline_item" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="60dp"/>
+                tools:listitem="@layout/timeline_item"/>
         </LinearLayout>
 
         </RelativeLayout>

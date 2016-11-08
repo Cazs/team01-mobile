@@ -16,6 +16,7 @@ public enum Config
     USR_MAX_AGE("max_age"),
     USR_GEND("pref_gender"),
     EVENT_LOUDNESS("loudness"),
+    PASSED_EVENTS("show_past_events"),
     META_DELIM(";"),
     META_DATE_MODIFIED("dmd"),
     META_PARAM_NEWER("1"),

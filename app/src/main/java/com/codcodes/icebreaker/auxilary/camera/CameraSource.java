@@ -74,7 +74,8 @@ import java.util.Map;
  * </ul>
  */
 @SuppressWarnings("deprecation")
-public class CameraSource {
+public class CameraSource
+{
     @SuppressLint("InlinedApi")
     public static final int CAMERA_FACING_BACK = CameraInfo.CAMERA_FACING_BACK;
     @SuppressLint("InlinedApi")
@@ -136,7 +137,7 @@ public class CameraSource {
 
     // These values may be requested by the caller.  Due to hardware limitations, we may need to
     // select close, but not exactly the same values for these.
-    private float mRequestedFps = 20.0f;
+    private float mRequestedFps = 30.0f;
     private static int mRequestedPreviewWidth = 800;
     private static int mRequestedPreviewHeight = 900;
 

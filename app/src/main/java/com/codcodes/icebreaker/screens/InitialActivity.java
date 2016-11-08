@@ -143,6 +143,7 @@ public class InitialActivity extends AppCompatActivity
         {
             Intent intent = new Intent(this,MainActivity.class);
             startActivity(intent);
+            this.finish();
         }
     }
 
@@ -225,12 +226,12 @@ public class InitialActivity extends AppCompatActivity
 
             if (v==2)
             {
-                temp.setBackgroundResource(R.drawable.image2);
+                temp.setBackgroundResource(R.drawable.land_2);
             }
 
             if (v==3)
             {
-                temp.setBackgroundResource(R.drawable.image3);
+                temp.setBackgroundResource(R.drawable.land_3);
             }
 
            // textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));

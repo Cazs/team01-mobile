@@ -1509,6 +1509,58 @@ public class LocalComms
         return messages;
     }
 
+    public static ArrayList<Message> getAllMessages(Context context)
+    {
+        //TODO: add to db task queue/stack
+        SQLiteDatabase db = null;
+        ArrayList<Message> messages = new ArrayList<Message>();
+
+        String query = "SELECT * FROM " + MessagePollContract.MessageEntry.TABLE_NAME;
+
+        try
+        {
+            MessageHelper dbHelper = new MessageHelper(context);
+            db = dbHelper.getReadableDatabase();
+            dbHelper.onCreate(db);
+
+            Cursor c = db.rawQuery(query, null);
+
+            while (c.moveToNext())
+            {
+                Message m = new Message();
+                String mgid = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_ID));
+                String send = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_SENDER));
+                String msg = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE));
+                String recv = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_RECEIVER));
+                String time = c.getString(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_TIME));
+                int stat = c.getInt(c.getColumnIndex(MessagePollContract.MessageEntry.COL_MESSAGE_STATUS));
+
+                //System.err.println(msg + ":" + stat);
+
+                m.setId(mgid);
+                m.setSender(send);
+                m.setMessage(msg);
+                m.setReceiver(recv);
+                m.setTime(time);
+                m.setStatus(stat);
+
+                messages.add(m);
+            }
+            if(c!=null)
+                if(!c.isClosed())
+                    c.close();
+        }
+        catch (SQLiteException e)
+        {
+            LocalComms.logException(e);
+        }
+        finally
+        {
+            closeDB(db);
+        }
+        return messages;
+    }
+
     private static void closeDB(SQLiteDatabase db)
     {
         if(db!=null)
