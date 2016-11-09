@@ -233,8 +233,6 @@ public class InitialActivity extends AppCompatActivity
             {
                 temp.setBackgroundResource(R.drawable.land_3);
             }
-
-           // textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
             return rootView;
         }
     }

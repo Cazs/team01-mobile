@@ -161,7 +161,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.Timeli
                                         //img_post.setBackground(new BitmapDrawable(context.getResources(), bitmap));
                                         img_post.setImageBitmap(bitmap);
                                         ViewGroup.LayoutParams img_params = img_post.getLayoutParams();
-                                        img_params.width = (int) (metrics.widthPixels*1.2);
+                                        img_params.width = (int) (metrics.widthPixels*1.4);
                                         img_post.setLayoutParams(img_params);
                                     } else Log.wtf(TAG, "Bitmap is null.");
                                 }
@@ -169,7 +169,7 @@ public class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.Timeli
                         }
                     }
                     dlg.show();
-                    //dlg.getWindow().setLayout((int) (metrics.widthPixels * 0.9), (int) (metrics.heightPixels * 0.95));
+                    dlg.getWindow().setLayout((int) (metrics.widthPixels * 0.9), (int) (metrics.heightPixels * 0.95));
 
                     //RelativeLayout img_post = (RelativeLayout) dlg.findViewById(R.id.post_container);
 

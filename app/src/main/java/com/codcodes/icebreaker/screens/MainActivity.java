@@ -567,6 +567,18 @@ public class MainActivity extends AppCompatActivity implements IOnListFragmentIn
             }
         }else
         {
+            //If location is null use hardcoded GPS coordinates (UJ APK)
+            mLastKnownLoc= new Location("Icebreak GPS Provider");
+            mLastKnownLoc.setLatitude(-26.183478);
+            mLastKnownLoc.setLatitude(27.996496);
+            try
+            {
+                WritersAndReaders.writeAttributeToConfig(Config.LOC_LAT.getValue(), String.valueOf(mLastKnownLoc.getLatitude()));
+                WritersAndReaders.writeAttributeToConfig(Config.LOC_LNG.getValue(), String.valueOf(mLastKnownLoc.getLongitude()));
+            } catch (IOException e)
+            {
+                LocalComms.logException(e);
+            }
             Log.wtf(TAG,"Last known location is null.");
             toastHandler("Couldn't get last known location.").obtainMessage().sendToTarget();
         }

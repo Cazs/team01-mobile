@@ -48,7 +48,7 @@ public class IbTokenRegistrationService extends FirebaseInstanceIdService
         // Update Instance ID token on server.
         ArrayList<AbstractMap.SimpleEntry<String,String>> params = new ArrayList<>();
         String usr;
-        if(SharedPreference.getUsername(getBaseContext()).toString().length()>0)//MainActivity.uhandle.length()
+        if(SharedPreference.getUsername(getBaseContext()).length()>0)//MainActivity.uhandle.length()
         {
             usr = SharedPreference.getUsername(getBaseContext());
             //User lcl = ;

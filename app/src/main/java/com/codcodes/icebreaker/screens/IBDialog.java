@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Looper;
 import android.os.Vibrator;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -440,6 +441,7 @@ public class IBDialog extends Activity
             @Override
             public void run()
             {
+                Looper.prepare();
                 try
                 {
                     long ev_id = 0;
@@ -453,27 +455,30 @@ public class IBDialog extends Activity
                     if (event != null)
                     {
                         final String[] places = event.getMeetingPlaces();
-                        if (places.length > 2)
+                        if (places.length > 0)
                         {
                             IBDialog.this.runOnUiThread(new Runnable()
                             {
                                 @Override
                                 public void run()
                                 {
-                                    optionA.setText(places[0]);
-                                    optionB.setText(places[1]);
-                                    optionC.setText(places[2]);
+                                    if (places.length > 0)
+                                        optionA.setText(places[0]);
+                                    if (places.length > 1)
+                                        optionB.setText(places[1]);
+                                    if (places.length > 2)
+                                        optionC.setText(places[2]);
                                 }
                             });
+                        }else
+                        {
+                            Toast.makeText(IBDialog.this,"This event has no meeting places.",Toast.LENGTH_LONG).show();
                         }
                     }
                 }
                 catch (IOException e)
                 {
-                    if(e.getMessage()!=null)
-                        Log.d(TAG,e.getMessage());
-                    else
-                        e.printStackTrace();
+                    LocalComms.logException(e);
                 }
             }
         });
@@ -553,6 +558,7 @@ public class IBDialog extends Activity
                         @Override
                         public void run()
                         {
+                            Looper.prepare();
                             try
                             {
                                 String place = "ICEBREAK";

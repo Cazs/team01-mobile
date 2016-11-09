@@ -394,10 +394,10 @@ public class EventsFragment extends android.support.v4.app.Fragment implements S
                                 long ev_id = Long.parseLong(id);
 
                                 Event event = LocalComms.getLocalEventRecord(getContext(), ev_id);
-                                long now_in_sec = System.currentTimeMillis()/1000;
-                                if(event!=null)
+                                //long now_in_sec = System.currentTimeMillis()/1000;
+                                //if(event!=null)
                                 {
-                                    if(now_in_sec<=event.getEndDate())
+                                    //if(now_in_sec<=event.getEndDate())
                                         MainActivity.events.add(event);
                                 }
                             } catch (NumberFormatException e)

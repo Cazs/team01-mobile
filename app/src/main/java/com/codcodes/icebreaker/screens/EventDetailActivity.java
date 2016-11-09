@@ -288,6 +288,10 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                             {
                                 LocalComms.logException(e);
                                 Toast.makeText(EventDetailActivity.this, "Code is not a valid number!", Toast.LENGTH_LONG).show();
+                            } catch (IOException e)
+                            {
+                                LocalComms.logException(e);
+                                Toast.makeText(EventDetailActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
                             }
                         }else toastHandler("This event has already passed.").obtainMessage().sendToTarget();
                     }else toastHandler("This event is invalid.").obtainMessage().sendToTarget();
@@ -505,11 +509,23 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
 
     public void viewPosition(View view)
     {
-        Intent i = new Intent(this,EventTimelineActivity.class);
-        i.putExtra("Location_lat",String.valueOf(MainActivity.mLastKnownLoc.getLatitude()));
-        i.putExtra("Location_lng",String.valueOf(MainActivity.mLastKnownLoc.getLongitude()));
-        i.putExtra("Event",selected_event);
-        startActivity(i);
+        try
+        {
+            String loc_lat = WritersAndReaders.readAttributeFromConfig(Config.LOC_LAT.getValue());
+            String loc_lng = WritersAndReaders.readAttributeFromConfig(Config.LOC_LNG.getValue());
+            //if(me!=null)
+            if(loc_lat!=null || loc_lng!=null)
+            {
+                Intent i = new Intent(this,EventTimelineActivity.class);
+                i.putExtra("Location_lat",String.valueOf(loc_lat));
+                i.putExtra("Location_lng",String.valueOf(loc_lng));
+                i.putExtra("Event",selected_event);
+                startActivity(i);
+            }
+        }catch (IOException e)
+        {
+            LocalComms.logException(e);
+        }
     }
 
     private Handler toastHandler(final String text)
@@ -526,112 +542,126 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
     }
 
 
-    private void validateEventLogin(int code)
+    private void validateEventLogin(int code) throws IOException
     {
-        me = new LatLng(MainActivity.mLastKnownLoc.getLatitude(),
-                            MainActivity.mLastKnownLoc.getLongitude());
-        if(me!=null)
+        //me = new LatLng(MainActivity.mLastKnownLoc.getLatitude(),MainActivity.mLastKnownLoc.getLongitude());
+        String loc_lat = WritersAndReaders.readAttributeFromConfig(Config.LOC_LAT.getValue());
+        String loc_lng = WritersAndReaders.readAttributeFromConfig(Config.LOC_LNG.getValue());
+        //if(me!=null)
+        if(loc_lat!=null || loc_lng!=null)
         {
-            if (matchAccessCode(code))
+            try
             {
-                if (locationChecker.containsLocation(me, selected_event.getBoundary(), true))
+                double lat = Double.valueOf(loc_lat);
+                double lng = Double.valueOf(loc_lng);
+                me = new LatLng(lat,lng);
+                Log.wtf(TAG,"Loc>>>>>>>>>>>>>>"+me);
+                if (matchAccessCode(code))
                 {
-                    Log.d(TAG,"Valid code and location.");
-                    progress = LocalComms.showProgressDialog(EventDetailActivity.this, "Signing in to event...");
-                    Thread tEventDataLoader = new Thread(new Runnable()
+                    //Log.d(TAG,me.);
+                    if (locationChecker.containsLocation(me, selected_event.getBoundary(), true))
                     {
-                        @Override
-                        public void run()
+                        Log.d(TAG, "Valid code and location.");
+                        progress = LocalComms.showProgressDialog(EventDetailActivity.this, "Signing in to event...");
+                        Thread tEventDataLoader = new Thread(new Runnable()
                         {
-                            try
+                            @Override
+                            public void run()
                             {
-                                User user = LocalComms.getContact(EventDetailActivity.this, SharedPreference.getUsername(EventDetailActivity.this));
-                                if (user == null)
-                                    user = RemoteComms.getUser(EventDetailActivity.this, SharedPreference.getUsername(EventDetailActivity.this));
-                                if (user != null)
+                                try
                                 {
-                                    user.setUsername(SharedPreference.getUsername(EventDetailActivity.this));//for some reason the username is not being set by preceding methods
-
-                                    if (selected_event == null)
-                                        return;
-                                    if (selected_event.getId() > 0)
+                                    User user = LocalComms.getContact(EventDetailActivity.this, SharedPreference.getUsername(EventDetailActivity.this));
+                                    if (user == null)
+                                        user = RemoteComms.getUser(EventDetailActivity.this, SharedPreference.getUsername(EventDetailActivity.this));
+                                    if (user != null)
                                     {
-                                        user.setEvent(selected_event);
-                                        String resp = RemoteComms.postData("userUpdate/" + user.getUsername(), user.toString());
+                                        user.setUsername(SharedPreference.getUsername(EventDetailActivity.this));//for some reason the username is not being set by preceding methods
 
-                                        Message message;
-
-                                        if (resp.contains("200"))
+                                        if (selected_event == null)
+                                            return;
+                                        if (selected_event.getId() > 0)
                                         {
-                                            String ev_title = selected_event.getTitle();
+                                            user.setEvent(selected_event);
+                                            String resp = RemoteComms.postData("userUpdate/" + user.getUsername(), user.toString());
 
-                                            WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),
-                                                    String.valueOf(selected_event.getId()));
+                                            Message message;
 
-                                            message = toastHandler("Signed in to event \"" + ev_title + "\"").obtainMessage();
-                                            message.sendToTarget();
+                                            if (resp.contains("200"))
+                                            {
+                                                String ev_title = selected_event.getTitle();
 
-                                            Log.d(TAG, "Signed in to event \"" + ev_title + "\".");
+                                                WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),
+                                                        String.valueOf(selected_event.getId()));
 
-                                            Intent i = new Intent(EventDetailActivity.this,MainActivity.class);
-                                            i.putExtra("Fragment", UserContactsFragment.class.getName());
-                                            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                            startActivity(i);
+                                                LocalComms.hideProgressBar(progress);
+
+                                                message = toastHandler("Signed in to event \"" + ev_title + "\"").obtainMessage();
+                                                message.sendToTarget();
+
+                                                Log.d(TAG, "Signed in to event \"" + ev_title + "\".");
+
+                                                Intent i = new Intent(EventDetailActivity.this, MainActivity.class);
+                                                i.putExtra("Fragment", UserContactsFragment.class.getName());
+                                                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                startActivity(i);
+                                            } else
+                                            {
+                                                /*WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),
+                                                        String.valueOf(0));*/
+                                                message = toastHandler("Could not login to event, server response: " + resp).obtainMessage();
+                                                message.sendToTarget();
+                                                Log.d(TAG, resp);
+                                            }
                                         } else
                                         {
                                             /*WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),
                                                     String.valueOf(0));*/
-                                            message = toastHandler("Could not login to event, server response: " + resp).obtainMessage();
+                                            Message message = toastHandler("Event is null.").obtainMessage();
                                             message.sendToTarget();
-                                            Log.d(TAG, resp);
+                                            Log.wtf(TAG, "Event is null for some reason.");
                                         }
                                     } else
                                     {
                                         /*WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),
                                                 String.valueOf(0));*/
-                                        Message message = toastHandler("Event is null.").obtainMessage();
+                                        Log.wtf(TAG, "User object is null.");
+                                        Message message = toastHandler("Could not sign in to event, User object is null.").obtainMessage();
                                         message.sendToTarget();
-                                        Log.wtf(TAG, "Event is null for some reason.");
                                     }
-                                } else
+                                } catch (SocketTimeoutException e)
                                 {
-                                    /*WritersAndReaders.writeAttributeToConfig(Config.EVENT_ID.getValue(),
-                                            String.valueOf(0));*/
-                                    Log.wtf(TAG, "User object is null.");
-                                    Message message = toastHandler("Could not sign in to event, User object is null.").obtainMessage();
+                                    Message message = toastHandler("We are having trouble connecting to the server, please check your internet connection.").obtainMessage();
                                     message.sendToTarget();
+                                    Log.d(TAG, e.getMessage(), e);
+                                } catch (UnknownHostException e)
+                                {
+                                    Message message = toastHandler("No Internet access.").obtainMessage();
+                                    message.sendToTarget();
+                                    Log.d(TAG, e.getMessage(), e);
+                                } catch (IOException e)
+                                {
+                                    Log.wtf(TAG, e.getMessage(), e);
+                                } finally
+                                {
+                                    LocalComms.hideProgressBar(progress);
                                 }
-                            }catch (SocketTimeoutException e)
-                            {
-                                Message message = toastHandler("We are having trouble connecting to the server, please check your internet connection.").obtainMessage();
-                                message.sendToTarget();
-                                Log.d(TAG, e.getMessage(), e);
                             }
-                            catch (UnknownHostException e)
-                            {
-                                Message message = toastHandler("No Internet access.").obtainMessage();
-                                message.sendToTarget();
-                                Log.d(TAG, e.getMessage(), e);
-                            } catch (IOException e)
-                            {
-                                Log.wtf(TAG, e.getMessage(), e);
-                            } finally
-                            {
-                                LocalComms.hideProgressBar(progress);
-                            }
-                        }
-                    });
-                    tEventDataLoader.start();
-                    //TODO: Go to UserContactsFragment
+                        });
+                        tEventDataLoader.start();
+                        //TODO: Go to UserContactsFragment
+                    } else
+                    {
+                        Toast.makeText(this, "Your location reading says that you're not at this event. \nPlease check that your GPS is on and you have an Internet connection.", Toast.LENGTH_LONG).show();
+                        Log.d(TAG, "User is not actually at the Event.");
+                    }
                 } else
                 {
-                    Toast.makeText(this, "Your location reading says that you're not at this event. \nPlease check that your GPS is on and you have an Internet connection.", Toast.LENGTH_LONG).show();
-                    Log.d(TAG, "User is not actually at the Event.");
+                    Toast.makeText(this, "Invalid access code. Please try again.", Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "Invalid Access Code Entered");
                 }
-            } else
+            }catch (NumberFormatException e)
             {
-                Toast.makeText(this, "Invalid access code. Please try again.", Toast.LENGTH_LONG).show();
-                Log.d(TAG, "Invalid Access Code Entered");
+                LocalComms.logException(e);
             }
         }
         else Log.d(TAG,"Location is null.");
@@ -656,7 +686,13 @@ public class EventDetailActivity extends AppCompatActivity implements IOnListFra
                 if (data != null)
                 {
                     Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
-                    validateEventLogin(Integer.valueOf(barcode.displayValue));
+                    try
+                    {
+                        validateEventLogin(Integer.valueOf(barcode.displayValue));
+                    } catch (IOException e)
+                    {
+                        LocalComms.logException(e);
+                    }
                     Log.d(TAG, "Barcode read: " + barcode.displayValue);
                 }
                 else

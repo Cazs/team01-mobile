@@ -113,6 +113,9 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
+        if(getActivity()==null)
+            return null;
+
         View view = inflater.inflate(R.layout.fragment_usercontacts_list, container, false);
         View rview = null;
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_layout);
@@ -384,16 +387,21 @@ public class UserContactsFragment extends Fragment implements SwipeRefreshLayout
                     temp.setLastname("");
                     contacts.add(temp);
                     Log.d(TAG, "Contact list is empty.");
-
-                    LinearLayout contactsContainer = (LinearLayout)getActivity().findViewById(R.id.contcts_anim_container);
-                    if(contactsContainer!=null)
-                        contactsContainer.setVisibility(View.VISIBLE);
+                    if(getActivity()!=null)
+                    {
+                        LinearLayout contactsContainer = (LinearLayout) getActivity().findViewById(R.id.contcts_anim_container);
+                        if (contactsContainer != null)
+                            contactsContainer.setVisibility(View.VISIBLE);
+                    }
                 }
                 else
                 {
-                    LinearLayout contactsContainer = (LinearLayout)getActivity().findViewById(R.id.contcts_anim_container);
-                    if(contactsContainer!=null)
-                        contactsContainer.setVisibility(View.GONE);
+                    if(getActivity()!=null)
+                    {
+                        LinearLayout contactsContainer = (LinearLayout) getActivity().findViewById(R.id.contcts_anim_container);
+                        if (contactsContainer != null)
+                            contactsContainer.setVisibility(View.GONE);
+                    }
                 }
 
                 if (recyclerView != null)
